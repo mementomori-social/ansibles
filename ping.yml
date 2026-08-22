@@ -1,0 +1,58 @@
+---
+- name: Connection check
+  hosts: all
+  become: true
+  vars:
+    send_to:
+  tasks:
+
+    - name: Distribution
+      ansible.builtin.debug:
+        msg: "Hello from {{ ansible_distribution }}: {{ ansible_distribution_version }}."
+
+    - name: Get disk usage
+      ansible.builtin.shell: |
+        set -eo pipefail
+        df -h | grep -v 'tmpfs\|/boot/efi\|/var/lib/docker'
+      args:
+        executable: /usr/bin/bash
+      changed_when: false
+      register: space
+
+    - name: Print disk usage
+      ansible.builtin.debug:
+        var: space.stdout_lines
+      changed_when: false
+
+    - name: Check if deleted files are in use
+      ansible.builtin.shell: |
+        set -eo pipefail
+        lsof -nP +L1 2>/dev/null | grep -c deleted
+      args:
+        executable: /usr/bin/bash
+      register: deleted
+      changed_when: false
+
+    - name: Print deleted count
+      ansible.builtin.debug:
+        msg: "Deleted files count: {{ deleted.stdout }}"
+
+    - name: Send data to Matrix
+      connection: local
+      become: false
+      vars:
+        ansible_python_interpreter: '{{ ansible_playbook_python }}'
+      tags: matrix
+      community.general.matrix:
+        hs_url: "{{ vault_hs_url }}"
+        room_id: "{{ vault_room_id }}"
+        token: "{{ vault_hs_token }}"
+        msg_plain: |
+          **Host:** {{ ansible_facts["hostname"] }}
+          "**Deleted files count:** {{ deleted.stdout }}"
+          "```{{ space.stdout_lines }}```"
+        msg_html: |
+          "<bold>Host:</bold> {{ ansible_facts["hostname"] }}"
+          "<bold>Deleted files count:</bold> {{ deleted.stdout }}"
+          "<code>{{ space.stdout_lines }}</code>```"
+      when: send_to == "matrix"

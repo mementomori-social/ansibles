@@ -1,0 +1,39 @@
+---
+- name: Update host
+  hosts: all
+  become: true
+
+  tasks:
+    - name: Perform a dist-upgrade and clean cache.
+      ansible.builtin.apt:
+        upgrade: dist
+        update_cache: true
+        clean: true
+
+    - name: Check if a reboot is required.
+      ansible.builtin.stat:
+        path: /var/run/reboot-required
+        get_checksum: false
+      register: reboot_required_file
+
+    - name: Reboot the server (if required).
+      ansible.builtin.reboot:
+      when: reboot_required_file.stat.exists and reboot_required_file is defined
+
+    - name: Remove dependencies that are no longer required.
+      ansible.builtin.apt:
+        autoremove: true
+
+    - name: Check if deleted files are in use
+      ansible.builtin.shell: |
+        set -eo pipefail
+        lsof -nP +L1 2>/dev/null | grep -c deleted
+      args:
+        executable: /usr/bin/bash
+      register: deleted
+      changed_when: false
+
+    - name: Do we need to warn about "deleted files in use" count
+      ansible.builtin.debug:
+        msg: "Reboot recommended. Deleted files count: {{ deleted.stdout }}"
+      when: deleted.stdout | int >= 20
