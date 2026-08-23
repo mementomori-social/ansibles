@@ -49,10 +49,12 @@
         token: "{{ vault_hs_token }}"
         msg_plain: |
           **Host:** {{ ansible_facts["hostname"] }}
-          "**Deleted files count:** {{ deleted.stdout }}"
-          "```{{ space.stdout_lines }}```"
+          **Deleted files count:** {{ deleted.stdout }}
+          ```
+          {{ space.stdout }}
+          ```
         msg_html: |
-          "<bold>Host:</bold> {{ ansible_facts["hostname"] }}"
-          "<bold>Deleted files count:</bold> {{ deleted.stdout }}"
-          "<code>{{ space.stdout_lines }}</code>```"
+          <strong>Host:</strong> {{ ansible_facts["hostname"] }}<br>
+          <strong>Deleted files count:</strong> {{ deleted.stdout }}
+          <pre><code>{{ space.stdout }}</code></pre>
       when: send_to == "matrix"
