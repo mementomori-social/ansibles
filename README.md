@@ -47,4 +47,15 @@ Also warns if you should reboot anyway due deleted files in use.
 ansible-playbook -i inventory-hetzner.yml -e @secrets/vault.yml update-host.yml
 ```
 
+# Roles
+
+We provision services based on roles. Aim is so we can scale and move services
+between the hosts if later needed.
+
+* dev-vm - Create server for developing mementomori features & BirdUI
+* **elasticsearch** - Install and configure elastic search for mastodon search
+* mastodon - Install and configure mastodon services
+* **nginx** - Install and configre web server with reverse proxy and cert automation
+* **postgresql** - Install and configure database for mastodon
+* **valkey** - Install and configure key-val store for mastodon
 
