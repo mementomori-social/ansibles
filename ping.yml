@@ -11,11 +11,7 @@
         msg: "Hello from {{ ansible_distribution }}: {{ ansible_distribution_version }}."
 
     - name: Get disk usage
-      ansible.builtin.shell: |
-        set -eo pipefail
-        df -h | grep -v 'tmpfs\|/boot/efi\|/var/lib/docker'
-      args:
-        executable: /usr/bin/bash
+      ansible.builtin.shell: df -h | grep -v 'tmpfs\|/boot/efi\|/var/lib/docker'
       changed_when: false
       register: space
 
@@ -25,11 +21,7 @@
       changed_when: false
 
     - name: Check if deleted files are in use
-      ansible.builtin.shell: |
-        set -eo pipefail
-        lsof -nP +L1 2>/dev/null | grep -c deleted
-      args:
-        executable: /usr/bin/bash
+      ansible.builtin.shell: lsof -nP +L1 2>/dev/null | grep -c deleted
       register: deleted
       changed_when: false
 

@@ -25,11 +25,7 @@
         autoremove: true
 
     - name: Check if deleted files are in use
-      ansible.builtin.shell: |
-        set -eo pipefail
-        lsof -nP +L1 2>/dev/null | grep -c deleted
-      args:
-        executable: /usr/bin/bash
+      ansible.builtin.shell: lsof -nP +L1 2>/dev/null | grep -c deleted
       register: deleted
       changed_when: false
 
