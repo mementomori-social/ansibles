@@ -6,19 +6,13 @@ mastodon:
       ansible_ssh_user: "{{ vault_ssh_user_mastodon }}"
       ansible_ssh_port: "{{ vault_ansible_ssh_port_mastodon }}"
     elastic:
-      # ansible_ssh_host: let's go through jumphost
-      ansible_ssh_host: 10.0.0.3
+      ansible_ssh_host: 37.27.1.139
       ansible_ssh_user: "{{ vault_ssh_user_elastic }}"
       ansible_ssh_port: "{{ vault_ansible_ssh_port_elastic }}"
-      ansible_ssh_common_args:
-        '-o ProxyCommand="ssh -p {{ vault_ansible_ssh_port_mastodon }} -W %h:%p -q {{ vault_ssh_user_mastodon }}@65.21.62.142"'
     postgresql:
-      # ansible_ssh_host: let's go through jumphost
-      ansible_ssh_host: 10.0.0.4
+      ansible_ssh_host: 65.109.235.193
       ansible_ssh_user: "{{ vault_ssh_user_postgresql }}"
       ansible_ssh_port: "{{ vault_ansible_ssh_port_postgresql }}"
-      ansible_ssh_common_args:
-        '-o ProxyCommand="ssh -p {{ vault_ansible_ssh_port_mastodon }} -W %h:%p -q {{ vault_ssh_user_mastodon }}@65.21.62.142"'
 matrix:
   hosts:
     chat:
