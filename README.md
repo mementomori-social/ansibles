@@ -16,7 +16,6 @@ you know to create your own vault if you want to try this automation yourself.
    `ansible-galaxy collection install -r collections/requirements.yml -p collections`
 4. Clone secret vault and link to it
    ```sh
-   ```sh
    git clone <vault_url> ../secrets
    ln -s ../secrets
    ```
