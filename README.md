@@ -35,7 +35,7 @@ matrix channel if `-e send_to=matrix` is added.
 
 
 ```sh
-ansible-playbook -i inventory.yml -e @secrets/vault.yml ping.yml
+ansible-playbook -i inventory-hetzner.yml -e @secrets/vault.yml ping.yml
 ```
 
 
@@ -45,7 +45,7 @@ Updates the hosts software packages and reboots the host if seem necessary.
 Also warns if you should reboot anyway due deleted files in use.
 
 ```sh
-ansible-playbook -i inventory.yml -e @secrets/vault.yml update-host.yml
+ansible-playbook -i inventory-hetzner.yml -e @secrets/vault.yml update-host.yml
 ```
 
 
