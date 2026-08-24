@@ -32,5 +32,5 @@
         line: "{{ item.line }}"
       loop:
         # deny password login
-        - { option: 'PermitRootLogin', line: 'PermitRootLogin prohibit-password' }
+        - { option: 'PermitRootLogin', line: 'PermitRootLogin no' }
         - { option: 'PasswordAuthentication', line: 'PasswordAuthentication no' }
