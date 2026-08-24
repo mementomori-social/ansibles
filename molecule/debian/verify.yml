@@ -1,0 +1,68 @@
+
+---
+- name: Verify
+  hosts: all
+  gather_facts: true
+  tasks:
+    - name: Check required packages are installed
+      ansible.builtin.package_facts:
+        manager: auto
+
+    - name: Verify python3 is installed
+      ansible.builtin.assert:
+        that:
+          - "'python3' in ansible_facts.packages"
+        fail_msg: "Python3 package not found"
+
+    - name: Verify systemd service is running
+      ansible.builtin.systemd:
+        name: systemd-logind
+        state: started
+      check_mode: true
+      register: systemd_check
+      failed_when: false
+
+    - name: Assert systemd is active
+      ansible.builtin.assert:
+        that:
+          - systemd_check is not failed
+        fail_msg: "Systemd service not running"
+
+    - name: Verify users created
+      ansible.builtin.user:
+        name: ikke
+        state: present
+      check_mode: true
+      register: user_check
+      failed_when: false
+
+    - name: Assert users created
+      ansible.builtin.assert:
+        that:
+          - user_check is not failed
+        fail_msg: "User missing"
+
+    - name: Verify users has ssh pubkey
+      ansible.builtin.stat:
+        path: /home/ikke/.ssh/authorized_keys
+      register: ak
+
+    - name: Assert authorized keys created
+      ansible.builtin.assert:
+        that:
+          - ak.stat.isreg is not false
+        fail_msg: "Authorized_keys missing"
+
+    - name: Verify SSH option
+      ansible.builtin.lineinfile:
+        path: /etc/ssh/sshd_config
+        regex: 'PasswordAuthentication no'
+      check_mode: true
+      register: ssh_opt_check
+      failed_when: false
+
+    - name: Assert users created
+      ansible.builtin.assert:
+        that:
+          - ssh_opt_check is not failed
+        fail_msg: "SSH option missing"

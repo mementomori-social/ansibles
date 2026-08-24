@@ -1,0 +1,11 @@
+---
+- name: Prepare container instances
+  hosts: all
+  gather_facts: false
+  become: true
+  tasks:
+    - name: Install required packages
+      ansible.builtin.package:
+        name: "{{ required_packages }}"
+        state: present
+      when: required_packages is defined

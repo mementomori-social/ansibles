@@ -1,0 +1,17 @@
+---
+- name: Destroy container instances
+  hosts: localhost
+  gather_facts: false
+  tasks:
+    - name: Remove test containers
+      containers.podman.podman_container:
+        name: "{{ hostvars[item].ansible_host }}"
+        state: absent
+      loop: "{{ groups['all'] }}"
+      failed_when: false
+
+    - name: Remove container network
+      containers.podman.podman_network:
+        name: molecule-debian-test
+        state: absent
+      failed_when: false

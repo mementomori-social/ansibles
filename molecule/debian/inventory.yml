@@ -1,0 +1,44 @@
+---
+all:
+  children:
+    mastodon:
+      hosts:
+        mastodon:
+          ansible_host: mastodon
+          ansible_connection: containers.podman.podman
+          # container_image: docker.io/debian:stable-slim
+          container_image: docker.io/jomrr/molecule-debian:stable
+          container_command: /sbin/init
+          container_privileged: false
+        elastic:
+          ansible_host: elastic
+          ansible_connection: containers.podman.podman
+          container_image: docker.io/jomrr/molecule-debian:stable
+          container_command: /sbin/init
+          container_privileged: false
+        postgresql:
+          ansible_host: postgresql
+          ansible_connection: containers.podman.podman
+          container_image: docker.io/jomrr/molecule-debian:stable
+          container_command: /sbin/init
+          container_privileged: false
+      vars:
+        required_packages:
+          - python3
+          - systemd
+          - ssh
+        container_log_driver: json-file
+        container_systemd: false
+    # matrix:
+    #   hosts:
+    #     chat:
+    #       ansible_host: postgresql
+    #       ansible_connection: containers.podman.podman
+    #       container_image: docker.io/jomrr/molecule-debian:stable
+    #       container_command: /sbin/init
+    #       container_privileged: false
+    #   vars:
+    #     required_packages:
+    #       - python3
+    #       - systemd
+    #       - ssh

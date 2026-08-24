@@ -58,3 +58,33 @@ between the hosts if later needed.
 * **nginx** - Install and configre web server with reverse proxy and cert automation
 * **postgresql** - Install and configure database for mastodon
 * **valkey** - Install and configure key-val store for mastodon
+
+# Testing
+
+[Molecule](https://docs.ansible.com/projects/molecule/) can be used to test the playbooks created.
+It is set to use podman with debian stable images for testing the playbooks.
+See test [inventory.yml](molecule/debian/inventory.yml) for test containers
+and [verify.yml](molecule/debian/verify.yml) for test cases.
+
+Useful commands (in repo root):
+
+```sh
+# Test the complete lifecycle
+molecule
+ test --scenario-name debian
+
+# Run specific actions
+molecule create --scenario-name debian
+molecule converge --scenario-name debian
+molecule verify --scenario-name debian
+```
+
+## Requirements
+
+You'll need podman and molecule on your dev env. In Fedora:
+
+```sh
+sudo dnf install podman
+pip install --user molecule
+```
+

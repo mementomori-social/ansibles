@@ -1,0 +1,27 @@
+---
+- name: Create container instances
+  hosts: localhost
+  gather_facts: false
+  tasks:
+    - name: Create container network
+      containers.podman.podman_network:
+        name: molecule-debian-test
+        state: present
+
+    - name: Create test containers
+      containers.podman.podman_container:
+        name: "{{ hostvars[item].ansible_host }}"
+        image: "{{ hostvars[item].container_image }}"
+        command: "{{ hostvars[item].container_command }}"
+        privileged: "{{ hostvars[item].container_privileged }}"
+        state: started
+        network:
+          - molecule-debian-test
+        systemd: true
+      loop: "{{ groups['all'] }}"
+
+    - name: Wait for containers to be ready
+      ansible.builtin.wait_for_connection:
+        timeout: 300
+      delegate_to: "{{ hostvars[item].ansible_host }}"
+      loop: "{{ groups['all'] }}"
