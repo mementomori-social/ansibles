@@ -31,6 +31,13 @@
         insertafter: "^ *# *{{ item.option }}"
         line: "{{ item.line }}"
       loop:
-        # deny password login
+        # deny password or root login
         - { option: 'PermitRootLogin', line: 'PermitRootLogin no' }
         - { option: 'PasswordAuthentication', line: 'PasswordAuthentication no' }
+      notify: Restart sshd
+
+  handlers:
+    - name: Restart sshd
+      ansible.builtin.service:
+        name: ssh
+        state: restarted
