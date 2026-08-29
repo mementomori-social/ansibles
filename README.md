@@ -23,6 +23,30 @@ you know to create your own vault if you want to try this automation yourself.
 6. If you want messages sent to matrix install matrix-client
    `pip install matrix-client`
 
+# Inventories
+
+* inventory - is static file for hetzner env.
+* inventory-uplcoud.yml is dynamic inventory for Upcloud.
+
+Upcloud inventory is a dynamic inventory, see usage
+[from docs](https://upcloud.com/docs/guides/get-started-ansible-inventory/).
+
+I had bunch of warnings unless I set `PYTHHON_PATH`. You can check
+inventory contents like this:
+
+```sh
+PYTHONPATH=collections ansible-inventory -i inventory-upcloud.yml --graph --vars
+```
+
+# Secrets Vault
+
+We have secrets in ansible vault. It's a good idea to put link to vault in `group_vars/all/` directory.
+
+```sh
+cd group_vars/all
+ln -s ../../secrets/vault.yml .
+```
+
 # Playbooks
 
 Here are some use cases for the playbooks:
@@ -46,6 +70,15 @@ Also warns if you should reboot anyway due deleted files in use.
 ```sh
 ansible-playbook -i inventory-hetzner.yml -e @secrets/vault.yml update-host.yml
 ```
+
+## Setup PostgreSQL
+
+This imports postgresql role to postgresql server.
+
+```sh
+ansible-playbook -i inventory-hetzner.yml -e @secrets/vault.yml postgres1l.yml
+```
+
 
 # Roles
 
@@ -78,6 +111,9 @@ molecule create --scenario-name debian
 molecule converge --scenario-name debian
 molecule verify --scenario-name debian
 ```
+
+This lets you keep running ansible setup playbooks and tests all over again
+without always destroying the containers in between.
 
 ## Requirements
 
