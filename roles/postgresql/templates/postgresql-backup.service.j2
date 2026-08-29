@@ -1,0 +1,7 @@
+[Unit]
+Description=PostgreSQL database backup
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/backup-db.sh
+User=root

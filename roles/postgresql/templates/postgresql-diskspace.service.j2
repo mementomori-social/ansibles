@@ -1,0 +1,7 @@
+[Unit]
+Description=PostgreSQL disk space heartbeat
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/diskspace-db.sh
+User=root

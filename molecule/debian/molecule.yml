@@ -9,10 +9,13 @@ ansible:
     defaults:
       collections_path: collections
       inventory: inventory.yml
+      vault_password_file: ../../.vaultpw
   executor:
     args:
       ansible_playbook:
         - --inventory=inventory.yml
+        - --vault-password-file=../../.vaultpw
+        # - -e @../../secrets/vault.yml
 
 scenario:
   test_sequence:

@@ -1,0 +1,21 @@
+---
+
+postgresql_tunables:
+  - { key: listen_addresses, value: "localhost,{{ ansible_facts['default_ipv4']['address'] }}" }
+  - { key: log_timezone, value: Europe/Helsinki }
+  - { key: max_connections, value: 850 }
+  - { key: shared_buffers, value: 8GB }
+  - { key: effective_cache_size, value: 24GB }
+  - { key: maintenance_work_mem, value: 2GB }
+  - { key: checkpoint_completion_target, value: 0.9 }
+  - { key: wal_buffers, value: 16MB }
+  - { key: default_statistics_target, value: 100 }
+  - { key: random_page_cost, value: 1.1 }
+  - { key: effective_io_concurrency, value: 200 }
+  - { key: work_mem, value: 32MB }
+  - { key: min_wal_size, value: 2GB }
+  - { key: max_wal_size, value: 8GB }
+  - { key: max_worker_processes, value: 8 }
+  - { key: max_parallel_workers_per_gather, value: 4 }
+  - { key: max_parallel_workers, value: 8 }
+  - { key: max_parallel_maintenance_workers, value: 4 }

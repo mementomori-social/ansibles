@@ -1,3 +1,10 @@
 ---
-- name: Converge
+- name: Common tests
+  tags: common
   ansible.builtin.import_playbook: ../../common.yml
+
+- name: Postgresql
+  tags: postgresql
+  vars:
+    skip_in_tests: true
+  ansible.builtin.import_playbook: ../../postgresql.yml

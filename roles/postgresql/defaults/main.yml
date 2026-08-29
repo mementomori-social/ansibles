@@ -1,3 +1,27 @@
-#SPDX-License-Identifier: MIT-0
+# SPDX-License-Identifier: MIT-0
 ---
-# defaults file for postgresql
+
+postgresql_datadir: /database
+postgresql_mount_device: /dev/sdb
+postgresql_mount_fs_type: ext4
+postgresql_mount_opts: defaults
+postgresql_packages:
+  - postgresql
+  - postgresql-contrib
+  - postgresql-client
+postgresql_version: "17"
+postgresql_service: postgresql
+postgresql_host: localhost
+postgresql_port: 5432
+
+# postgresql_tunables: []
+
+postgresql_disk_space_limit_gb: 5
+postgresql_betterstack_heartbeat:
+
+postgresql_backup_mount: /mnt/extra-backups
+postgresql_backup_diskspace_threshold: 90
+postgresql_backup_betterstack_heartbeat:
+
+# for molecule podman tests
+skip_in_tests: false

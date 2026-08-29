@@ -1,0 +1,44 @@
+#!/bin/bash
+# diskspace-db.sh
+# Heartbeat for postgresql DB size
+
+# Set up the mountpoint
+MOUNTPOINT="{{ postgresql_datadir }}"
+
+# Check if the mountpoint is mounted
+if findmnt --real -rno TARGET "$MOUNTPOINT" > /dev/null; then
+  echo "Mountpoint is mounted. Proceeding..."
+else
+  echo "Mountpoint is not mounted"
+  exit 1
+fi
+
+# Get disk usage and total
+DISK_USAGE=$(df -hk | grep "$MOUNTPOINT" | awk '{print $3}')
+DISK_TOTAL=$(df -hk | grep "$MOUNTPOINT" | awk '{print $2}')
+
+# Convert from block sizes to GB
+DISK_USAGE_GB=$((DISK_USAGE / 1024 / 1024))
+DISK_TOTAL_GB=$((DISK_TOTAL / 1024 / 1024))
+
+# How much is allowed to be left
+DISK_GB_LIMIT="{{ postgresql_disk_space_limit_gb }}"
+
+# How much is left
+DISK_GB_LEFT=$((DISK_TOTAL_GB - DISK_USAGE_GB))
+
+# Check if the heartbeat URL is fine
+if curl --output /dev/null --silent --head --fail "https://uptime.betterstack.com"; then
+  echo "Heartbeat URL is fine. Proceeding..."
+else
+  echo "Heartbeat URL is not fine"
+  exit 1
+fi
+
+# Do the real thing
+if [ "$DISK_GB_LEFT" -lt "$DISK_GB_LIMIT" ]; then
+  echo "Less than ${DISK_GB_LIMIT} GB left! Only ${DISK_GB_LEFT} GB left!"
+else
+  echo "There is still ${DISK_GB_LEFT} of ${DISK_TOTAL_GB} GB left. No need to be alarmed as the alarming size is ${DISK_GB_LIMIT} GB."
+  curl https://uptime.betterstack.com/api/v1/heartbeat/{{ postgresql_betterstack_heartbeat }};
+fi

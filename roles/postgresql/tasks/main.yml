@@ -1,3 +1,147 @@
-#SPDX-License-Identifier: MIT-0
+# SPDX-License-Identifier: MIT-0
 ---
-# tasks file for postgresql
+
+- name: Ensure /database directory exists for mount point
+  ansible.builtin.file:
+    path: "{{ postgresql_datadir }}"
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Add to fstab for {{ postgresql_mount_device }}-{{ postgresql_datadir }}
+  ansible.posix.mount:
+    src: "{{ postgresql_mount_device }}"
+    path: "{{ postgresql_datadir }}"
+    fstype: "{{ postgresql_mount_fs_type }}"
+    opts: "{{ postgresql_mount_opts }}"
+    state: present
+  when: not skip_in_tests
+
+- name: Mount device - dir "{{ postgresql_mount_device }}->{{ postgresql_datadir }}"
+  ansible.posix.mount:
+    path: "{{ postgresql_datadir }}"
+    state: mounted
+  when: not skip_in_tests
+
+- name: Ensure PostgreSQL packages are installed
+  ansible.builtin.apt:
+    name: "{{ postgresql_packages }}"
+    state: present
+    update_cache: true
+
+#
+# We make sure postgresql data lives on storage disk.
+#
+- name: Check if PostgreSQL original data directory is a regular directory
+  ansible.builtin.stat:
+    path: /var/lib/postgresql/{{ postgresql_version }}/main
+  register: pg_data_old_stat
+
+- name: Create PostgreSQL persistent data disk directory
+  ansible.builtin.file:
+    path: "{{ postgresql_datadir }}/{{ postgresql_version }}/main"
+    state: directory
+    owner: postgres
+    group: postgres
+  register: pg_data_persistent
+
+- name: Stop PostgreSQL service before configuring new data directory
+  ansible.builtin.service:
+    name: "{{ postgresql_service }}"
+    state: stopped
+  when:
+    - pg_data_persistent.changed
+    - pg_data_old_stat.stat.exists and pg_data_old_stat.stat.isdir
+
+- name: Move default PostgreSQL data directory to if not already exists {{ postgresql_datadir }}/{{ postgresql_version }}
+  ansible.builtin.command:
+    cmd: mv /var/lib/postgresql/{{ postgresql_version }}/main {{ postgresql_datadir }}/{{ postgresql_version }}
+    creates: "{{ postgresql_datadir }}/{{ postgresql_version }}/main"
+  when:
+    - pg_data_persistent.changed
+    - pg_data_old_stat.stat.exists and pg_data_old_stat.stat.isdir
+  changed_when: true
+
+- name: If data dir existed, and yet there is postgres dir from package (new server install with old datadir)
+  ansible.builtin.file:
+    path: /var/lib/postgresql/{{ postgresql_version }}/main
+    state: absent
+  when:
+    - pg_data_persistent.changed == false
+    - pg_data_old_stat.stat.exists and pg_data_old_stat.stat.isdir
+
+- name: Symlink from default location to {{ postgresql_datadir }}
+  ansible.builtin.file:
+    src: "{{ postgresql_datadir }}/{{ postgresql_version }}/main"
+    dest: /var/lib/postgresql/{{ postgresql_version }}/main
+    state: link
+    owner: postgres
+    group: postgres
+    force: true
+
+- name: Tune postgresql
+  ansible.builtin.lineinfile:
+    path: /etc/postgresql/{{ postgresql_version }}/main/postgresql.conf
+    regexp: "^ *{{ item.key }}"
+    line: "{{ item.key }} = {{ item.value }}"
+    state: present
+  loop: "{{ postgresql_tunables }}"
+  notify: Restart postgresql
+
+- name: Ensure PostgreSQL is started and enabled
+  ansible.builtin.service:
+    name: "{{ postgresql_service }}"
+    state: started
+    enabled: true
+
+#
+# Set up periodic tasks for the server (systmed timer)
+#
+- name: Deploy diskspace-db.sh script
+  ansible.builtin.template:
+    src: scripts/diskspace-db.sh.j2
+    dest: /usr/local/bin/diskspace-db.sh
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Deploy backup-db.sh script
+  ansible.builtin.template:
+    src: scripts/backup-db.sh.j2
+    dest: /usr/local/bin/backup-db.sh
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Deploy PostgreSQL diskspace systemd unit files
+  ansible.builtin.template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    mode: '0644'
+  loop:
+    - { src: postgresql-diskspace.service.j2, dest: /etc/systemd/system/postgresql-diskspace.service }
+    - { src: postgresql-diskspace.timer.j2, dest: /etc/systemd/system/postgresql-diskspace.timer }
+  notify: Reload systemd
+
+- name: Deploy PostgreSQL backup systemd unit files
+  ansible.builtin.template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    mode: '0644'
+  loop:
+    - { src: postgresql-backup.service.j2, dest: /etc/systemd/system/postgresql-backup.service }
+    - { src: postgresql-backup.timer.j2, dest: /etc/systemd/system/postgresql-backup.timer }
+  notify: Reload systemd
+
+- name: Enable and start PostgreSQL diskspace timer
+  ansible.builtin.systemd:
+    name: postgresql-diskspace.timer
+    state: started
+    enabled: true
+
+- name: Enable and start PostgreSQL backup timer
+  ansible.builtin.systemd:
+    name: postgresql-backup.timer
+    state: started
+    enabled: true

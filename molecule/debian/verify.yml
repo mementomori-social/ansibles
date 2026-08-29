@@ -1,8 +1,9 @@
-
 ---
-- name: Verify
+- name: Verify common
   hosts: all
   gather_facts: true
+  vars:
+    skip_in_tests: true
   tasks:
     - name: Check required packages are installed
       ansible.builtin.package_facts:
@@ -66,3 +67,37 @@
         that:
           - ssh_opt_check is not failed
         fail_msg: "SSH option missing"
+
+- name: Verify postgresql
+  hosts: postgresql
+  gather_facts: true
+  vars:
+    skip_in_tests: true
+    postgresql_version: 17
+  tasks:
+
+    - name: Symlink for persistent data exists
+      ansible.builtin.stat:
+        path: /var/lib/postgresql/{{ postgresql_version }}/main
+      register: postgresql_link
+
+    - name: Assert postgresql persistent data dir is linked
+      ansible.builtin.assert:
+        that:
+          - postgresql_link.stat.islnk is defined
+          - postgresql_link.stat.islnk
+        fail_msg: "postgresql link missing"
+
+    - name: Verify postgresql service is running
+      ansible.builtin.systemd:
+        name: postgresql
+        state: started
+      check_mode: true
+      register: postgresql_check
+      failed_when: false
+
+    - name: Assert postgresql
+      ansible.builtin.assert:
+        that:
+          - postgresql_check is started
+        fail_msg: "Postgresql is not running"
