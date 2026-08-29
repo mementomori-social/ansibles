@@ -40,7 +40,7 @@
 
 - name: Create PostgreSQL persistent data disk directory
   ansible.builtin.file:
-    path: "{{ postgresql_datadir }}/{{ postgresql_version }}/main"
+    path: "{{ postgresql_datadir }}/{{ postgresql_version }}"
     state: directory
     owner: postgres
     group: postgres
@@ -83,7 +83,8 @@
 - name: Tune postgresql
   ansible.builtin.lineinfile:
     path: /etc/postgresql/{{ postgresql_version }}/main/postgresql.conf
-    regexp: "^ *{{ item.key }}"
+    insertafter: "^ *# *{{ item.key }}"
+    regexp: "^{{ item.key }}"
     line: "{{ item.key }} = {{ item.value }}"
     state: present
   loop: "{{ postgresql_tunables }}"
