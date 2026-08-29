@@ -8,3 +8,9 @@
   vars:
     skip_in_tests: true
   ansible.builtin.import_playbook: ../../postgresql.yml
+
+- name: Valkey
+  tags: valkey
+  vars:
+    skip_in_tests: true
+  ansible.builtin.import_playbook: ../../valkey.yml

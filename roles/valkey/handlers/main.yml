@@ -1,3 +1,11 @@
-#SPDX-License-Identifier: MIT-0
+# SPDX-License-Identifier: MIT-0
 ---
-# handlers file for valkey
+- name: Restart valkey
+  ansible.builtin.service:
+    name: valkey-server
+    state: restarted
+
+- name: Reload valkey
+  ansible.builtin.service:
+    name: valkey-server
+    state: reloaded

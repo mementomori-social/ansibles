@@ -101,3 +101,33 @@
         that:
           - postgresql_check is started
         fail_msg: "Postgresql is not running"
+
+- name: Verify valkey
+  hosts: valkey
+  gather_facts: true
+  vars:
+    skip_in_tests: true
+  tasks:
+    - name: Check required packages are installed
+      ansible.builtin.package_facts:
+        manager: auto
+
+    - name: Verify valkey-server is installed
+      ansible.builtin.assert:
+        that:
+          - "'valkey-server' in ansible_facts.packages"
+        fail_msg: "valkey-server package not found"
+
+    - name: Verify valkey service is running
+      ansible.builtin.systemd:
+        name: valkey-server
+        state: started
+      check_mode: true
+      register: valkey_check
+      failed_when: false
+
+    - name: Assert valkey
+      ansible.builtin.assert:
+        that:
+          - valkey_check is started
+        fail_msg: "Valkey is not running"

@@ -1,9 +1,13 @@
+# SPDX-License-Identifier: MIT-0
+---
 galaxy_info:
   author: ilkka.tengvall@iki.fi
-  description: administrator
+  description: Valkey key-value store for mastodon
   company: Mementomori RY
   issue_tracker_url: https://github.com/mementomori-social/ansibles/issues
   license: BSD-3-Clause
-  min_ansible_version: 2.2
-  galaxy_tags: []
+  min_ansible_version: "2.9"
+  galaxy_tags:
+    - valkey
+    - cache
 dependencies: []
