@@ -1,0 +1,104 @@
+---
+#
+# Upcloud doesn't have Ansible modules for infra. We use their
+# [Upcloud API](https://upcloudltd.github.io/upcloud-openapi-spec/api)
+#
+- name: Configure UpCloud Network Environment
+  hosts: localhost
+  connection: local
+  vars:
+    upcloud_token: "{{ vault_upcloud_ansible_token }}"
+    upcloud_api_url: "https://api.upcloud.com/1.3"
+    zone: "fi-hel2"
+    sdn_name: "fi-hel2-mastodon-network"
+    router_name: "fi-hel2-router"
+    nat_gateway_name: "fi-hel2-nat-gw"
+    dns_servers:
+      - 94.237.127.9
+      - 94.237.40.9
+    ip_cidr: "10.0.0.0/24"
+    ip_gw: "10.0.0.1"
+
+  tasks:
+    - name: Create private SDN network for Mastodon
+      # private network is costless
+      ansible.builtin.uri:
+        url: "{{ upcloud_api_url }}/network"
+        method: POST
+        headers:
+          Authorization: "Bearer {{ upcloud_token }}"
+        body_format: json
+        body:
+          network:
+            name: "{{ sdn_name }}"
+            zone: "{{ zone }}"
+            type: "private"
+            ip_networks:
+              ip_network:
+                - address: "{{ ip_cidr }}"
+                  family: IPv4
+                  dhcp: "yes"
+                  dhcp_default_route: "yes"
+                  gateway: "{{ ip_gw }}"
+                  dhcp_dns: "{{ dns_servers }}"
+                  dhcp_routes_configuration:
+                    effective_routes_auto_population:
+                      enabled: "yes"
+        status_code: 201
+      register: create_sdn
+
+    - name: Create router
+      # router is costless
+      ansible.builtin.uri:
+        url: "{{ upcloud_api_url }}/router"
+        method: POST
+        headers:
+          Authorization: "Bearer {{ upcloud_token }}"
+        body_format: json
+        body:
+          router:
+            name: "{{ router_name }}"
+        status_code: 201
+      register: create_router
+
+    - name: Connect Mastodon network to router
+      ansible.builtin.uri:
+        url: "{{ upcloud_api_url }}/network/{{ create_sdn.json.network.uuid }}"
+        method: PUT
+        headers:
+          Authorization: "Bearer {{ upcloud_token }}"
+        body_format: json
+        body:
+          network:
+            router: "{{ create_router.json.router.uuid }}"
+        status_code: 200
+      register: connect_network
+
+    - name: Create NAT Gateway and connect it to router
+      # essentials is free, see
+      # pricing}(https://hub.upcloud.com/networks/nat-gateways/new)
+      ansible.builtin.uri:
+        url: "{{ upcloud_api_url }}/gateway"
+        method: POST
+        headers:
+          Authorization: "Bearer {{ upcloud_token }}"
+        body_format: json
+        body:
+          name: "{{ nat_gateway_name }}"
+          zone: "{{ zone }}"
+          automatic_tunnel_internal_ip_allocation: true
+          features:
+            - nat
+          plan: "essentials"
+          routers:
+            - uuid: "{{ create_router.json.router.uuid }}"
+          configured_status: "started"
+        status_code: 201
+      register: create_nat_gateway
+
+    - name: Display created resource UUIDs
+      ansible.builtin.debug:
+        msg: |
+          SDN UUID: "{{ create_sdn.json.network.uuid }}"
+          Router UUID: "{{ create_router.json.router.uuid }}"
+          NAT Gateway UUID: "{{ create_nat_gateway.json.uuid }}"
