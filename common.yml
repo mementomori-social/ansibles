@@ -36,6 +36,13 @@
         - { option: 'PasswordAuthentication', line: 'PasswordAuthentication no' }
       notify: Restart sshd
 
+    - name: Give passwordless sudo powers to sudo group
+      ansible.builtin.copy:
+        dest: /etc/sudoers.d/01-sudo-group
+        content: |
+          # Ansible managed
+          %sudo ALL=(ALL) NOPASSWD:ALL
+
   handlers:
     - name: Restart sshd
       ansible.builtin.service:
