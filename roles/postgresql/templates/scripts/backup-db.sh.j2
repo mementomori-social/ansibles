@@ -12,13 +12,13 @@ white=$(tput setaf 7)
 txtreset=$(tput sgr0)
 
 # Check if required mount exists
-if ! mountpoint -q {{ postgresql_backup_mount }}; then
-    echo "${red}Error: Backup drive is not mounted at {{ postgresql_backup_mount }}${txtreset}"
+if ! mountpoint -q {{ postgresql_backupdir }}; then
+    echo "${red}Error: Backup drive is not mounted at {{ postgresql_backupdir }}${txtreset}"
     exit 1
 fi
 
 # Directory to clean up
-backup_dir="{{ postgresql_backup_mount }}/"
+backup_dir="{{ postgresql_backupdir }}/"
 
 # Clean up old backups while maintaining disk space under X%
 cleanup_old_backups() {
@@ -69,14 +69,14 @@ check_disk_space() {
 }
 
 # Check storage space on mount point
-if ! check_disk_space "{{ postgresql_backup_mount }}"; then
+if ! check_disk_space "{{ postgresql_backupdir }}"; then
     echo "${red}Please free up space on backup drive before running backup${txtreset}"
     exit 1
 fi
 
 # Backup to directory format
 echo "${boldyellow}Creating directory format backup with parallel jobs...${txtreset}"
-if ! sudo ionice -c2 -n7 nice -n19 pg_dump --host={{ postgresql_host }} --username mastodon --port {{ postgresql_port }} --dbname mastodon_production --verbose --jobs=2 --compress=5 --format=directory --file="{{ postgresql_backup_mount }}/mastodon_production_$(date +\%Y\-%m\-%d\_%H-%M).backup"; then
+if ! sudo ionice -c2 -n7 nice -n19 pg_dump --host={{ postgresql_host }} --username mastodon --port {{ postgresql_port }} --dbname mastodon_production --verbose --jobs=2 --compress=5 --format=directory --file="{{ postgresql_backupdir }}/mastodon_production_$(date +\%Y\-%m\-%d\_%H-%M).backup"; then
     echo "${red}Error: Directory format backup failed${txtreset}"
     exit 1
 fi

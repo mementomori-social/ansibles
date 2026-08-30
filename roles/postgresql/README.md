@@ -47,7 +47,7 @@ postgresql_betterstack_heartbeat: ""       # Better Stack heartbeat token for DB
 ### Local Backup
 
 ```yaml
-postgresql_backup_mount: /mnt/extra-backups  # Mount point for local backups
+postgresql_backupdir: /mnt/backup # Mount point for local backups
 postgresql_backup_betterstack_heartbeat: ""  # Better Stack heartbeat token for backups
 ```
 

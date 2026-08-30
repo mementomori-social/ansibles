@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT-0
 ---
 
-- name: Ensure /database directory exists for mount point
+- name: Ensure /database directory exists for mount point {{ postgresql_datadir }
   ansible.builtin.file:
     path: "{{ postgresql_datadir }}"
     state: directory
@@ -15,6 +15,29 @@
     path: "{{ postgresql_datadir }}"
     fstype: "{{ postgresql_mount_fs_type }}"
     opts: "{{ postgresql_mount_opts }}"
+    state: present
+  when: not skip_in_tests
+
+- name: Mount device - dir "{{ postgresql_mount_device }}->{{ postgresql_datadir }}"
+  ansible.posix.mount:
+    path: "{{ postgresql_datadir }}"
+    state: mounted
+  when: not skip_in_tests
+
+- name: Ensure directory exists for mount point {{ postgresql_backupdir }}
+  ansible.builtin.file:
+    path: "{{ postgresql_backupdir }}"
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Add to fstab for {{ postgresql_backup_mount_device }}-{{ postgresql_backupdir }}
+  ansible.posix.mount:
+    src: "{{ postgresql_backuo_mount_device }}"
+    path: "{{ postgresql_backupdir }}"
+    fstype: "{{ postgresql_backup_mount_fs_type }}"
+    opts: "{{ postgresql_backup_mount_opts }}"
     state: present
   when: not skip_in_tests
 

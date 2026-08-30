@@ -19,7 +19,10 @@ postgresql_port: 5432
 postgresql_disk_space_limit_gb: 5
 postgresql_betterstack_heartbeat:
 
-postgresql_backup_mount: /mnt/extra-backups
+postgresql_backupdir: /mnt/backup
+postgresql_backup_mount_device: /dev/sdc
+postgresql_backuo_mount_fs_type: ext4
+postgresql_backup_mount_opts: defaults
 postgresql_backup_diskspace_threshold: 90
 postgresql_backup_betterstack_heartbeat:
 
