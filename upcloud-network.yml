@@ -16,8 +16,8 @@
     dns_servers:
       - 94.237.127.9
       - 94.237.40.9
-    ip_cidr: "10.0.0.0/24"
-    ip_gw: "10.0.0.1"
+    ip_cidr: "10.222.222.0/24"
+    ip_gw: "10.222.222.1"
 
   tasks:
     - name: Create private SDN network for Mastodon
