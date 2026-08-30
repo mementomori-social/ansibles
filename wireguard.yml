@@ -1,13 +1,13 @@
 ---
 # based on https://oneuptime.com/blog/post/2026-02-21-ansible-configure-wireguard-vpn/view
 - name: Install WireGuard
-  hosts: vpn_servers
+  hosts: bastion.mementomori.social
   become: true
   vars:
     wg_interface: wg0
     wg_port: 51820
     wg_address: 10.222.223.1/24
-    # wg_server_private_key: "{{ vault_wg_server_private_key }}"
+    wg_server_private_key: "{{ lookup('vars', 'vault_wg_server_private_key', default='') }}"
     wg_peers:
       - name: ikke
         public_key: "xBFlPqzgePxiNjrMlUZ+YcTiXtx1ZmTHFRwGBhEcAGA="
@@ -49,20 +49,34 @@
         path: /etc/wireguard/privatekey
       register: privkey_file
 
-    - name: Generate private key
+    - name: Generate private key if not in vault
       ansible.builtin.command: wg genkey
       register: wg_private_key
-      when: not privkey_file.stat.exists
+      when:
+        - not privkey_file.stat.exists
+        - wg_server_private_key == ''
       changed_when: true
 
-    - name: Save private key
+    - name: Save private key if not coming from vault
       ansible.builtin.copy:
         content: "{{ wg_private_key.stdout }}"
         dest: /etc/wireguard/privatekey
         owner: root
         group: root
         mode: '0600'
-      when: not privkey_file.stat.exists
+      when:
+        - not privkey_file.stat.exists
+        - wg_server_private_key == ''
+
+    - name: Save private key from vault
+      ansible.builtin.copy:
+        content: "{{ wg_server_private_key }}"
+        dest: /etc/wireguard/privatekey
+        owner: root
+        group: root
+        mode: '0600'
+      when:
+        - wg_server_private_key != ''
 
     - name: Read private key
       ansible.builtin.slurp:
@@ -75,10 +89,6 @@
         stdin: "{{ private_key_content.content | b64decode | trim }}"
       register: wg_public_key
       changed_when: false
-
-    - name: Store private key
-      ansible.builtin.set_fact:
-        wg_server_private_key: "{{ private_key_content.content | b64decode | trim }}"
 
     - name: Save public key
       ansible.builtin.copy:
