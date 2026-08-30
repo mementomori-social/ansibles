@@ -1,0 +1,113 @@
+# SPDX-License-Identifier: MIT-0
+---
+- name: Create UpCloud elastic search host
+  hosts: localhost
+  connection: local
+  vars:
+    upcloud_token: "{{ vault_upcloud_ansible_token }}"
+    upcloud_api_url: "https://api.upcloud.com/1.3"
+    zone: "fi-hel2"
+    server_hostname: "elastic.mastodon.social"
+    server_title: "Search Server"
+    server_plan: "STARTER-2xCPU-8GB"
+    source_storage_uuid: "01000000-0000-4000-8000-000030260200"
+    storage_size_root: 40 # current root is 11 GB, but starter comes with 40GB
+    storage_size_data: 35 # current database is 24G
+    network_name: "fi-hel2-mastodon-network"
+    server_ip: 10.222.222.11
+    labels:
+      - key: role
+        value: elastic
+
+  tasks:
+    - name: Fetch networks from upcloud
+      ansible.builtin.uri:
+        url: "{{ upcloud_api_url }}/network"
+        method: GET
+        headers:
+          Authorization: "Bearer {{ upcloud_token }}"
+      register: upcloud_networks_response
+      no_log: true
+
+    - name: Find network UUID by name
+      ansible.builtin.set_fact:
+        mastodon_network:
+          "{{ (upcloud_networks_response.json.networks.network | selectattr('name', 'equalto', network_name) | first) }}"
+
+    - name: Display network info
+      ansible.builtin.debug:
+        msg: "Network {{ mastodon_network.name }} has UUID {{ mastodon_network.uuid }}"
+
+    - name: Create UpCloud server
+      ansible.builtin.uri:
+        url: "{{ upcloud_api_url }}/server"
+        method: POST
+        headers:
+          Authorization: "Bearer {{ upcloud_token }}"
+        body_format: json
+        body:
+          server:
+            hostname: "{{ server_hostname }}"
+            title: "{{ server_title }}"
+            zone: "{{ zone }}"
+            plan: "{{ server_plan }}"
+            metadata: 'yes'
+            # firewall: ''
+            storage_devices:
+              storage_device:
+                - title: "{{ server_hostname }}-rootdisk"
+                  action: clone
+                  storage: "{{ source_storage_uuid }}"
+                  tier: "standard"
+                  size: "{{ storage_size_root }}"
+                - title: "{{ server_hostname }}-data"
+                  storage: "{{ source_storage_uuid }}"
+                  tier: "MaxIOPS"
+                  size: "{{ storage_size_data }}"
+            networking:
+              interfaces:
+                interface:
+                  - type: private
+                    source_ip_filtering: 'no'
+                    network: "{{ mastodon_network.uuid }}"
+                    bootable: 'no'
+                    ip_addresses:
+                      ip_address:
+                        - address: "{{ server_ip }}"
+                          family: IPv4
+                          dhcp_provided: 'yes'
+            nic_model: virtio
+            password_delivery: 'none'
+            timezone: "Europe/Helsinki"
+            labels:
+              label: "{{ labels }}"
+            login_user:
+              username: ansible
+              ssh_keys:
+                # yamllint disable-line rule:line-length
+                ssh_key: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQC577GzJaVha0u0byNEFLDbGQhMkPSyXeT9gqIfZMKIxgh9PhOjpHl739lcdbsbgiUVAjZYI7M3PwuGghYTZpk2amJEZXUrul2MQudEc5tUX9wbpdKx9PEhzCywynRN+ZWGK15R5uVyc8mhqbvE0xQnkX0d+/eh+K8reFw451rPJuXrbbk13x/KBs/WqjEGCe6Yto/BotRRadpxTP5gPTxs/MIZ9LZC5EjmuOxDVt1xNROUNdD7gdK8DdpAHK72OoaT5ooc3Zq9uum4sYhCc611IGMNy2yjaYsJWWiVpDFy+APs5u9oK7wdtYFZwhf6B1O3U1X21CoaU8nJsFxJmI1g32IaAfh18sGiTBKKu8vYfF1y2eHa0I/App5WI+H5BS9WV7QyW5s7FQQ9R0okZ3kWbiGj8tVcVdTviwKmNm/7FtED6vPDe9ji+ou56YyzX7sd8ZFZjCX4rG9ZfpCzwsCCRdYHcKEyTIM5is9aggSUVWIkhdD9IKKsJEuW2ZCo8zpVMqSKm4G05tieIAGGr546m1OiTVBFVzuhYuTmwGuVfR0szoDCV6nOc1vcZMLyWYM5zWZRMuCw6NMzMuL+ot0JXyVKtgfFt4q5Q+Ha87jYXsiLOezsTiycgG1c/HmF4NxfWHt8nkDP/hQI0ESb1AKqxqp3++mCciHd1PlE/Y1CaQ==
+              create_password: 'no'
+        status_code: 202
+      register: upcloud_server_response
+
+    - name: Debug the return code
+      ansible.builtin.debug:
+        var: upcloud_server_response
+
+    - name: Set fact with created server details
+      ansible.builtin.set_fact:
+        upcloud_server: "{{ upcloud_server_response.json.server }}"
+        upcloud_server_uuid: "{{ upcloud_server_response.json.server.uuid }}"
+        upcloud_server_state: "{{ upcloud_server_response.json.server.state }}"
+
+  post_tasks:
+    - name: Display created server info
+      ansible.builtin.debug:
+        msg:
+          - "Server UUID: {{ upcloud_server_uuid }}"
+          - "Server Title: {{ upcloud_server.title }}"
+          - "Server Hostname: {{ upcloud_server.hostname }}"
+          - "Server Zone: {{ upcloud_server.zone }}"
+          - "Server State: {{ upcloud_server_state }}"
+          - "Server Plan: {{ upcloud_server.plan }}"
+          - "Attached Network: {{ mastodon_network.name }} ({{ mastodon_network.uuid }})"
