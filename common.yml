@@ -44,6 +44,16 @@
           # Ansible managed
           %sudo ALL=(ALL) NOPASSWD:ALL
 
+    - name: Install some basic goodies
+      tags: pkgs
+      ansible.builtin.package:
+        name: "{{ item }}"
+        state: present
+      loop:
+        - tmux
+        - zsh
+        - btop
+
   handlers:
     - name: Restart sshd
       ansible.builtin.service:
