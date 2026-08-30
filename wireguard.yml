@@ -1,0 +1,122 @@
+---
+# based on https://oneuptime.com/blog/post/2026-02-21-ansible-configure-wireguard-vpn/view
+- name: Install WireGuard
+  hosts: vpn_servers
+  become: true
+  vars:
+    wg_interface: wg0
+    wg_port: 51820
+    wg_address: 10.222.223.1/24
+    # wg_server_private_key: "{{ vault_wg_server_private_key }}"
+    wg_peers:
+      - name: ikke
+        public_key: "xBFlPqzgePxiNjrMlUZ+YcTiXtx1ZmTHFRwGBhEcAGA="
+        allowed_ips: 10.222.223.10/32
+    server_public_interface: eth0
+  tasks:
+    - name: Install WireGuard on Debian/Ubuntu
+      ansible.builtin.apt:
+        name:
+          - wireguard
+          - wireguard-tools
+        state: present
+        update_cache: true
+      when: ansible_os_family == "Debian"
+
+    - name: Install WireGuard tools on RHEL/CentOS/Fedora hosts with kernel support
+      ansible.builtin.dnf:
+        name:
+          - wireguard-tools
+        state: present
+      when: ansible_os_family == "RedHat"
+
+    - name: Enable IP forwarding
+      ansible.posix.sysctl:
+        name: net.ipv4.ip_forward
+        value: '1'
+        sysctl_set: true
+        state: present
+        reload: true
+
+    - name: Create WireGuard directory
+      ansible.builtin.file:
+        path: /etc/wireguard
+        state: directory
+        mode: '0700'
+
+    - name: Check if private key already exists
+      ansible.builtin.stat:
+        path: /etc/wireguard/privatekey
+      register: privkey_file
+
+    - name: Generate private key
+      ansible.builtin.command: wg genkey
+      register: wg_private_key
+      when: not privkey_file.stat.exists
+      changed_when: true
+
+    - name: Save private key
+      ansible.builtin.copy:
+        content: "{{ wg_private_key.stdout }}"
+        dest: /etc/wireguard/privatekey
+        owner: root
+        group: root
+        mode: '0600'
+      when: not privkey_file.stat.exists
+
+    - name: Read private key
+      ansible.builtin.slurp:
+        src: /etc/wireguard/privatekey
+      register: private_key_content
+
+    - name: Generate public key from private key
+      ansible.builtin.command:
+        cmd: wg pubkey
+        stdin: "{{ private_key_content.content | b64decode | trim }}"
+      register: wg_public_key
+      changed_when: false
+
+    - name: Store private key
+      ansible.builtin.set_fact:
+        wg_server_private_key: "{{ private_key_content.content | b64decode | trim }}"
+
+    - name: Save public key
+      ansible.builtin.copy:
+        content: "{{ wg_public_key.stdout }}"
+        dest: /etc/wireguard/publickey
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Display public key for reference
+      ansible.builtin.debug:
+        msg: "Public key for {{ inventory_hostname }}: {{ wg_public_key.stdout }}"
+
+    - name: Deploy WireGuard server configuration
+      ansible.builtin.template:
+        src: templates/wg-server.conf.j2
+        dest: "/etc/wireguard/{{ wg_interface }}.conf"
+        owner: root
+        group: root
+        mode: '0600'
+      notify: Restart WireGuard
+
+    - name: Enable and start WireGuard
+      ansible.builtin.systemd_service:
+        name: "wg-quick@{{ wg_interface }}"
+        state: started
+        enabled: true
+
+    - name: Open WireGuard port in firewall
+      community.general.ufw:
+        rule: allow
+        port: "{{ wg_port }}"
+        proto: udp
+        comment: "WireGuard VPN"
+      ignore_errors: true
+
+  handlers:
+    - name: Restart WireGuard
+      ansible.builtin.systemd_service:
+        name: "wg-quick@{{ wg_interface }}"
+        state: restarted

@@ -1,0 +1,22 @@
+# templates/wg-server.conf.j2 - WireGuard server configuration
+# Managed by Ansible - do not edit manually
+
+[Interface]
+Address = {{ wg_address }}
+ListenPort = {{ wg_port }}
+PrivateKey = {{ wg_server_private_key }}
+
+# NAT for VPN clients accessing the internet
+# PostUp = iptables -t nat -A POSTROUTING -o {{ server_public_interface }} -j MASQUERADE
+# PostDown = iptables -t nat -D POSTROUTING -o {{ server_public_interface }} -j MASQUERADE
+
+{% for peer in wg_peers %}
+# {{ peer.name }}
+[Peer]
+PublicKey = {{ peer.public_key }}
+AllowedIPs = {{ peer.allowed_ips }}
+{% if peer.persistent_keepalive is defined %}
+PersistentKeepalive = {{ peer.persistent_keepalive }}
+{% endif %}
+
+{% endfor %}
