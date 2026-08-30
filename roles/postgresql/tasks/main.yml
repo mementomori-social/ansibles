@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT-0
 ---
 
-- name: Ensure /database directory exists for mount point {{ postgresql_datadir }
+- name: Ensure /database directory exists for mount point {{ postgresql_datadir }}
   ansible.builtin.file:
     path: "{{ postgresql_datadir }}"
     state: directory
