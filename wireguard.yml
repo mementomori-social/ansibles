@@ -15,6 +15,9 @@
       - name: rolle
         public_key: "qwGPb07dsiY1nDeKCQMNNXgTMQ70dVh8VQXY6ndnQ0w="
         allowed_ips: 10.222.223.11/32
+      - name: possu
+        public_key: "LWJgng7Mb1PLVEyzJbuDlKnYVi2XOEj1YcWEPTikAyU="
+        allowed_ips: 10.222.223.20/32, 10.0.0.0/24
     server_public_interface: eth0
   tasks:
     - name: Install WireGuard on Debian/Ubuntu
