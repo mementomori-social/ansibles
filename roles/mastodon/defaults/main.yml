@@ -113,3 +113,67 @@ mastodon_services:
 mastodon_fedifetch_access_token: "{{ vault_mastodon_fedifetch_access_token }}"
 mastodon_fedifetch_server: mementomori.social
 mastodon_betterstack_sidekick: "{{ vault_mastodon_betterstack_sidekick }}"
+
+#
+# Mastodon server settings
+#
+mastodon_local_domain: mementomori.social
+mastodon_single_user_mode: 'false'
+mastodon_secret_key_base: "{{ vault_mastodon_secret_key_base }}"
+mastodon_otp_secret: "{{ vault_mastodon_otp_secret }}"
+mastodon_mastodon_vapid_private_key: "{{ vault_mastodon_vapid_private_key }}"
+mastodon_mastodon_vapid_public_key: "{{ vault_mastodon_vapid_public_key }}"
+mastodon_db_host: 10.222.222.10
+mastodon_db_port: 5432
+mastodon_db_name: "{{ vault_mastodon_db_name }}"
+mastodon_db_user: "{{ vault_mastodon_db_user }}"
+mastodon_db_pass: "{{ vault_mastodon_db_pass }}"
+
+mastodon_web_concurrency: 6
+mastodon_max_threads: 10
+mastodon_db_pool: 25
+mastodon_redis_host: localhost
+mastodon_redis_port: 6379
+mastodon_redis_password: "{{ vault_mastodon_redis_password }}"
+mastodon_smtp_server: smtp.eu.mailgun.org
+mastodon_smtp_port: 587
+mastodon_smtp_login: "{{ vault_mastodon_smtp_login }}"
+mastodon_smtp_password: "{{ vault_mastodon_smtp_password }}"
+mastodon_smtp_auth_method: plain
+mastodon_smtp_openssl_verify_mode: none
+mastodon_smtp_from_address: "{{ vault_mastodon_smtp_from_address }}"
+mastodon_rails_log_level: warn
+mastodon_es_enabled: 'true'
+mastodon_es_host: 10.222.222.11
+mastodon_es_port: 9200
+mastodon_es_user: "{{ vault_mastodon_es_user }}"
+mastodon_es_pass: "{{ vault_mastodon_es_pass }}"
+mastodon_s3_enabled: 'true'
+mastodon_s3_protocol: https
+mastodon_s3_bucket: media
+mastodon_s3_region: auto
+mastodon_s3_hostname: "{{ vault_mastodon_s3_hostname }}"
+mastodon_s3_endpoint: "{{ vault_mastodon_s3_endpoint }}"
+mastodon_aws_access_key_id: "{{ vault_mastodon_aws_access_key_id }}"
+mastodon_aws_secret_access_key: "{{ vault_mastodon_aws_secret_access_key }}"
+mastodon_s3_alias_host: media.mementomori.social
+mastodon_s3_disable_checksum_mode: 'true'
+mastodon_deepl_api_key: "{{ vault_mastodon_deepl_api_key }}"
+mastodon_deepl_plan: pro
+mastodon_version_metadata: mementomods-2026-08-23
+mastodon_github_repository: mastodon/mastodon/compare/main...mementomori-social/mastodon:"{{ mastodon_version_metadata }}"
+mastodon_fetch_replies_enabled: 'true'
+mastodon_fetch_replies_cooldown_minutes: 15
+mastodon_fetch_replies_initial_wait_minutes: 5
+mastodon_fetch_replies_max_global: 1000
+mastodon_fetch_replies_max_single: 500
+mastodon_fetch_replies_max_pages: 500
+mastodon_status_search_scope: discoverable
+mastodon_account_search_scope: discoverable
+mastodon_active_record_encryption_primary_key: "{{ vault_mastodon_active_record_encryption_primary_key }}"
+mastodon_active_record_encryption_deterministic_key: "{{ vault_mastodon_active_record_encryption_deterministic_key }}"
+mastodon_active_record_encryption_key_derivation_salt: "{{ mastodon_active_record_encryption_key_derivation_salt }}"
+mastodon_experimental_features: inbound_quotes,outgoing_quotes,modern_emojis,wrapstodon
+mastodon_captcha_provider: turnstile
+mastodon_turnstile_site_key: "{{ vault_mastodon_turnstile_site_key }}"
+mastodon_turnstile_secret_key: "{{ vault_mastodon_turnstile_secret_key }}"

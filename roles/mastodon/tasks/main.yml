@@ -90,9 +90,17 @@
   ansible.builtin.git:
     repo: 'https://github.com/mementomori-social/mastodon.git'
     dest: "{{ mastodon_home }}/live"
-    version: mementomods-2026-06-07
+    version: "{{ mastodon_version_metadata }}"
     separate_git_dir: "{{ mastodon_home }}/live-git"
-  # notify: Restart mastodon services
+  notify: Restart mastodon services
+
+- name: Install mastodon production config
+  ansible.builtin.template:
+    src: templates/env.production.j2
+    dest: "{{ mastodon_home }}/live/.env.production"
+    owner: mastodon
+    group: mastodon
+    mode: '0644'
 
 - name: Install ruby
   become: true
@@ -100,6 +108,7 @@
   ansible.builtin.git:
     repo: 'https://github.com/rbenv/rbenv.git'
     dest: "{{ mastodon_home }}/.rbenv"
+  notify: Restart mastodon services
 
 - name: Add ruby rbenv command to user's profile. We don't login, so probably unnecessary
   ansible.builtin.blockinfile:
@@ -130,6 +139,7 @@
   ansible.builtin.git:
     repo: 'https://github.com/rbenv/ruby-build.git'
     dest: "{{ mastodon_home }}/.rbenv/plugins/ruby-build"
+  notify: Restart mastodon services
 
 - name: Read ruby version file
   ansible.builtin.slurp:
