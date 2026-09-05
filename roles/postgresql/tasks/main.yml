@@ -107,7 +107,7 @@
   ansible.builtin.lineinfile:
     path: /etc/postgresql/{{ postgresql_version }}/main/postgresql.conf
     insertafter: "^ *# *{{ item.key }}"
-    regexp: "^{{ item.key }}"
+    regexp: "^{{ item.key }}\\s*="
     line: "{{ item.key }} = {{ item.value }}"
     state: present
   loop: "{{ postgresql_tunables }}"
