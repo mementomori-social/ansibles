@@ -121,8 +121,8 @@ mastodon_local_domain: mementomori.social
 mastodon_single_user_mode: 'false'
 mastodon_secret_key_base: "{{ vault_mastodon_secret_key_base }}"
 mastodon_otp_secret: "{{ vault_mastodon_otp_secret }}"
-mastodon_mastodon_vapid_private_key: "{{ vault_mastodon_vapid_private_key }}"
-mastodon_mastodon_vapid_public_key: "{{ vault_mastodon_vapid_public_key }}"
+mastodon_vapid_private_key: "{{ vault_mastodon_vapid_private_key }}"
+mastodon_vapid_public_key: "{{ vault_mastodon_vapid_public_key }}"
 mastodon_db_host: 10.222.222.10
 mastodon_db_port: 5432
 mastodon_db_name: "{{ vault_mastodon_db_name }}"
@@ -172,7 +172,7 @@ mastodon_status_search_scope: discoverable
 mastodon_account_search_scope: discoverable
 mastodon_active_record_encryption_primary_key: "{{ vault_mastodon_active_record_encryption_primary_key }}"
 mastodon_active_record_encryption_deterministic_key: "{{ vault_mastodon_active_record_encryption_deterministic_key }}"
-mastodon_active_record_encryption_key_derivation_salt: "{{ mastodon_active_record_encryption_key_derivation_salt }}"
+mastodon_active_record_encryption_key_derivation_salt: "{{ vault_mastodon_active_record_encryption_key_derivation_salt }}"
 mastodon_experimental_features: inbound_quotes,outgoing_quotes,modern_emojis,wrapstodon
 mastodon_captcha_provider: turnstile
 mastodon_turnstile_site_key: "{{ vault_mastodon_turnstile_site_key }}"

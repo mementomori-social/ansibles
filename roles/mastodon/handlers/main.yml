@@ -1,4 +1,4 @@
-#SPDX-License-Identifier: MIT-0
+# SPDX-License-Identifier: MIT-0
 ---
 
 - name: Reload systemd
@@ -10,3 +10,4 @@
     name: "{{ item }}"
     state: restarted
   loop: "{{ mastodon_services }}"
+  when: not skip_in_tests
