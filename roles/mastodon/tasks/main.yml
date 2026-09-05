@@ -117,7 +117,7 @@
     block: |
       export PATH="$HOME/.rbenv/bin:$HOME/.rbenv/shims:${PATH}"
       export RBENV_SHELL=bash
-      source "{{ mastodon_home }}/.rbenv/completions/rbenv.bash
+      source "{{ mastodon_home }}/.rbenv/completions/rbenv.bash"
       command rbenv rehash 2>/dev/null
       rbenv() {
         local command
