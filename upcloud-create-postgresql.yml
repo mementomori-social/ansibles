@@ -7,7 +7,7 @@
     upcloud_token: "{{ vault_upcloud_ansible_token }}"
     upcloud_api_url: "https://api.upcloud.com/1.3"
     zone: "fi-hel2"
-    server_hostname: "postgresql.mastodon.social"
+    server_hostname: "postgresql.mementomori.social"
     server_title: "Database Server"
     server_plan: "CLOUDNATIVE-6xCPU-24GB"
     source_storage_uuid: "01000000-0000-4000-8000-000030260200"
