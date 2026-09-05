@@ -1,0 +1,10 @@
+#!/bin/bash
+
+# Go to folder
+cd {{ mastodon_home }}/live;
+
+# Run the command
+# https://github.com/VyrCossont/mastodon/pull/8
+RAILS_ENV=production {{ mastodon_home }}/live/bin/tootctl search deploy --concurrency 16 --batch_size 4096;
+RAILS_ENV=production {{ mastodon_home }}/ive/bin/tootctl search deploy --only accounts --concurrency 16 --batch_size 4096;
+RAILS_ENV=production {{ mastodon_home }}/live/bin/tootctl search deploy --only statuses --concurrency 16 --batch_size 4096;

@@ -125,7 +125,6 @@
         esac
       }
 
-  # source ~/.bashrc
 - name: Install ruby build
   become_user: mastodon
   ansible.builtin.git:
@@ -223,6 +222,51 @@
   ansible.builtin.debug:
     var: yarn_install
 
+- name: Ensure bin dir exists for user
+  ansible.builtin.file:
+    path: "{{ mastodon_home }}/bin"
+    state: directory
+    owner: mastodon
+    group: mastodon
+    mode: '0755'
+
+- name: Make sure needed files exist in bin
+  ansible.builtin.template:
+    src: "templates/{{ item }}.j2"
+    dest: "{{ mastodon_home }}/bin/{{ item }}"
+    owner: root
+    group: root
+    mode: '0755'
+  loop:
+    - flush-dead-jobs.rb
+    - mastodon-prune.sh
+    - refetch-preview-cards.sh
+    - check-sidekiq.sh
+    - mastodon-build-search-index.sh
+
+- name: Ensure logs dir exists for user
+  ansible.builtin.file:
+    path: "{{ mastodon_home }}/logs"
+    state: directory
+    owner: mastodon
+    group: mastodon
+    mode: '0755'
+
+- name: Install Fedifetcher
+  become: true
+  become_user: mastodon
+  ansible.builtin.git:
+    repo: 'https://github.com/nanos/FediFetcher'
+    dest: "{{ mastodon_home }}/FediFetcher"
+
+- name: Configure Fedifetcher
+  ansible.builtin.template:
+    src: templates/fedifetcher-config.json.j2
+    dest: "{{ mastodon_home }}/FediFetcher/artifacts/config.json"
+    owner: mastodon
+    group: mastodon
+    mode: '0644'
+
 - name: Deploy systemd files
   ansible.builtin.template:
     src: "templates/{{ item }}.j2"
@@ -230,23 +274,7 @@
     owner: root
     group: root
     mode: '0755'
-  loop:
-    - mastodon-sidekiq-1-default@.service
-    - mastodon-sidekiq-1-ingress@.service
-    - mastodon-sidekiq-2-default@.service
-    - mastodon-sidekiq-2-ingress@.service
-    - mastodon-sidekiq-default@.service
-    - mastodon-sidekiq-fasp@.service
-    - mastodon-sidekiq-ingress@.service
-    - mastodon-sidekiq-mailers@.service
-    - mastodon-sidekiq-pull@.service
-    - mastodon-sidekiq-push@.service
-    - mastodon-sidekiq-scheduler@.service
-    - mastodon-sidekiq.service
-    - mastodon-sidekiq-template.service
-    - mastodon-streaming.service
-    - mastodon-streaming@.service
-    - mastodon-web.service
+  loop: "{{ mastodon_systemd_files }}"
   notify: Reload systemd
 
 - name: Enable and start mastodon services
@@ -257,10 +285,10 @@
   loop: "{{ mastodon_services }}"
   when: not skip_in_tests
 
-- name: Enable and stop mastodon services
+- name: Enable and stop mastodon services (test case)
   ansible.builtin.systemd_service:
     name: "{{ item }}"
     state: stopped
     enabled: true
   loop: "{{ mastodon_services }}"
-  when: skip_in_tests
+  when: skip_in_tests is defined

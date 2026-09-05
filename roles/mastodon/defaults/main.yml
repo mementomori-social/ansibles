@@ -11,7 +11,6 @@ mastodon_packages:
   - autoconf
   - bison
   - build-essential
-  # - certbot
   - curl
   - ffmpeg
   - file
@@ -28,15 +27,47 @@ mastodon_packages:
   - libvips-tools
   - libxslt1-dev
   - libyaml-dev
-  # - nginx
   - nodejs
   - pkg-config
   - protobuf-compiler
-  # - python3-certbot-nginx
-  # - yarn
   - wget
   - zlib1g-dev
 
+mastodon_systemd_files:
+  - mastodon-sidekiq-1-default@.service
+  - mastodon-sidekiq-1-ingress@.service
+  - mastodon-sidekiq-2-default@.service
+  - mastodon-sidekiq-2-ingress@.service
+  - mastodon-sidekiq-default@.service
+  - mastodon-sidekiq-fasp@.service
+  - mastodon-sidekiq-ingress@.service
+  - mastodon-sidekiq-mailers@.service
+  - mastodon-sidekiq-pull@.service
+  - mastodon-sidekiq-push@.service
+  - mastodon-sidekiq-scheduler@.service
+  - mastodon-sidekiq.service
+  - mastodon-sidekiq-template.service
+  - mastodon-streaming.service
+  - mastodon-streaming@.service
+  - mastodon-web.service
+  # timers
+  - mastodon-media-clear.service
+  - mastodon-media-clear.timer
+  - mastodon-prune.service
+  - mastodon-prune.timer
+  - mastodon-sidekiq-check.service
+  - mastodon-sidekiq-check.timer
+  - mastodon-build-search-index.service
+  - mastodon-build-search-index.timer
+  - mastodon-flush-dead-jobs.service
+  - mastodon-flush-dead-jobs.timer
+  - mastodon-fedifetcher.service
+  - mastodon-fedifetcher.timer
+  - mastodon-refetch-preview-cards.service
+  - mastodon-refetch-preview-cards.timer
+
+# XXX The following list has such entries commented out which existed on the
+# old server, but were not enabled. Do we need them anymore?
 mastodon_services:
   # - mastodon-fasp.service
   # - mastodon-sidekiq-default.service
@@ -70,4 +101,15 @@ mastodon_services:
   - mastodon-streaming@4002.service
   - mastodon-streaming@4003.service
   - mastodon-web.service
+  # timers
+  - mastodon-media-clear.timer
+  - mastodon-prune.timer
+  - mastodon-sidekiq-check.timer
+  - mastodon-build-search-index.timer
+  - mastodon-flush-dead-jobs.timer
+  - mastodon-fedifetcher.timer
+  - mastodon-refetch-preview-cards.timer
 
+mastodon_fedifetch_access_token: "{{ vault_mastodon_fedifetch_access_token }}"
+mastodon_fedifetch_server: mementomori.social
+mastodon_betterstack_sidekick: "{{ vault_mastodon_betterstack_sidekick }}"

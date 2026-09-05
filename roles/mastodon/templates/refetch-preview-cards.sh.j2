@@ -1,0 +1,20 @@
+#!/bin/bash
+# Re-fetch preview cards for recent local statuses with URLs but missing/broken cards.
+# Runs as mastodon user via cron every 30 minutes.
+
+cd {{ mastodon_home }}/live || exit 1
+
+RAILS_ENV=production bin/rails runner '
+cutoff = 6.hours.ago
+
+Status.local
+  .where("created_at > ?", cutoff)
+  .where("text LIKE ?", "%https://%")
+  .order(id: :desc)
+  .limit(200)
+  .each do |status|
+    card = status.preview_card
+    next unless card.nil? || card.image_file_name.blank?
+    LinkCrawlWorker.perform_async(status.id)
+  end
+'

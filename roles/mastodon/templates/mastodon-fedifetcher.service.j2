@@ -1,0 +1,15 @@
+[Unit]
+Description=FediFetcher - fetch posts from the Fediverse
+After=network.target
+
+[Service]
+Type=oneshot
+User=mastodon
+WorkingDirectory={{ mastodon_home }}/FediFetcher
+Environment="PATH=/usr/bin:/bin:{{ mastodon_home }}/.rbenv/shims:{{ mastodon_home }}/.rbenv/bin"
+ExecStart=/usr/bin/python3 {{ mastodon_home }}/FediFetcher/find_posts.py -c={{ mastodon_home }}/FediFetcher/artifacts/config.json
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

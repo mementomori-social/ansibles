@@ -1,0 +1,16 @@
+[Unit]
+Description=Build Elasticsearch index for Mastodon
+After=network.target
+
+[Service]
+Type=oneshot
+User=mastodon
+WorkingDirectory={{ mastodon_home }}/live
+Environment="RAILS_ENV=production"
+Environment="PATH={{ mastodon_home }}/.rbenv/shims:{{ mastodon_home }}/.rbenv/bin:/usr/local/bin:/usr/bin:/bin"
+ExecStart=/bin/bash -l -c 'cd {{ mastodon_home }}/live && bash {{ mastodon_home }}/bin/mastodon-build-search-index.sh'
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

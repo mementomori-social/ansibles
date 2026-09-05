@@ -1,0 +1,40 @@
+#!/usr/bin/env ruby
+# Script by rolle
+# FUN-59
+
+# Run as mastodon user:
+# cd /home/mastodon/live && RAILS_ENV=production ruby ~/flush-dead-jobs.rb
+# Purpose: Flush Sidekiq's dead queue and log deleted jobs to a timestamped log file
+
+require_relative {{ mastodon_home }}/live/config/environment.rb
+require 'sidekiq/api'
+require 'fileutils'
+
+timestamp = Time.now.utc.strftime('%Y-%m-%d_%H-%M-%S')
+log_dir = "{{ mastodon_home }}/logs"
+log_file = "#{log_dir}/dead-jobs-#{timestamp}.log"
+
+FileUtils.mkdir_p(log_dir)
+
+dead_set = Sidekiq::DeadSet.new
+job_count = dead_set.size
+
+File.open(log_file, 'w') do |file|
+  file.puts "Deleted #{job_count} dead jobs at #{Time.now.utc.iso8601}\n\n"
+
+  dead_set.each do |job|
+    begin
+      job_data = job.item
+      file.puts "[#{Time.now.utc.iso8601}] Class: #{job_data['class']}"
+      file.puts "Args: #{job_data['args'].inspect}"
+      file.puts "Error: #{job_data['error_message']}"
+      file.puts "Failed at: #{Time.at(job_data['failed_at']).utc.iso8601}" if job_data['failed_at']
+      file.puts "-" * 60
+    rescue => e
+      file.puts "[#{Time.now.utc.iso8601}] Failed to log job: #{e.message}"
+    end
+    job.delete
+  end
+end
+
+puts "Flushed #{job_count} dead jobs. Log saved to #{log_file}"

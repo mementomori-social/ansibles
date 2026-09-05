@@ -1,0 +1,16 @@
+[Unit]
+Description=Refetch missing preview cards
+After=network.target
+
+[Service]
+Type=oneshot
+User=mastodon
+WorkingDirectory={{ mastodon_home }}/live
+Environment="RAILS_ENV=production"
+Environment="PATH={{ mastodon_home }}/.rbenv/shims:{{ mastodon_home }}/.rbenv/bin:/usr/local/bin:/usr/bin:/bin"
+ExecStart=/bin/bash -l -c 'bash {{ mastodon_home }}/bin/refetch-preview-cards.sh'
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

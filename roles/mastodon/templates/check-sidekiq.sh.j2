@@ -1,0 +1,13 @@
+#!/bin/bash
+# Crontab: /bin/bash -l -c 'cd /home/mastodon/live && bash {{ mastodon_home }}/bin/check-sidekiq.sh'
+COMMAND=$(RAILS_ENV=production {{ mastodon_home }}/.rbenv/shims/bundle exec sidekiqmon processes | grep -Po '\d' | awk '{s+=$1} END {print s}')
+
+cd /home/mastodon/live
+
+# Check if more than 0
+if [ $COMMAND -gt 0 ]; then
+  echo "Sidekiq is running"
+  curl https://uptime.betterstack.com/api/v1/heartbeat/{{ mastodon_betterstack_sidekick }};
+else
+  echo "Sidekiq is not running"
+fi

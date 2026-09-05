@@ -1,0 +1,9 @@
+#!/bin/bash
+# Go to folder
+cd {{ mastodon_home }}/live
+
+# Remove remote accounts that no longer exist
+#RAILS_ENV=production /home/mastodon/live/bin/tootctl accounts cull;
+
+# Remove media attachments older than x days
+RAILS_ENV=production {{ mastodon_home }}/live/bin/tootctl media remove --days 90;

@@ -1,0 +1,16 @@
+[Unit]
+Description=Clear unattached Mastodon media
+After=network.target
+
+[Service]
+Type=oneshot
+User=mastodon
+WorkingDirectory={{ mastodon_home }}/live
+Environment="RAILS_ENV=production"
+Environment="PATH={{ mastodon_home }}/.rbenv/shims:{{ mastodon_home }}/.rbenv/bin:/usr/local/bin:/usr/bin:/bin"
+ExecStart={{ mastodon_home }}/.rbenv/shims/bundle exec rake mastodon:media:clear
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

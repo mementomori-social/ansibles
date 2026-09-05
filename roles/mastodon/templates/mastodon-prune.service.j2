@@ -1,0 +1,14 @@
+[Unit]
+Description=Prune Mastodon media to save disk space
+After=network.target
+
+[Service]
+Type=oneshot
+User=mastodon
+WorkingDirectory={{ mastodon_home }}/live
+ExecStart=/bin/bash {{ mastodon_home }}/bin/mastodon-prune.sh
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,16 @@
+[Unit]
+Description=Flush dead sidekiq jobs
+After=network.target
+
+[Service]
+Type=oneshot
+User=mastodon
+WorkingDirectory={{ mastodon_home }}/live
+Environment="RAILS_ENV=production"
+Environment="PATH={{ mastodon_home }}/.rbenv/shims:{{ mastodon_home }}/.rbenv/bin:/usr/local/bin:/usr/bin:/bin"
+ExecStart=/bin/bash -l -c 'cd {{ mastodon_home }}/live && ruby {{ mastodon_home }}/bin/flush-dead-jobs.rb'
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
