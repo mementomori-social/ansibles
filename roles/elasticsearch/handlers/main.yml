@@ -1,3 +1,9 @@
-#SPDX-License-Identifier: MIT-0
+# SPDX-License-Identifier: MIT-0
 ---
 # handlers file for elasticsearch
+
+- name: Restart elasticsearch
+  ansible.builtin.service:
+    name: "{{ elasticsearch_service }}"
+    state: restarted
+  when: not skip_in_tests

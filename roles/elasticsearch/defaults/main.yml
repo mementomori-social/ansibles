@@ -1,3 +1,27 @@
-#SPDX-License-Identifier: MIT-0
+# SPDX-License-Identifier: MIT-0
 ---
-# defaults file for elasticsearch
+
+elasticsearch_version: "7.x"
+elasticsearch_apt_repo: "deb [signed-by=/usr/share/keyrings/elasticsearch.asc] https://artifacts.elastic.co/packages/{{ elasticsearch_version }}/apt stable main"
+elasticsearch_apt_key_url: https://artifacts.elastic.co/GPG-KEY-elasticsearch
+elasticsearch_packages:
+  - elasticsearch
+elasticsearch_service: elasticsearch
+
+elasticsearch_datadir: /var/lib/elasticsearch
+elasticsearch_logdir: /var/log/elasticsearch
+
+# Bind to the private network only. The current server listens on 0.0.0.0,
+# which is wider than it needs to be.
+elasticsearch_network_host: "{{ ansible_default_ipv4.address }}"
+elasticsearch_http_port: 9200
+elasticsearch_discovery_type: single-node
+
+# Half of system memory, capped, is the usual guidance. 8g suits a 16 GB host,
+# so a smaller machine needs this lowered.
+elasticsearch_heap_size: 8g
+
+elasticsearch_security_enabled: true
+
+# for molecule podman tests
+skip_in_tests: false

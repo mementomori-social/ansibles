@@ -1,3 +1,64 @@
-#SPDX-License-Identifier: MIT-0
+# SPDX-License-Identifier: MIT-0
 ---
 # tasks file for elasticsearch
+
+- name: Ensure prerequisite packages are installed
+  ansible.builtin.apt:
+    name:
+      - apt-transport-https
+      - gnupg
+    state: present
+    update_cache: true
+
+- name: Add Elastic signing key
+  ansible.builtin.get_url:
+    url: "{{ elasticsearch_apt_key_url }}"
+    dest: /usr/share/keyrings/elasticsearch.asc
+    mode: "0644"
+
+- name: Add Elastic apt repository
+  ansible.builtin.apt_repository:
+    repo: "{{ elasticsearch_apt_repo }}"
+    filename: elastic-{{ elasticsearch_version }}
+    state: present
+
+- name: Ensure Elasticsearch packages are installed
+  ansible.builtin.apt:
+    name: "{{ elasticsearch_packages }}"
+    state: present
+    update_cache: true
+
+- name: Ensure data directory exists
+  ansible.builtin.file:
+    path: "{{ elasticsearch_datadir }}"
+    state: directory
+    owner: elasticsearch
+    group: elasticsearch
+    mode: "0750"
+
+- name: Configure Elasticsearch
+  ansible.builtin.template:
+    src: elasticsearch.yml.j2
+    dest: /etc/elasticsearch/elasticsearch.yml
+    owner: root
+    group: elasticsearch
+    mode: "0660"
+  notify: Restart elasticsearch
+
+# The package ships a jvm.options with commented defaults. Heap goes in a
+# drop-in so package upgrades do not overwrite it.
+- name: Configure JVM heap size
+  ansible.builtin.template:
+    src: heap.options.j2
+    dest: /etc/elasticsearch/jvm.options.d/mastodon.elasticsearch.options
+    owner: root
+    group: elasticsearch
+    mode: "0660"
+  notify: Restart elasticsearch
+
+- name: Ensure Elasticsearch is started and enabled
+  ansible.builtin.service:
+    name: "{{ elasticsearch_service }}"
+    state: started
+    enabled: true
+  when: not skip_in_tests

@@ -22,3 +22,8 @@
     skip_in_tests: true
   ansible.builtin.import_playbook: ../../valkey.yml
 
+- name: Elasticsearch
+  tags: elasticsearch
+  vars:
+    skip_in_tests: true
+  ansible.builtin.import_playbook: ../../elasticsearch.yml

@@ -1,0 +1,3 @@
+---
+# STARTER-2xCPU-8GB, half of memory for the heap
+elasticsearch_heap_size: 4g

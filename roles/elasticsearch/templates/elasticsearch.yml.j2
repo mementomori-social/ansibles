@@ -1,0 +1,10 @@
+# Managed by Ansible. Local changes are overwritten.
+path.data: {{ elasticsearch_datadir }}
+path.logs: {{ elasticsearch_logdir }}
+
+network.host: {{ elasticsearch_network_host }}
+http.port: {{ elasticsearch_http_port }}
+discovery.type: {{ elasticsearch_discovery_type }}
+
+xpack.security.enabled: {{ elasticsearch_security_enabled | lower }}
+xpack.security.transport.ssl.enabled: {{ elasticsearch_security_enabled | lower }}
