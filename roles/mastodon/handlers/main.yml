@@ -1,3 +1,12 @@
 #SPDX-License-Identifier: MIT-0
 ---
-# handlers file for mastodon
+
+- name: Reload systemd
+  ansible.builtin.systemd_service:
+    daemon_reload: true
+
+- name: Restart mastodon services
+  ansible.builtin.systemd_service:
+    name: "{{ item }}"
+    state: restarted
+  loop: "{{ mastodon_services }}"

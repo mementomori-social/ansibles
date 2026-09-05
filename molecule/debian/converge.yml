@@ -1,7 +1,14 @@
 ---
+
 - name: Common tests
   tags: common
   ansible.builtin.import_playbook: ../../common.yml
+
+- name: Mastodon
+  tags: mastodon
+  vars:
+    skip_in_tests: true
+  ansible.builtin.import_playbook: ../../mastodon.yml
 
 - name: Postgresql
   tags: postgresql
@@ -14,3 +21,4 @@
   vars:
     skip_in_tests: true
   ansible.builtin.import_playbook: ../../valkey.yml
+

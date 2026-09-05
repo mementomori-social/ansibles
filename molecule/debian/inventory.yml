@@ -3,14 +3,14 @@ all:
   children:
     mastodon:
       hosts:
-        mastodon:
-          ansible_host: mastodon
+        mastodon-0:
+          ansible_host: mastodon-0
           ansible_connection: containers.podman.podman
           container_image: docker.io/jomrr/molecule-debian:stable
           container_command: /sbin/init
           container_privileged: false
-        valkey:
-          ansible_host: valkey
+        valkey-0:
+          ansible_host: valkey-0
           ansible_connection: containers.podman.podman
           container_image: docker.io/jomrr/molecule-debian:stable
           container_command: /sbin/init
@@ -24,9 +24,8 @@ all:
         container_systemd: false
     elastic:
       hosts:
-        mastodon:
-        elastic:
-          ansible_host: elastic
+        elastic-0:
+          ansible_host: elastic-0
           ansible_connection: containers.podman.podman
           container_image: docker.io/jomrr/molecule-debian:stable
           container_command: /sbin/init
@@ -40,8 +39,8 @@ all:
         container_systemd: false
     postgresql:
       hosts:
-        postgresql:
-          ansible_host: postgresql
+        postgresql-0:
+          ansible_host: postgresql-0
           ansible_connection: containers.podman.podman
           container_image: docker.io/jomrr/molecule-debian:stable
           container_command: /sbin/init

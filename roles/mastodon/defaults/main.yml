@@ -1,3 +1,73 @@
-#SPDX-License-Identifier: MIT-0
+# SPDX-License-Identifier: MIT-0
 ---
-# defaults file for mastodon
+
+mastodon_data_device: /dev/sdb
+mastodon_data_mountpoint: /data
+mastodon_mount_fs_type: ext4
+mastodon_mount_opts: defaults
+mastodon_home: "{{ mastodon_data_mountpoint }}/mastodon"
+
+mastodon_packages:
+  - autoconf
+  - bison
+  - build-essential
+  # - certbot
+  - curl
+  - ffmpeg
+  - file
+  - git
+  - imagemagick
+  - libffi-dev
+  - libgdbm-dev
+  - libicu-dev
+  - libidn-dev
+  - libjemalloc-dev
+  - libpq-dev
+  - libreadline-dev
+  - libssl-dev
+  - libvips-tools
+  - libxslt1-dev
+  - libyaml-dev
+  # - nginx
+  - nodejs
+  - pkg-config
+  - protobuf-compiler
+  # - python3-certbot-nginx
+  # - yarn
+  - wget
+  - zlib1g-dev
+
+mastodon_services:
+  # - mastodon-fasp.service
+  # - mastodon-sidekiq-default.service
+  # - mastodon-sidekiq-default@.service
+  # - mastodon-sidekiq-default@20.service
+  # - mastodon-sidekiq-default@40.service
+  # - mastodon-sidekiq-1-default@25.service
+  - mastodon-sidekiq-1-default@35.service
+  # - mastodon-sidekiq-1-default@40.service
+  - mastodon-sidekiq-1-ingress@25.service
+  # - mastodon-sidekiq-2-default@25.service
+  - mastodon-sidekiq-2-default@35.service
+  # - mastodon-sidekiq-2-default@40.service
+  # - mastodon-sidekiq-2-default@60.service
+  - mastodon-sidekiq-2-ingress@25.service
+  - mastodon-sidekiq-fasp@1.service
+  # - mastodon-sidekiq-ingress@.service
+  # - mastodon-sidekiq-mailer@20.service
+  # - mastodon-sidekiq-mailers@.service
+  - mastodon-sidekiq-mailers@20.service
+  # - mastodon-sidekiq-pull@.service
+  - mastodon-sidekiq-pull@40.service
+  # - mastodon-sidekiq-push@.service
+  - mastodon-sidekiq-push@35.service
+  # - mastodon-sidekiq-scheduler@.service
+  - mastodon-sidekiq-scheduler@5.service
+  # - mastodon-sidekiq.service
+  - mastodon-streaming.service
+  - mastodon-streaming@4000.service
+  - mastodon-streaming@4001.service
+  - mastodon-streaming@4002.service
+  - mastodon-streaming@4003.service
+  - mastodon-web.service
+

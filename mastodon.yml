@@ -1,0 +1,6 @@
+---
+
+- name: Install mastodon role
+  hosts: mastodon-0
+  roles:
+    - mastodon

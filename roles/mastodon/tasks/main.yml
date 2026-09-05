@@ -1,3 +1,266 @@
-#SPDX-License-Identifier: MIT-0
 ---
-# tasks file for mastodon
+
+- name: Install base packages to get nodejs repo
+  # package list from https://docs.joinmastodon.org/admin/install/
+  ansible.builtin.apt:
+    name:
+      - gnupg
+      - lsb-release
+      - ca-certificates
+
+- name: Check if nodejs repo is already installed
+  ansible.builtin.stat:
+    path: /etc/apt/sources.list.d/nodesource.list
+  register: nodelist
+
+- name: Get nodejs repo key
+  ansible.builtin.get_url:
+    url: https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key
+    dest: /tmp/nodesource-repo.gpg.key
+    mode: '0755'
+    owner: root
+    group: root
+  when: not nodelist.stat.exists
+
+- name: Generate repo key into apt keyring
+  ansible.builtin.command: gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg /tmp/nodesource-repo.gpg.key
+  when: not nodelist.stat.exists
+  changed_when: true
+
+- name: Create nodejs repofile
+  ansible.builtin.copy:
+    content: deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_24.x nodistro main
+    dest: /etc/apt/sources.list.d/nodesource.list
+    owner: root
+    group: root
+    mode: '0755'
+  when: not nodelist.stat.exists
+
+- name: Install the rest of the packages
+  ansible.builtin.apt:
+    name: "{{ mastodon_packages }}"
+    state: present
+    update_cache: true
+
+- name: Enable corepack for yarn
+  ansible.builtin.command: corepack enable
+  args:
+    creates: /usr/bin/yarn
+
+- name: Ensure directory exists for mount point {{ mastodon_data_mountpoint }}
+  ansible.builtin.file:
+    path: "{{ mastodon_data_mountpoint }}"
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Add to fstab for "{{ mastodon_data_device }}-{{ mastodon_data_mountpoint }}"
+  ansible.posix.mount:
+    src: "{{ mastodon_data_device }}"
+    path: "{{ mastodon_data_mountpoint }}"
+    fstype: "{{ mastodon_mount_fs_type }}"
+    opts: "{{ mastodon_mount_opts }}"
+    state: present
+  when: not skip_in_tests
+
+- name: Mount device - dir "{{ mastodon_data_device }}-{{ mastodon_data_mountpoint }}"
+  ansible.posix.mount:
+    path: "{{ postgresql_datadir }}"
+    state: mounted
+  when: not skip_in_tests
+
+- name: Ensure mastodon group
+  ansible.builtin.group:
+    name: mastodon
+    gid: 1100
+
+- name: Ensure mastodon user
+  ansible.builtin.user:
+    name: mastodon
+    password: '!'
+    home: "{{ mastodon_home }}"
+    comment: Mastodon server user
+    uid: 1100
+    group: mastodon
+
+- name: Ensure proper version of mementomods installed
+  become: true
+  become_user: mastodon
+  ansible.builtin.git:
+    repo: 'https://github.com/mementomori-social/mastodon.git'
+    dest: "{{ mastodon_home }}/live"
+    version: mementomods-2026-06-07
+    separate_git_dir: "{{ mastodon_home }}/live-git"
+  # notify: Restart mastodon services
+
+- name: Install ruby
+  become: true
+  become_user: mastodon
+  ansible.builtin.git:
+    repo: 'https://github.com/rbenv/rbenv.git'
+    dest: "{{ mastodon_home }}/.rbenv"
+
+- name: Add ruby rbenv command to user's profile. We don't login, so probably unnecessary
+  ansible.builtin.blockinfile:
+    path: "{{ mastodon_home }}/.bashrc"
+    marker: "# {mark} ANSIBLE MANAGED BLOCK"
+    block: |
+      export PATH="$HOME/.rbenv/bin:$HOME/.rbenv/shims:${PATH}"
+      export RBENV_SHELL=bash
+      source "{{ mastodon_home }}/.rbenv/completions/rbenv.bash
+      command rbenv rehash 2>/dev/null
+      rbenv() {
+        local command
+        command="${1:-}"
+        if [ "$#" -gt 0 ]; then
+          shift
+        fi
+
+        case "$command" in
+        rehash|shell)
+          eval "$(rbenv "sh-$command" "$@")";;
+        *)
+          command rbenv "$command" "$@";;
+        esac
+      }
+
+  # source ~/.bashrc
+- name: Install ruby build
+  become_user: mastodon
+  ansible.builtin.git:
+    repo: 'https://github.com/rbenv/ruby-build.git'
+    dest: "{{ mastodon_home }}/.rbenv/plugins/ruby-build"
+
+- name: Read ruby version file
+  ansible.builtin.slurp:
+    src: "{{ mastodon_home }}/live/.ruby-version"
+  register: ruby_version_file
+
+- name: Set ruby version fact
+  ansible.builtin.set_fact:
+    ruby_version: "{{ ruby_version_file.content | b64decode | trim }}"
+
+- name: Rbenv install
+  ansible.builtin.command: "{{ mastodon_home }}/.rbenv/bin/rbenv install {{ ruby_version }}"
+  become: true
+  become_user: mastodon
+  args:
+    chdir: "{{ mastodon_home }}"
+    creates: "{{ mastodon_home }}/.rbenv/versions/{{ ruby_version }}/bin/ruby"
+  environment:
+    RUBY_CONFIGURE_OPTS: --with-jemalloc
+    PATH: "{{ mastodon_home }}/.rbenv/bin:{{ mastodon_home }}/.rbenv/shims:{{ ansible_facts.env.PATH }}"
+    RBENV_SHELL: /usr/bin/bash
+  register: rbenv
+  notify: Restart mastodon services
+
+- name: What did we just do?
+  ansible.builtin.debug:
+    var: rbenv
+
+- name: Bundle config deployment
+  ansible.builtin.command: bundle config set deployment 'true'
+  become: true
+  become_user: mastodon
+  args:
+    chdir: "{{ mastodon_home }}/live"
+    creates: "{{ mastodon_home }}/live/.bundle/config"
+  environment:
+    PATH: "{{ mastodon_home }}/.rbenv/bin:{{ mastodon_home }}/.rbenv/shims:{{ ansible_facts.env.PATH }}"
+  register: bconfig
+  notify: Restart mastodon services
+
+- name: What did we just do?
+  ansible.builtin.debug:
+    var: bconfig
+
+- name: Bundle config without development test
+  ansible.builtin.command: bundle config set without 'development test'
+  become: true
+  become_user: mastodon
+  args:
+    chdir: "{{ mastodon_home }}/live"
+  changed_when: false
+  environment:
+    PATH: "{{ mastodon_home }}/.rbenv/bin:{{ mastodon_home }}/.rbenv/shims:{{ ansible_facts.env.PATH }}"
+  register: bconfig2
+  notify: Restart mastodon services
+
+- name: What did we just do?
+  ansible.builtin.debug:
+    var: bconfig2
+
+- name: Bundle install
+  ansible.builtin.command: bundle install
+  become: true
+  become_user: mastodon
+  args:
+    chdir: "{{ mastodon_home }}/live"
+    creates: "{{ mastodon_home }}/live/vendor/bundle"
+  environment:
+    PATH: "{{ mastodon_home }}/.rbenv/bin:{{ mastodon_home }}/.rbenv/shims:{{ ansible_facts.env.PATH }}"
+  register: bundle_install
+  notify: Restart mastodon services
+
+- name: What did we just do?
+  ansible.builtin.debug:
+    var: bundle_install
+
+- name: Yarn install
+  ansible.builtin.command: yarn install
+  become: true
+  become_user: mastodon
+  args:
+    chdir: "{{ mastodon_home }}/live"
+    creates: "{{ mastodon_home }}/live/node_modules"
+  environment:
+    PATH: "{{ mastodon_home }}/.rbenv/bin:{{ mastodon_home }}/.rbenv/shims:{{ ansible_facts.env.PATH }}"
+  register: yarn_install
+  notify: Restart mastodon services
+
+- name: What did we just do?
+  ansible.builtin.debug:
+    var: yarn_install
+
+- name: Deploy systemd files
+  ansible.builtin.template:
+    src: "templates/{{ item }}.j2"
+    dest: "/etc/systemd/system/{{ item }}"
+    owner: root
+    group: root
+    mode: '0755'
+  loop:
+    - mastodon-sidekiq-1-default@.service
+    - mastodon-sidekiq-1-ingress@.service
+    - mastodon-sidekiq-2-default@.service
+    - mastodon-sidekiq-2-ingress@.service
+    - mastodon-sidekiq-default@.service
+    - mastodon-sidekiq-fasp@.service
+    - mastodon-sidekiq-ingress@.service
+    - mastodon-sidekiq-mailers@.service
+    - mastodon-sidekiq-pull@.service
+    - mastodon-sidekiq-push@.service
+    - mastodon-sidekiq-scheduler@.service
+    - mastodon-sidekiq.service
+    - mastodon-sidekiq-template.service
+    - mastodon-streaming.service
+    - mastodon-streaming@.service
+    - mastodon-web.service
+  notify: Reload systemd
+
+- name: Enable and start mastodon services
+  ansible.builtin.systemd_service:
+    name: "{{ item }}"
+    state: started
+    enabled: true
+  loop: "{{ mastodon_services }}"
+  when: not skip_in_tests
+
+- name: Enable and stop mastodon services
+  ansible.builtin.systemd_service:
+    name: "{{ item }}"
+    state: stopped
+    enabled: true
+  loop: "{{ mastodon_services }}"
+  when: skip_in_tests
