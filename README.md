@@ -96,20 +96,19 @@ between the hosts if later needed.
 
 [Molecule](https://docs.ansible.com/projects/molecule/) can be used to test the playbooks created.
 It is set to use podman with debian stable images for testing the playbooks.
-See test [inventory.yml](molecule/debian/inventory.yml) for test containers
-and [verify.yml](molecule/debian/verify.yml) for test cases.
+See test [inventory.yml](molecule/default/inventory.yml) for test containers
+and [verify.yml](molecule/default/verify.yml) for test cases.
 
 Useful commands (in repo root):
 
 ```sh
 # Test the complete lifecycle
-molecule
- test --scenario-name debian
+molecule test
 
 # Run specific actions
-molecule create --scenario-name debian
-molecule converge --scenario-name debian
-molecule verify --scenario-name debian
+molecule create
+molecule converge
+molecule verify
 ```
 
 This lets you keep running ansible setup playbooks and tests all over again
