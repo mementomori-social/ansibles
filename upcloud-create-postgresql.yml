@@ -62,12 +62,11 @@
                   tier: "standard"
                   size: "{{ storage_size_root }}"
                 - title: "{{ server_hostname }}-data"
-                  storage: "{{ source_storage_uuid }}"
+                  action: create
                   tier: "MaxIOPS"
                   size: "{{ storage_size_data }}"
                 - title: "{{ server_hostname }}-backup"
-                  action: clone
-                  storage: "{{ source_storage_uuid }}"
+                  action: create
                   tier: "hdd"
                   size: "{{ storage_size_archive }}"
             networking:

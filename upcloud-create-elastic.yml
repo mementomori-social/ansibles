@@ -9,9 +9,9 @@
     zone: "fi-hel2"
     server_hostname: "elastic.mementomori.social"
     server_title: "Search Server"
-    server_plan: "STARTER-2xCPU-8GB"
+    server_plan: "STARTER-4xCPU-16GB"
     source_storage_uuid: "01000000-0000-4000-8000-000030260200"
-    storage_size_root: 40 # current root is 11 GB, but starter comes with 40GB
+    storage_size_root: 50 # plan includes 50 GB
     storage_size_data: 35 # current database is 24G
     network_name: "fi-hel2-mastodon-network"
     server_ip: 10.222.222.11
@@ -61,7 +61,7 @@
                   tier: "standard"
                   size: "{{ storage_size_root }}"
                 - title: "{{ server_hostname }}-data"
-                  storage: "{{ source_storage_uuid }}"
+                  action: create
                   tier: "MaxIOPS"
                   size: "{{ storage_size_data }}"
             networking:
