@@ -3,4 +3,5 @@ collections:
 - ansible.posix
 - community.general
 - community.molecule
+- containers.podman
 - upcloud.cloud
