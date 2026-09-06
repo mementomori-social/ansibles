@@ -95,7 +95,7 @@ between the hosts if later needed.
 # Testing
 
 [Molecule](https://docs.ansible.com/projects/molecule/) can be used to test the playbooks created.
-It is set to use podman with debian stable images for testing the playbooks.
+It is set to use podman with Ubuntu 26.04 images, the same as the UpCloud template, for testing the playbooks.
 See test [inventory.yml](molecule/default/inventory.yml) for test containers
 and [verify.yml](molecule/default/verify.yml) for test cases.
 

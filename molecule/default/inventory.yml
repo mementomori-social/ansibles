@@ -6,13 +6,13 @@ all:
         mastodon-0:
           ansible_host: mastodon-0
           ansible_connection: containers.podman.podman
-          container_image: docker.io/jomrr/molecule-debian:stable
+          container_image: docker.io/jomrr/molecule-ubuntu:26.04
           container_command: /sbin/init
           container_privileged: false
         valkey-0:
           ansible_host: valkey-0
           ansible_connection: containers.podman.podman
-          container_image: docker.io/jomrr/molecule-debian:stable
+          container_image: docker.io/jomrr/molecule-ubuntu:26.04
           container_command: /sbin/init
           container_privileged: false
       vars:
@@ -27,7 +27,7 @@ all:
         elastic-0:
           ansible_host: elastic-0
           ansible_connection: containers.podman.podman
-          container_image: docker.io/jomrr/molecule-debian:stable
+          container_image: docker.io/jomrr/molecule-ubuntu:26.04
           container_command: /sbin/init
           container_privileged: false
       vars:
@@ -42,7 +42,7 @@ all:
         postgresql-0:
           ansible_host: postgresql-0
           ansible_connection: containers.podman.podman
-          container_image: docker.io/jomrr/molecule-debian:stable
+          container_image: docker.io/jomrr/molecule-ubuntu:26.04
           container_command: /sbin/init
           container_privileged: false
       vars:
@@ -57,7 +57,7 @@ all:
     #     chat:
     #       ansible_host: postgresql
     #       ansible_connection: containers.podman.podman
-    #       container_image: docker.io/jomrr/molecule-debian:stable
+    #       container_image: docker.io/jomrr/molecule-ubuntu:26.04
     #       container_command: /sbin/init
     #       container_privileged: false
     #   vars:
