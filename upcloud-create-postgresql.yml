@@ -12,8 +12,9 @@
     server_plan: "CLOUDNATIVE-6xCPU-24GB"
     source_storage_uuid: "01000000-0000-4000-8000-000030260200"
     storage_size_root: 30
-    storage_size_data: 260
-    storage_size_backup: 350
+    # Created beforehand with upctl storage create, see README
+    data_storage_uuid: ""
+    backup_storage_uuid: ""
     network_name: "fi-hel2-mastodon-network"
     server_ip: 10.222.222.10
     labels:
@@ -61,14 +62,10 @@
                   storage: "{{ source_storage_uuid }}"
                   tier: "standard"
                   size: "{{ storage_size_root }}"
-                - title: "{{ server_hostname }}-data"
-                  action: create
-                  tier: "maxiops"
-                  size: "{{ storage_size_data }}"
-                - title: "{{ server_hostname }}-backup"
-                  action: create
-                  tier: "hdd"
-                  size: "{{ storage_size_archive }}"
+                - action: attach
+                  storage: "{{ data_storage_uuid }}"
+                - action: attach
+                  storage: "{{ backup_storage_uuid }}"
             networking:
               interfaces:
                 interface:
