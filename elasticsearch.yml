@@ -2,5 +2,6 @@
 ---
 - name: Elasticsearch server settings
   hosts: elastic
+  become: true
   roles:
     - role: elasticsearch
