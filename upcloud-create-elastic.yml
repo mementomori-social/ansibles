@@ -12,7 +12,8 @@
     server_plan: "CLOUDNATIVE-4xCPU-16GB"
     source_storage_uuid: "01000000-0000-4000-8000-000030260200"
     storage_size_root: 40
-    storage_size_data: 35 # current database is 24G
+    # 35 GB maxiops, created 6.9.2026
+    data_storage_uuid: "01ccc090-414a-4059-9a95-57eff599373b"
     network_name: "fi-hel2-mastodon-network"
     server_ip: 10.222.222.11
     labels:
@@ -60,10 +61,8 @@
                   storage: "{{ source_storage_uuid }}"
                   tier: "standard"
                   size: "{{ storage_size_root }}"
-                - title: "{{ server_hostname }}-data"
-                  action: create
-                  tier: "maxiops"
-                  size: "{{ storage_size_data }}"
+                - action: attach
+                  storage: "{{ data_storage_uuid }}"
             networking:
               interfaces:
                 interface:
