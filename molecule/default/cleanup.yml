@@ -1,6 +1,7 @@
 ---
 - name: Cleanup
   hosts: all
+  tags: always
   gather_facts: false
   tasks:
     - name: Remove test artifacts

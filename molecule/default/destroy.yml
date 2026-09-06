@@ -1,6 +1,7 @@
 ---
 - name: Destroy container instances
   hosts: localhost
+  tags: always
   gather_facts: false
   tasks:
     - name: Remove test containers

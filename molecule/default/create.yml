@@ -1,6 +1,7 @@
 ---
 - name: Create container instances
   hosts: localhost
+  tags: always
   gather_facts: false
   tasks:
     - name: Create container network

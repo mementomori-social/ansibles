@@ -1,6 +1,7 @@
 ---
 - name: Prepare container instances
   hosts: all
+  tags: always
   gather_facts: false
   become: true
   tasks:
