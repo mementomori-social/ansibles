@@ -63,7 +63,7 @@
                   size: "{{ storage_size_root }}"
                 - title: "{{ server_hostname }}-data"
                   action: create
-                  tier: "MaxIOPS"
+                  tier: "maxiops"
                   size: "{{ storage_size_data }}"
                 - title: "{{ server_hostname }}-backup"
                   action: create
