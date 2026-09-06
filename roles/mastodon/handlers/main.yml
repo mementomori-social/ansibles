@@ -11,3 +11,10 @@
     state: restarted
   loop: "{{ mastodon_services }}"
   when: not skip_in_tests
+
+- name: Stop mastodon services for migration
+  ansible.builtin.systemd_service:
+    name: "{{ item }}"
+    state: stopped
+  loop: "{{ mastodon_services }}"
+  when: not skip_in_tests and item is search('sidekiq')
