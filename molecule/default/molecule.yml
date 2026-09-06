@@ -2,14 +2,13 @@
 dependency:
   name: galaxy
   options:
-    requirements-file: ../requirements.yml
+    requirements-file: ${MOLECULE_PROJECT_DIRECTORY}/collections/requirements.yml
 
 ansible:
   cfg:
     defaults:
       collections_path: collections
       inventory: inventory.yml
-      vault_password_file: ../../.vaultpw
   executor:
     args:
       ansible_playbook:
