@@ -1,2 +1,17 @@
 plugin: upcloud.cloud.servers
-network: []
+# fi-hel2-mastodon-network, needed for private_ipv4
+network:
+  - 03e9a09b-1a8d-4b52-9d1e-4f5e63045704
+# Private-only servers fall back to their private address.
+connect_with:
+  - public_ipv4
+  - private_ipv4
+# role=elastic label becomes group elastic, matching the playbooks.
+keyed_groups:
+  - key: labels | select('match', '^role=') | map('regex_replace', '^role=', '') | first
+    prefix: ""
+    separator: ""
+compose:
+  ansible_user: "'ansible'"
+  # Private servers are reached through the bastion.
+  ansible_ssh_common_args: "'-o ProxyJump=rolle@87.58.148.167' if public_ip is not defined else ''"
