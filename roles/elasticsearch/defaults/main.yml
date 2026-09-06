@@ -8,6 +8,10 @@ elasticsearch_packages:
   - elasticsearch
 elasticsearch_service: elasticsearch
 
+# Separate data disk, so the machine can be replaced without touching the index.
+elasticsearch_data_device: /dev/sdb
+elasticsearch_mount_fs_type: ext4
+elasticsearch_mount_opts: defaults
 elasticsearch_datadir: /var/lib/elasticsearch
 elasticsearch_logdir: /var/log/elasticsearch
 

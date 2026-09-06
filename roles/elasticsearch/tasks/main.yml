@@ -28,6 +28,21 @@
     state: present
     update_cache: true
 
+- name: Create filesystem on data disk {{ elasticsearch_data_device }}
+  community.general.filesystem:
+    dev: "{{ elasticsearch_data_device }}"
+    fstype: "{{ elasticsearch_mount_fs_type }}"
+  when: not skip_in_tests
+
+- name: Mount data disk at {{ elasticsearch_datadir }}
+  ansible.posix.mount:
+    src: "{{ elasticsearch_data_device }}"
+    path: "{{ elasticsearch_datadir }}"
+    fstype: "{{ elasticsearch_mount_fs_type }}"
+    opts: "{{ elasticsearch_mount_opts }}"
+    state: mounted
+  when: not skip_in_tests
+
 - name: Ensure data directory exists
   ansible.builtin.file:
     path: "{{ elasticsearch_datadir }}"

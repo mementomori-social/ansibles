@@ -55,6 +55,12 @@
     group: root
     mode: '0755'
 
+- name: Create filesystem on {{ mastodon_data_device }}
+  community.general.filesystem:
+    dev: "{{ mastodon_data_device }}"
+    fstype: "{{ mastodon_mount_fs_type }}"
+  when: not skip_in_tests
+
 - name: Add to fstab for "{{ mastodon_data_device }}-{{ mastodon_data_mountpoint }}"
   ansible.posix.mount:
     src: "{{ mastodon_data_device }}"
@@ -66,7 +72,7 @@
 
 - name: Mount device - dir "{{ mastodon_data_device }}-{{ mastodon_data_mountpoint }}"
   ansible.posix.mount:
-    path: "{{ postgresql_datadir }}"
+    path: "{{ mastodon_data_mountpoint }}"
     state: mounted
   when: not skip_in_tests
 

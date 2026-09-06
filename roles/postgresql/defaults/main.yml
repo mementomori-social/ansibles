@@ -21,7 +21,7 @@ postgresql_betterstack_heartbeat:
 
 postgresql_backupdir: /mnt/backup
 postgresql_backup_mount_device: /dev/sdc
-postgresql_backuo_mount_fs_type: ext4
+postgresql_backup_mount_fs_type: ext4
 postgresql_backup_mount_opts: defaults
 postgresql_backup_diskspace_threshold: 90
 postgresql_backup_betterstack_heartbeat:
