@@ -2,25 +2,30 @@
 ---
 # tasks file for elasticsearch
 
+- name: Remove legacy Elastic apt source
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - /etc/apt/sources.list.d/elastic-{{ elasticsearch_version }}.list
+    - /usr/share/keyrings/elasticsearch.asc
+
 - name: Ensure prerequisite packages are installed
   ansible.builtin.apt:
     name:
       - apt-transport-https
-      - gnupg
+      - python3-debian
     state: present
     update_cache: true
 
-- name: Add Elastic signing key
-  ansible.builtin.get_url:
-    url: "{{ elasticsearch_apt_key_url }}"
-    dest: /usr/share/keyrings/elasticsearch.asc
-    mode: "0644"
-
 - name: Add Elastic apt repository
-  ansible.builtin.apt_repository:
-    repo: "{{ elasticsearch_apt_repo }}"
-    filename: elastic-{{ elasticsearch_version }}
-    state: present
+  ansible.builtin.deb822_repository:
+    name: elastic-{{ elasticsearch_version }}
+    types: deb
+    uris: "{{ elasticsearch_apt_uri }}"
+    suites: stable
+    components: main
+    signed_by: "{{ elasticsearch_apt_key_url }}"
 
 - name: Ensure Elasticsearch packages are installed
   ansible.builtin.apt:
@@ -70,6 +75,29 @@
     group: elasticsearch
     mode: "0660"
   notify: Restart elasticsearch
+
+- name: Ensure systemd drop-in directory exists
+  ansible.builtin.file:
+    path: /etc/systemd/system/elasticsearch.service.d
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+# Same limits as the current production unit override.
+- name: Configure systemd limits
+  ansible.builtin.copy:
+    dest: /etc/systemd/system/elasticsearch.service.d/override.conf
+    content: |
+      [Service]
+      LimitNOFILE=65536
+      LimitMEMLOCK=infinity
+    owner: root
+    group: root
+    mode: "0644"
+  notify:
+    - Reload systemd
+    - Restart elasticsearch
 
 - name: Ensure Elasticsearch is started and enabled
   ansible.builtin.service:

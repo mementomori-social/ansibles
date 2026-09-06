@@ -2,7 +2,7 @@
 ---
 
 elasticsearch_version: "7.x"
-elasticsearch_apt_repo: "deb [signed-by=/usr/share/keyrings/elasticsearch.asc] https://artifacts.elastic.co/packages/{{ elasticsearch_version }}/apt stable main"
+elasticsearch_apt_uri: "https://artifacts.elastic.co/packages/{{ elasticsearch_version }}/apt"
 elasticsearch_apt_key_url: https://artifacts.elastic.co/GPG-KEY-elasticsearch
 elasticsearch_packages:
   - elasticsearch
@@ -17,7 +17,7 @@ elasticsearch_logdir: /var/log/elasticsearch
 
 # Bind to the private network only. The current server listens on 0.0.0.0,
 # which is wider than it needs to be.
-elasticsearch_network_host: "{{ ansible_default_ipv4.address }}"
+elasticsearch_network_host: "{{ ansible_facts['default_ipv4']['address'] }}"
 elasticsearch_http_port: 9200
 elasticsearch_discovery_type: single-node
 
