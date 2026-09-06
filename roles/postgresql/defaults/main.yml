@@ -2,7 +2,7 @@
 ---
 
 postgresql_datadir: /database
-postgresql_mount_device: /dev/sdb
+postgresql_mount_device: /dev/vdb
 postgresql_mount_fs_type: ext4
 postgresql_mount_opts: defaults
 postgresql_packages:
@@ -20,7 +20,7 @@ postgresql_disk_space_limit_gb: 5
 postgresql_betterstack_heartbeat:
 
 postgresql_backupdir: /mnt/backup
-postgresql_backup_mount_device: /dev/sdc
+postgresql_backup_mount_device: /dev/vdc
 postgresql_backup_mount_fs_type: ext4
 postgresql_backup_mount_opts: defaults
 postgresql_backup_diskspace_threshold: 90

@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT-0
 ---
 
-mastodon_data_device: /dev/sdb
+mastodon_data_device: /dev/vdb
 mastodon_data_mountpoint: /data
 mastodon_mount_fs_type: ext4
 mastodon_mount_opts: defaults
