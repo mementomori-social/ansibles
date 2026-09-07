@@ -30,47 +30,6 @@ Role Variables
 | `mastodon_fedifetch_server` | `mementomori.social` | Server hostname for Fedifetcher |
 | `mastodon_betterstack_sidekick` | `{{ vault_mastodon_betterstack_sidekick }}` | Betterstack Sidekick token for log shipping (from vault) |
 
-See `defaults/main.yml` for all variables. There is also in addition all
-mastodon config file variables. Everything prefixed with `vault_` is coming
-from ansible vault. Those are described in
-[mastodon config docs](https://docs.joinmastodon.org/admin/config/).
-
-Tasks
------
-
-### main.yml
-
-Installs and configures Mementomori Mastodon instance:
-
-1. **Repository setup** - Installs NodeSource Node.js 24 repo
-2. **System packages** - Installs all required dependencies (build tools, imagemagick, ffmpeg, libvips, etc.)
-3. **Data mount** - Mounts separate data partition at `mastodon_data_mountpoint`
-4. **User setup** - Creates mastodon user (uid 1100) with home at `mastodon_home`
-5. **Mastodon code** - Clones mastodon repo to `{{ mastodon_home }}/live` at `mastodon_version_metadata`
-6. **Config** - Deploys `.env.production` from template
-7. **Ruby** - Installs rbenv and builds required Ruby version
-8. **Bundle** - Runs `bundle config` and `bundle install`
-9. **Yarn** - Enables corepack and runs `yarn install`
-10. **Bin scripts** - Deploys helper scripts (flush-dead-jobs, mastodon-prune, refetch-preview-cards, etc.)
-11. **FediFetcher** - Installs and configures FediFetcher
-12. **Systemd** - Deploys and enables all mastodon service files and timers
-
-### upgrade.yml
-
-** WIP **
-
-Upgrades Mastodon to the version specified by `mastodon_version_metadata`:
-
-1. **Safety checks** - Aborts any incomplete git merge, stashes uncommitted changes
-2. **Git update** - Fetches and checks out the branch specified by `mastodon_version_metadata`
-3. **Ruby setup** - Installs required Ruby version via rbenv if missing, updates ruby-build
-4. **Stop services** - Halts sidekiq services before migration (prevents deadlocks)
-5. **Clean rebuild** - Removes node_modules, clears yarn cache, runs `bundle install` and `yarn install`
-6. **Asset precompile** - Runs `rails assets:precompile` for production
-7. **Migrations** - Runs pending DB migrations (conditional on status check)
-8. **Restart services** - Restarts sidekiq, then all mastodon services
-9. **Cache clear** - Clears Rails cache via tootctl
-
 Dependencies
 ------------
 
