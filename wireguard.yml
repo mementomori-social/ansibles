@@ -17,7 +17,10 @@
         allowed_ips: 10.222.223.11/32
       - name: possu
         public_key: "LWJgng7Mb1PLVEyzJbuDlKnYVi2XOEj1YcWEPTikAyU="
-        allowed_ips: 10.222.223.20/32, 10.0.0.0/24
+        allowed_ips: 10.222.223.20/32, 10.0.0.4/32
+      - name: mastodon
+        public_key: "UPDIS2rpLTn3y0KcRjiJjfTuWwbtlZxTqntVgt4MRmU="
+        allowed_ips: 10.222.223.21/32, 10.0.0.2/32
     server_public_interface: eth0
   tasks:
     - name: Install WireGuard on Debian/Ubuntu
