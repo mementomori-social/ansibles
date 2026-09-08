@@ -14,6 +14,7 @@
       loop:
         - rolle
         - ikke
+        - ansible
 
     - name: Set ssh public keys
       ansible.posix.authorized_key:
@@ -24,6 +25,16 @@
       loop:
         - { name: 'rolle', keyfile: 'pubkeys-rolle.pub' }
         - { name: 'ikke', keyfile: 'pubkeys-ikke.pub' }
+
+    - name: Set multiple ssh public keys for ansible user
+      ansible.posix.authorized_key:
+        user: ansible
+        state: present
+        key: "{{ lookup('file', item) }}"
+        exclusive: false
+      loop:
+        - pubkeys-rolle.pub
+        - pubkeys-ikke.pub
 
     - name: Fix SSH options
       ansible.builtin.lineinfile:
