@@ -14,4 +14,4 @@ keyed_groups:
 compose:
   ansible_user: "'ansible'"
   # Private servers are reached through the bastion.
-  ansible_ssh_common_args: "'-o ProxyJump=rolle@87.58.148.167' if public_ip is not defined else ''"
+  ansible_ssh_common_args: "'-o ProxyJump=ansible@87.58.148.167' if public_ip is not defined else ''"
