@@ -13,10 +13,10 @@
     source_storage_uuid: "01000000-0000-4000-8000-000030260200"
     storage_size_root: 30
     # Created beforehand with upctl storage create, see README
-    data_storage_uuid: ""
-    backup_storage_uuid: ""
+    data_storage_uuid: "019c8a81-8435-44df-a867-ebbac33a9443"
+    backup_storage_uuid: "018b7d80-3da9-4f08-89a7-ac87b363f1a6"
     network_name: "fi-hel2-mastodon-network"
-    server_ip: 10.222.222.10
+    server_ip: 10.222.222.13
     labels:
       - key: role
         value: postgresql
@@ -87,7 +87,7 @@
               username: ansible
               ssh_keys:
                 # yamllint disable-line rule:line-length
-                ssh_key: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQC577GzJaVha0u0byNEFLDbGQhMkPSyXeT9gqIfZMKIxgh9PhOjpHl739lcdbsbgiUVAjZYI7M3PwuGghYTZpk2amJEZXUrul2MQudEc5tUX9wbpdKx9PEhzCywynRN+ZWGK15R5uVyc8mhqbvE0xQnkX0d+/eh+K8reFw451rPJuXrbbk13x/KBs/WqjEGCe6Yto/BotRRadpxTP5gPTxs/MIZ9LZC5EjmuOxDVt1xNROUNdD7gdK8DdpAHK72OoaT5ooc3Zq9uum4sYhCc611IGMNy2yjaYsJWWiVpDFy+APs5u9oK7wdtYFZwhf6B1O3U1X21CoaU8nJsFxJmI1g32IaAfh18sGiTBKKu8vYfF1y2eHa0I/App5WI+H5BS9WV7QyW5s7FQQ9R0okZ3kWbiGj8tVcVdTviwKmNm/7FtED6vPDe9ji+ou56YyzX7sd8ZFZjCX4rG9ZfpCzwsCCRdYHcKEyTIM5is9aggSUVWIkhdD9IKKsJEuW2ZCo8zpVMqSKm4G05tieIAGGr546m1OiTVBFVzuhYuTmwGuVfR0szoDCV6nOc1vcZMLyWYM5zWZRMuCw6NMzMuL+ot0JXyVKtgfFt4q5Q+Ha87jYXsiLOezsTiycgG1c/HmF4NxfWHt8nkDP/hQI0ESb1AKqxqp3++mCciHd1PlE/Y1CaQ==
+                ssh_key: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDHzXEq5NVyJPgrnfdVFJPpb9OPE5O4P9mkZjU2m4h08iV9/7isc2AeKL5y8qq2o3JNAx6UxL6Pw4daaDEnHE6jyEhPKW3nbfR+trO1bPVa3URFWTdn+lpaggJjs195rF0u9WZD2WP/PwuWFB6mhG4aFoxsGn9phFowY9walGNVJuR1eSfVwAMnY9ehO/XWwUui7xyWeaNahOzxO9OrimpmwOxc9LH6KoBOuxcDh/Q/O7SEhin9papgAd/QgFdLuzvlwvEkXjIllA+xb4QHg19EBkH66NFEDlnrs8obYCYj0MN/LuSr1ag+u0yBIHfq4S+7hQhdszybPjZujSTQo7f0UazStnDsB8CQFFxyJzPZFXrmptqe9J+mQBYdEx815pDcaiy4CpwcNlWk+4jWTQRGOviQZTHMXNHofjwLqVug4NvJaDPzYJwuIJVXRNypwx/9sbLroReCp3S2vILzsUiSL/FQOZgfvycDkwFRbzZZoz7XbKf/QvxG7PCgJznD423O3pSKgh3iSznxlMpPgtP6/cJVrFVEdKxcgz891wQ0XhUfzDPUoI5boCt9OVojIH6WOa3u1mok0ePtb9Q53Ai6gT2GkzsKKXy7T7c5VHVnSiUvXxYB+2zUL8l0LFWbfeOV1WWkA1HikHOm50nTEFht7xPu5iyqUY1n1E8UrI3iIw==
               create_password: 'no'
         status_code: 202
       register: upcloud_server_response
