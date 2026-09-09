@@ -9,12 +9,42 @@ postgresql_packages:
   - postgresql
   - postgresql-contrib
   - postgresql-client
-postgresql_version: "17"
+postgresql_version: "18"
 postgresql_service: postgresql
 postgresql_host: localhost
 postgresql_port: 5432
 
-# postgresql_tunables: []
+postgresql_tunables:
+  - key: listen_addresses
+    value: 'localhost,10.222.222.11,10.222.223.20'
+  - key: max_connections
+    value: 850
+  - key: shared_buffers
+    value: 8GB
+  - key: work_mem
+    value: 32MB
+  - key: maintenance_work_mem
+    value: 2GB
+  - key: effective_io_concurrency
+    value: 200
+  - key: max_parallel_workers_per_gather
+    value: 4
+  - key: max_parallel_maintenance_workers
+    value: 4
+  - key: wal_buffers
+    value: 16MB
+  - key: max_wal_size
+    value: 8GB
+  - key: min_wal_size
+    value: 2GB
+  - key: max_wal_senders
+    value: 4
+  - key: wal_keep_size
+    value: 64
+  - key: random_page_cost
+    value: 1.1
+  - key: effective_cache_size
+    value: 24GB
 
 postgresql_disk_space_limit_gb: 5
 postgresql_betterstack_heartbeat:
@@ -25,6 +55,8 @@ postgresql_backup_mount_fs_type: ext4
 postgresql_backup_mount_opts: defaults
 postgresql_backup_diskspace_threshold: 90
 postgresql_backup_betterstack_heartbeat:
+
+postgresql_pg_hba_block: "{{ vault_postgresql_pg_hba_block }}"
 
 # for molecule podman tests
 skip_in_tests: false
