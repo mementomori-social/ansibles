@@ -27,6 +27,9 @@
 - name: Mount device - dir "{{ postgresql_mount_device }}->{{ postgresql_datadir }}"
   ansible.posix.mount:
     path: "{{ postgresql_datadir }}"
+    src: "{{ postgresql_mount_device }}"
+    fstype: "{{ postgresql_mount_fs_type }}"
+    opts: "{{ postgresql_mount_opts }}"
     state: mounted
   when: not skip_in_tests
 
@@ -56,6 +59,9 @@
 - name: Mount device - dir "{{ postgresql_backup_mount_device }}->{{ postgresql_backupdir }}"
   ansible.posix.mount:
     path: "{{ postgresql_backupdir }}"
+    src: "{{ postgresql_backup_mount_device }}"
+    fstype: "{{ postgresql_backup_mount_fs_type }}"
+    opts: "{{ postgresql_backup_mount_opts }}"
     state: mounted
   when: not skip_in_tests
 
@@ -79,6 +85,7 @@
     state: directory
     owner: postgres
     group: postgres
+    mode: '0755'
   register: pg_data_persistent
 
 - name: Stop PostgreSQL service before configuring new data directory
@@ -124,6 +131,12 @@
     state: present
   loop: "{{ postgresql_tunables }}"
   notify: Restart postgresql
+
+- name: Tune access permissions
+  ansible.builtin.blockinfile:
+    path: /etc/postgresql/{{ postgresql_version }}/main/pg_hba.conf
+    marker: "# {mark} ANSIBLE MANAGED BLOCK"
+    block: "{{ postgresql_pg_hba_block }}"
 
 - name: Ensure PostgreSQL is started and enabled
   ansible.builtin.service:
