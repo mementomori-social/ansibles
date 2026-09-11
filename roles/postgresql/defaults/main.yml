@@ -16,7 +16,7 @@ postgresql_port: 5432
 
 postgresql_tunables:
   - key: listen_addresses
-    value: 'localhost,10.222.222.11,10.222.223.20'
+    value: "'localhost,{{ ansible_facts.default_ipv4.address }}'"
   - key: max_connections
     value: 850
   - key: shared_buffers
@@ -27,6 +27,10 @@ postgresql_tunables:
     value: 2GB
   - key: effective_io_concurrency
     value: 200
+  - key: max_worker_processes
+    value: 8
+  - key: max_parallel_workers
+    value: 8
   - key: max_parallel_workers_per_gather
     value: 4
   - key: max_parallel_maintenance_workers
@@ -45,6 +49,14 @@ postgresql_tunables:
     value: 1.1
   - key: effective_cache_size
     value: 24GB
+  - key: log_timezone
+    value: Europe/Helsinki
+  - key: checkpoint_completion_target
+    value: 0.9
+  - key: default_statistics_target
+    value: 100
+  - key: random_page_cost
+    value: 1.1
 
 postgresql_disk_space_limit_gb: 5
 postgresql_betterstack_heartbeat:
