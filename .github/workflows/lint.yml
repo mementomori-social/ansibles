@@ -1,0 +1,38 @@
+---
+name: Lint
+
+"on": [push, pull_request]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.13'
+
+      - name: Install tooling
+        run: pip install ansible-core ansible-lint yamllint
+
+      - name: Install collections
+        run: ansible-galaxy collection install -r collections/requirements.yml
+
+      # ansible.cfg points at .vaultpw, which is not in the repo. Lint never
+      # decrypts anything, it only needs the file to exist.
+      - name: Placeholder vault password
+        run: echo ci > .vaultpw
+
+      - name: yamllint
+        run: yamllint .
+
+      - name: ansible-lint
+        run: ansible-lint
+
+      - name: Playbook syntax
+        run: |
+          for playbook in *.yml; do
+            case "$playbook" in inventory-*) continue ;; esac
+            ansible-playbook --syntax-check -i localhost, "$playbook"
+          done

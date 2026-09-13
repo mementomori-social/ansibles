@@ -1,0 +1,25 @@
+---
+# The gate is syntax and schema, not house style. Convention rules that would
+# mean rewriting files already running in production are skipped. Drop one from
+# the list and fix the code when that is worth doing on its own.
+profile: min
+
+exclude_paths:
+  - collections/ansible_collections/
+  - .ansible/
+
+# molecule/default/inventory.yml is an inventory, not a playbook
+kinds:
+  - yaml: "molecule/*/inventory.yml"
+
+skip_list:
+  - name
+  - var-naming
+  - role-name
+  - schema[meta]
+  - literal-compare
+  - ignore-errors
+  - risky-shell-pipe
+  - risky-file-permissions
+  - partial-become
+  - latest
