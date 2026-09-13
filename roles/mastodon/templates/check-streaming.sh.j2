@@ -1,0 +1,13 @@
+#!/bin/bash
+# Get streaming health
+STREAMING_HEALTH=$(curl -s -X GET https://mementomori.social/api/v1/streaming/health)
+
+# Check if returns OK
+if [[ $STREAMING_HEALTH == *"OK"* ]]; then
+  echo "Streaming is OK"
+  curl https://uptime.betterstack.com/api/v1/heartbeat/{{ vault_mastodon_betterstack_streaming }}
+  exit 0
+else
+  echo "Streaming is not OK"
+  exit 1
+fi

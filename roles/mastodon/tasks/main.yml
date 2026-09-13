@@ -257,7 +257,11 @@
     - flush-dead-jobs.rb
     - mastodon-prune.sh
     - refetch-preview-cards.sh
+    - check-db.sh
+    - check-diskspace.sh
+    - check-elasticsearch.sh
     - check-sidekiq.sh
+    - check-streaming.sh
     - mastodon-build-search-index.sh
 
 - name: Ensure logs dir exists for user
@@ -274,6 +278,7 @@
   ansible.builtin.git:
     repo: 'https://github.com/nanos/FediFetcher'
     dest: "{{ mastodon_home }}/FediFetcher"
+    version: "{{ mastodon_fedifetch_version }}"
 
 - name: Configure Fedifetcher
   ansible.builtin.template:
@@ -282,6 +287,22 @@
     owner: mastodon
     group: mastodon
     mode: '0644'
+
+- name: Ensure upgrade scripts are present
+  become: true
+  become_user: mastodon
+  ansible.builtin.git:
+    repo: 'https://github.com/mementomori-social/upgrade-workflow-automation.git'
+    dest: "{{ mastodon_home }}/upgrade-workflow-automation"
+    version: "{{ mastodon_upgrade_scripts_version }}"
+
+- name: Ensure Finnish mastodon users repo is present
+  become: true
+  become_user: mastodon
+  ansible.builtin.git:
+    repo: 'https://github.com/mementomori-social/finnish-mastodon-users'
+    dest: "{{ mastodon_home }}/finnish-mastodon-users"
+    version: "{{ mastodon_finnish_users_version }}"
 
 - name: Deploy systemd files
   ansible.builtin.template:

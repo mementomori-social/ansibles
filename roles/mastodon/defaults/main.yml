@@ -51,20 +51,30 @@ mastodon_systemd_files:
   - mastodon-streaming@.service
   - mastodon-web.service
   # timers
+  - mastodon-build-search-index.service
+  - mastodon-build-search-index.timer
+  - mastodon-check-db.service
+  - mastodon-check-db.timer
+  - mastodon-check-diskspace.service
+  - mastodon-check-diskspace.timer
+  - mastodon-check-elasticsearch.service
+  - mastodon-check-elasticsearch.timer
+  - mastodon-check-sidekiq.service
+  - mastodon-check-sidekiq.timer
+  - mastodon-check-streaming.service
+  - mastodon-check-streaming.timer
+  - mastodon-fedifetcher.service
+  - mastodon-fedifetcher.timer
+  - mastodon-flush-dead-jobs.service
+  - mastodon-flush-dead-jobs.timer
   - mastodon-media-clear.service
   - mastodon-media-clear.timer
   - mastodon-prune.service
   - mastodon-prune.timer
-  - mastodon-sidekiq-check.service
-  - mastodon-sidekiq-check.timer
-  - mastodon-build-search-index.service
-  - mastodon-build-search-index.timer
-  - mastodon-flush-dead-jobs.service
-  - mastodon-flush-dead-jobs.timer
-  - mastodon-fedifetcher.service
-  - mastodon-fedifetcher.timer
   - mastodon-refetch-preview-cards.service
   - mastodon-refetch-preview-cards.timer
+  - mastodon-sidekiq-restart.service
+  - mastodon-sidekiq-restart.timer
 
 # XXX The following list has such entries commented out which existed on the
 # old server, but were not enabled. Do we need them anymore?
@@ -102,9 +112,13 @@ mastodon_services:
   - mastodon-streaming@4003.service
   - mastodon-web.service
   # timers
+  - mastodon-check-db.timer
+  - mastodon-check-diskspace.timer
+  - mastodon-check-elasticsearch.timer
+  - mastodon-check-sidekiq.timer
+  - mastodon-check-streaming.timer
   - mastodon-media-clear.timer
   - mastodon-prune.timer
-  - mastodon-sidekiq-check.timer
   - mastodon-build-search-index.timer
   - mastodon-flush-dead-jobs.timer
   - mastodon-fedifetcher.timer
@@ -113,6 +127,10 @@ mastodon_services:
 mastodon_fedifetch_access_token: "{{ vault_mastodon_fedifetch_access_token }}"
 mastodon_fedifetch_server: mementomori.social
 mastodon_betterstack_sidekick: "{{ vault_mastodon_betterstack_sidekick }}"
+mastodon_betterstack_db: "{{ vault_mastodon_betterstack_db }}"
+mastodon_betterstack_streaming: "{{ vault_mastodon_betterstack_streaming }}"
+mastodon_betterstack_diskspace: "{{ vault_mastodon_betterstack_diskspace }}"
+mastodon_betterstack_elastic: "{{ vault_mastodon_betterstack_elastic }}"
 
 #
 # Mastodon server settings
@@ -123,11 +141,15 @@ mastodon_secret_key_base: "{{ vault_mastodon_secret_key_base }}"
 mastodon_otp_secret: "{{ vault_mastodon_otp_secret }}"
 mastodon_vapid_private_key: "{{ vault_mastodon_vapid_private_key }}"
 mastodon_vapid_public_key: "{{ vault_mastodon_vapid_public_key }}"
-mastodon_db_host: 10.222.222.10
+mastodon_db_host: 10.222.222.13
 mastodon_db_port: 5432
 mastodon_db_name: "{{ vault_mastodon_db_name }}"
 mastodon_db_user: "{{ vault_mastodon_db_user }}"
 mastodon_db_pass: "{{ vault_mastodon_db_pass }}"
+mastodon_elasticearch_host: 10.222.222.11
+mastodon_elasticearch_port: 9200
+mastodon_elasticearch_user: "{{ vault_mastodon_elasticearch_user }}"
+mastodon_elasticearch_pass: "{{ vault_mastodon_elasticearch_pass }}"
 
 mastodon_web_concurrency: 6
 mastodon_max_threads: 10
@@ -177,3 +199,9 @@ mastodon_experimental_features: inbound_quotes,outgoing_quotes,modern_emojis,wra
 mastodon_captcha_provider: turnstile
 mastodon_turnstile_site_key: "{{ vault_mastodon_turnstile_site_key }}"
 mastodon_turnstile_secret_key: "{{ vault_mastodon_turnstile_secret_key }}"
+
+
+mastodon_upgrade_scripts_version: 621bef1
+mastodon_finnish_users_version: 78ac545
+mastodon_fedifetch_version: d184f8d
+ 
