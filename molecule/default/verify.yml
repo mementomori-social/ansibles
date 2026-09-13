@@ -131,3 +131,113 @@
         that:
           - valkey_check is started
         fail_msg: "Valkey is not running"
+
+- name: Verify nginx
+  hosts: nginx
+  gather_facts: true
+  tags: nginx
+  vars:
+    skip_in_tests: true
+  tasks:
+    - name: Check required packages are installed
+      ansible.builtin.package_facts:
+        manager: auto
+
+    - name: Verify nginx is installed
+      ansible.builtin.assert:
+        that:
+          - "'nginx' in ansible_facts.packages"
+        fail_msg: "nginx package not found"
+
+    - name: Verify nginx service is running
+      ansible.builtin.systemd:
+        name: nginx
+        state: started
+      check_mode: true
+      register: nginx_check
+      failed_when: false
+
+    - name: Assert nginx service is running
+      ansible.builtin.assert:
+        that:
+          - nginx_check is started
+        fail_msg: "nginx is not running"
+
+    - name: Render combined nginx configuration
+      ansible.builtin.command: nginx -T
+      register: nginx_config
+      changed_when: false
+
+    - name: Assert nginx.conf tweaks applied
+      ansible.builtin.assert:
+        that:
+          - "'worker_processes 8;' in nginx_config.stdout"
+          - "'worker_connections 8192;' in nginx_config.stdout"
+          - "'server_tokens off;' in nginx_config.stdout"
+          - "'ssl_protocols TLSv1.2 TLSv1.3;' in nginx_config.stdout"
+        fail_msg: "nginx_mementomori nginx.conf tweaks missing"
+
+    - name: Stat nginx_mementomori config files
+      ansible.builtin.stat:
+        path: "{{ item }}"
+      loop:
+        - /etc/nginx/conf.d/diagnostic-log.conf
+        - /etc/nginx/conf.d/static-asset-ratelimit.conf
+        - /etc/nginx/cors_support
+        - /etc/nginx/snippets/stub-status.conf
+        - /etc/nginx/sites-available/mastodon
+        - /etc/nginx/sites-available/rolle
+      register: nginx_memento_files
+
+    - name: Assert nginx_mementomori config files exist
+      ansible.builtin.assert:
+        that:
+          - nginx_memento_files.results | map(attribute='stat.exists') | list is all
+        fail_msg: "nginx_mementomori config file missing"
+
+    - name: Stat nginx_mementomori site symlinks
+      ansible.builtin.stat:
+        path: "/etc/nginx/sites-enabled/{{ item }}"
+      loop:
+        - mastodon
+        - rolle
+      register: nginx_site_links
+
+    - name: Assert nginx_mementomori site symlinks exist
+      ansible.builtin.assert:
+        that:
+          - nginx_site_links.results | map(attribute='stat.islnk') | list is all
+          - nginx_site_links.results[0].stat.lnk_target == '/etc/nginx/sites-available/mastodon'
+          - nginx_site_links.results[1].stat.lnk_target == '/etc/nginx/sites-available/rolle'
+        fail_msg: "nginx_mementomori site symlink missing"
+
+    - name: Stat bot blocker files
+      ansible.builtin.stat:
+        path: "{{ item }}"
+      loop:
+        - /etc/nginx/conf.d/globalblacklist.conf
+        - /etc/nginx/conf.d/botblocker-nginx-settings.conf
+        - /etc/nginx/bots.d/blockbots.conf
+        - /etc/nginx/bots.d/ddos.conf
+      register: nginx_botblocker_files
+      when: nginx_mementomori_bot_blocker_enabled | default(false)
+
+    - name: Assert bot blocker files exist
+      ansible.builtin.assert:
+        that:
+          - nginx_botblocker_files.results | map(attribute='stat.exists') | list is all
+        fail_msg: "bot blocker file missing"
+      when: nginx_mementomori_bot_blocker_enabled | default(false)
+
+    - name: Stat nginx_mementomori timer units
+      ansible.builtin.stat:
+        path: "/etc/systemd/system/mementomori-{{ item }}.timer"
+      loop:
+        - certbot-renew
+      register: nginx_timer_units
+
+    - name: Assert nginx_mementomori timer units exist
+      ansible.builtin.assert:
+        that:
+          - nginx_timer_units.results | map(attribute='stat.exists') | list is all
+        fail_msg: "nginx_mementomori timer unit missing"

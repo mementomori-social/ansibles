@@ -1,0 +1,203 @@
+# SPDX-License-Identifier: MIT-0
+---
+- name: Install nginx
+  ansible.builtin.apt:
+    name:
+      - nginx
+      - libnginx-mod-http-brotli-filter
+      - libnginx-mod-http-brotli-static
+    state: present
+    update_cache: true
+
+- name: Ensure nginx directories exist
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+  loop:
+    - /etc/nginx/conf.d
+    - /etc/nginx/snippets
+    - /etc/nginx/sites-available
+    - /etc/nginx/sites-enabled
+
+- name: Apply nginx.conf tunables
+  ansible.builtin.lineinfile:
+    path: /etc/nginx/nginx.conf
+    regexp: "{{ item.regexp | default(omit) }}"
+    insertafter: "{{ item.insertafter | default(omit) }}"
+    line: "\t{{ item.key }} {{ item.value }};"
+  loop: "{{ nginx_mementomori_tunables }}"
+  notify: Reload nginx
+
+- name: Drop hardcoded brotli load_module lines
+  ansible.builtin.lineinfile:
+    path: /etc/nginx/nginx.conf
+    regexp: '^\s*load_module modules/ngx_http_brotli_(filter|static)_module\.so;\s*$'
+    state: absent
+  notify: Reload nginx
+
+- name: Enable brotli compression settings
+  ansible.builtin.blockinfile:
+    path: /etc/nginx/nginx.conf
+    insertbefore: '^\s*#\s*Virtual Host Configs\s*$'
+    marker: "# {mark} ANSIBLE MANAGED BLOCK: brotli"
+    block: |
+      ##
+      # Brotli settings
+      ##
+      brotli on;
+      brotli_static on;
+      brotli_types
+      {% for t in nginx_mementomori_brotli_types[:-1] %}
+      {{ t }}
+      {% endfor %}
+      {{ nginx_mementomori_brotli_types[-1] }};
+  notify: Reload nginx
+
+- name: Install diagnostic cache-status log
+  ansible.builtin.copy:
+    src: diagnostic-log.conf
+    dest: /etc/nginx/conf.d/diagnostic-log.conf
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Reload nginx
+
+- name: Install static asset rate limit zone
+  ansible.builtin.copy:
+    src: static-asset-ratelimit.conf
+    dest: /etc/nginx/conf.d/static-asset-ratelimit.conf
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Reload nginx
+
+- name: Install stub status snippet
+  ansible.builtin.copy:
+    src: stub-status.conf
+    dest: /etc/nginx/snippets/stub-status.conf
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Reload nginx
+
+- name: Deploy mastodon virtual host
+  ansible.builtin.template:
+    src: sites-available/mastodon.j2
+    dest: /etc/nginx/sites-available/mastodon
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Reload nginx
+
+- name: Deploy rolle virtual host
+  ansible.builtin.template:
+    src: sites-available/rolle.j2
+    dest: /etc/nginx/sites-available/rolle
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Reload nginx
+
+- name: Enable virtual host symlinks
+  ansible.builtin.file:
+    src: "/etc/nginx/sites-available/{{ item }}"
+    dest: "/etc/nginx/sites-enabled/{{ item }}"
+    owner: root
+    group: root
+    state: link
+  loop:
+    - mastodon
+    - rolle
+  notify: Reload nginx
+
+- name: Deploy timer service units
+  ansible.builtin.template:
+    src: mementomori-timer.service.j2
+    dest: "/etc/systemd/system/mementomori-{{ item.name }}.service"
+    owner: root
+    group: root
+    mode: '0644'
+  loop: "{{ nginx_mementomori_timers }}"
+  when: item.enabled | default(true)
+  notify: Reload systemd
+
+- name: Deploy timer units
+  ansible.builtin.template:
+    src: mementomori-timer.timer.j2
+    dest: "/etc/systemd/system/mementomori-{{ item.name }}.timer"
+    owner: root
+    group: root
+    mode: '0644'
+  loop: "{{ nginx_mementomori_timers }}"
+  when: item.enabled | default(true)
+  notify: Reload systemd
+
+- name: Enable and start timers
+  ansible.builtin.systemd_service:
+    name: "mementomori-{{ item.name }}.timer"
+    state: started
+    enabled: true
+    daemon_reload: true
+  loop: "{{ nginx_mementomori_timers }}"
+  when:
+    - item.enabled | default(true)
+    - not nginx_mementomori_skip_systemd
+
+- name: Install nginx-ultimate-bad-bot-blocker
+  ansible.builtin.include_tasks: install-bot-blocker.yml
+  when: nginx_mementomori_bot_blocker_enabled
+
+#
+# We don't want to do letsencrypt on test servers not to interfere
+# with production certs.
+#
+- name: Obtain Let's Encrypt certificates before nginx starts
+  ansible.builtin.include_tasks: letsencrypt.yml
+  when: nginx_mementomori_letsencrypt_enabled
+
+#
+# Test-only path: the virtual hosts reference /etc/letsencrypt/live/<name>/
+# certificates, so when Let's Encrypt is skipped (skip_in_tests) we create
+# throwaway self-signed certs for those paths so `nginx -t` can validate.
+#
+- name: Create certificate directories for virtual hosts when skipping Let's Encrypt
+  ansible.builtin.file:
+    path: "/etc/letsencrypt/live/{{ item.name }}"
+    state: directory
+    owner: root
+    group: root
+    mode: '0700'
+  loop: "{{ nginx_mementomori_letsencrypt_certs }}"
+  when: skip_in_tests | default(false) | bool
+
+- name: Install openssl for placeholder certificate generation
+  ansible.builtin.apt:
+    name: openssl
+    state: present
+  when: skip_in_tests | default(false) | bool
+
+- name: Create placeholder certificates when Letsencrypt is disabled in tests
+  ansible.builtin.command:
+    cmd: >-
+      openssl req -x509 -newkey rsa:2048 -nodes -days 3650
+      -subj /CN={{ item.name }}
+      -keyout /etc/letsencrypt/live/{{ item.name }}/privkey.pem
+      -out /etc/letsencrypt/live/{{ item.name }}/fullchain.pem
+    creates: "/etc/letsencrypt/live/{{ item.name }}/fullchain.pem"
+  loop: "{{ nginx_mementomori_letsencrypt_certs }}"
+  when: skip_in_tests | default(false) | bool
+
+- name: Validate nginx configuration
+  ansible.builtin.command: nginx -t
+  register: nginx_mementomori_nginx_test
+  changed_when: false
+  failed_when: nginx_mementomori_nginx_test.rc != 0
+
+- name: Start and enable nginx
+  ansible.builtin.systemd_service:
+    name: nginx
+    state: started
+    enabled: true
