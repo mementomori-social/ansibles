@@ -1,0 +1,10 @@
+#!/bin/bash
+COMMAND=`pg_isready -d mastodon_production -h {{mastodon_db_host }} -p {{ mastodon_db_port }} -U postgres`
+
+if [ "$COMMAND" == "{{mastodon_db_host }}:{{ mastodon_db_port }} - accepting connections" ]; then
+  echo "DB is OK"
+  curl https://uptime.betterstack.com/api/v1/heartbeat/{{ mastodon_betterstack_db }}
+else
+  echo "DB is not OK"
+  exit 1
+fi

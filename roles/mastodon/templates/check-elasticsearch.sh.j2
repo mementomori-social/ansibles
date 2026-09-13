@@ -1,0 +1,20 @@
+#!/bin/bash
+# Check if elasticsearch is running
+ELASTICSEARCH_HOST="{{mastodon_elasticearch_host}}"
+ELASTICSEARCH_PORT="{{ mastodon_elasticearch_port }}"
+ELASTICSEARCH_URL="http://$ELASTICSEARCH_HOST:$ELASTICSEARCH_PORT"
+ELASTICSEARCH_USERNAME="{{ vault_mastodon_elasticearch_user }}"
+ELASTICSEARCH_PASSWORD="{{ vault_mastodon_elasticearch_pass }}"
+
+# Check with curl
+ELASTICSEACH_COMMAND=`curl -s -u $ELASTICSEARCH_USERNAME:$ELASTICSEARCH_PASSWORD $ELASTICSEARCH_URL/_cluster/health?pretty`
+
+# Check if elasticsearch is running
+if [[ $ELASTICSEACH_COMMAND == *"timed out"* ]]; then
+    echo "Elasticsearch is not running"
+    exit 1
+else
+    echo "Elasticsearch is running"
+    curl https://uptime.betterstack.com/api/v1/heartbeat/{{ mastodon_betterstack_elastic }};
+    exit 0
+fi

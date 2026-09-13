@@ -1,0 +1,31 @@
+#!/bin/bash
+# set -x
+# Shell script to monitor or watch the disk space
+ALERT=90
+# Exclude list of unwanted monitoring, if several partions then use "|" to separate the partitions.
+# An example: EXCLUDE_LIST="/dev/hdd1|/dev/hdc5"
+EXCLUDE_LIST="^Filesystem|mnt|sda15|sdc|sdb|tmpfs|cdrom|udev|tmpfs|/dev/loop1/dev/loop0/dev/loop2|/dev/loop4|/dev/loop5|/dev/loop6|loop"
+
+function main_prog() {
+while read output;
+do
+#echo $output
+  usep=$(echo $output | awk '{ print $1}' | cut -d'%' -f1)
+  partition=$(echo $output | awk '{print $2}')
+  if [ $usep -ge $ALERT ];
+  then
+     # Needs empty echo statement
+     echo "Disk space NOT OK.";
+  else
+    # As OK, send heartbeat
+    echo "Disk space OK."
+    curl https://uptime.betterstack.com/api/v1/heartbeat/{{ mastodon_betterstack_diskspace }};
+  fi
+done
+}
+
+if [ "$EXCLUDE_LIST" != "" ] ; then
+  df -H | grep -vE "${EXCLUDE_LIST}" | awk '{print $5 " " $6}' | main_prog
+else
+  df -H | grep -vE "^Filesystem|tmpfs|cdrom" | awk '{print $5 " " $6}' | main_prog
+fi

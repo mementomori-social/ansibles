@@ -1,0 +1,22 @@
+[Unit]
+Description=Check sidekiq health
+After=network.target
+
+[Service]
+Type=oneshot
+User=mastodon
+WorkingDirectory={{ mastodon_home }}/live
+ExecStart=systemctl restart mastodon-sidekiq-1-default@35
+ExecStart=systemctl restart mastodon-sidekiq-2-default@35
+ExecStart=systemctl restart mastodon-sidekiq-1-ingress@25
+ExecStart=systemctl restart mastodon-sidekiq-2-ingress@25
+ExecStart=systemctl restart mastodon-sidekiq-push@35
+ExecStart=systemctl restart mastodon-sidekiq-pull@40
+ExecStart=systemctl restart mastodon-sidekiq-mailers@20
+ExecStart=systemctl restart mastodon-sidekiq-scheduler@5
+ExecStart=systemctl restart mastodon-sidekiq-fasp@1
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
