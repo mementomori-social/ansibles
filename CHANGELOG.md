@@ -1,3 +1,7 @@
+### 1.0.1: 2026-09-13
+
+* Search index script uses the correct live path, Ref: [MEM-12](https://linear.app/mementomori-ry/issue/MEM-12)
+
 ### 1.0.0: 2026-09-06
 
 * Server domain in create playbooks is mementomori.social, Ref: [MEM-5](https://linear.app/mementomori-ry/issue/MEM-5)
