@@ -52,6 +52,18 @@ all:
           - ssh
         container_log_driver: json-file
         container_systemd: false
+    nginx:
+      hosts:
+        # The Mastodon server is also the nginx host, so the two roles run
+        # on the same container in the Mastodon server test.
+        mastodon-0: {}
+      vars:
+        required_packages:
+          - python3
+          - systemd
+          - ssh
+        container_log_driver: json-file
+        container_systemd: false
     # matrix:
     #   hosts:
     #     chat:

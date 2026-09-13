@@ -1,0 +1,62 @@
+#SPDX-License-Identifier: MIT-0
+---
+# Install nginx-ultimate-bad-bot-blocker.
+# https://github.com/mitchellkrogza/nginx-ultimate-bad-bot-blocker
+#
+# Downloads the same files the upstream install-ngxblocker script fetches
+# (see include_filelist.txt): the global blacklist and settings go into
+# conf.d/, the bots.d/ rule sets are served under /etc/nginx/bots.d/, and the
+# install/setup/update scripts land in /usr/local/sbin.
+#
+# Vhost wiring is intentionally NOT done here: site configs include the
+# blocker from inside their server blocks (roles/nginx does it for the
+# mastodon and rolle sites):
+#
+#   include /etc/nginx/bots.d/ddos.conf;
+#   include /etc/nginx/bots.d/blockbots.conf;
+#
+# Keeping the includes out of this role avoids defining the shared
+# limit_req/limit_conn zones more than once.
+#
+# The daily blacklist refresh is handled by the mementomori-update-ngxblocker
+# timer in this role, which runs /usr/local/sbin/update-ngxblocker -n.
+
+- name: Ensure bot blocker directories exist
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+  loop:
+    - /etc/nginx/bots.d
+    - /usr/local/sbin
+
+- name: Install bot blocker scripts
+  ansible.builtin.get_url:
+    url: "{{ nginx_mementomori_bot_blocker_url }}/{{ item }}"
+    dest: "/usr/local/sbin/{{ item }}"
+    owner: root
+    group: root
+    mode: '0755'
+  loop: "{{ nginx_mementomori_bot_blocker_scripts }}"
+
+- name: Install bot blocker conf.d files
+  ansible.builtin.get_url:
+    url: "{{ nginx_mementomori_bot_blocker_url }}/conf.d/{{ item }}"
+    dest: "/etc/nginx/conf.d/{{ item }}"
+    owner: root
+    group: root
+    mode: '0644'
+  loop: "{{ nginx_mementomori_bot_blocker_confd_files }}"
+  notify: Reload nginx
+
+- name: Install bot blocker bots.d files
+  ansible.builtin.get_url:
+    url: "{{ nginx_mementomori_bot_blocker_url }}/bots.d/{{ item }}"
+    dest: "/etc/nginx/bots.d/{{ item }}"
+    owner: root
+    group: root
+    mode: '0644'
+  loop: "{{ nginx_mementomori_bot_blocker_bot_files }}"
+  notify: Reload nginx

@@ -1,0 +1,21 @@
+#SPDX-License-Identifier: MIT-0
+[Unit]
+Description={{ item.description | default(item.name) }}
+{% if item.schedule is defined %}After=network.target
+{% endif %}
+[Service]
+Type=oneshot
+ExecStart={{ item.command }}
+{% if item.output is defined and item.output == 'discard' %}
+StandardOutput=null
+StandardError=null
+{% endif %}
+{% if item.remain_after_exit is defined and item.remain_after_exit %}
+RemainAfterExit=yes
+{% endif %}
+{% if item.user is defined and item.user %}
+User={{ item.user }}
+{% endif %}
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,14 @@
+#SPDX-License-Identifier: MIT-0
+[Unit]
+Description={{ item.description | default(item.name) }}
+
+[Timer]
+{% if item.boot_delay is defined and item.boot_delay %}
+OnBootSec={{ item.boot_delay }}s
+{% else %}
+OnCalendar={{ item.schedule }}
+Persistent=true
+{% endif %}
+
+[Install]
+WantedBy=timers.target

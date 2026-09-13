@@ -1,0 +1,78 @@
+# SPDX-License-Identifier: MIT-0
+---
+
+- name: Assert letsencrypt credentials are present
+  ansible.builtin.assert:
+    that:
+      - nginx_mementomori_letsencrypt_email | length > 0
+      - nginx_mementomori_cloudflare_api_token | length > 0
+    fail_msg: >-
+      nginx_mementomori_letsencrypt is enabled but the vault variables
+      vault_nginx_letsencrypt_email and vault_nginx_cloudflare_api_token are
+      not set. Add them to secrets/vault.yml, or set
+      nginx_mementomori_letsencrypt_enabled: false.
+
+- name: Install certbot and Cloudflare DNS plugin
+  ansible.builtin.apt:
+    name:
+      - certbot
+      - python3-certbot-dns-cloudflare
+    state: present
+    update_cache: true
+
+- name: Create certbot Cloudflare credentials file
+  ansible.builtin.template:
+    src: cloudflare.ini.j2
+    dest: /etc/letsencrypt/cloudflare.ini
+    owner: root
+    group: root
+    mode: '0600'
+
+- name: Create certbot cli.ini
+  ansible.builtin.copy:
+    content: |
+      # Because we are using logrotate for greater flexibility, disable the
+      # internal certbot logrotation.
+      max-log-backups = 0
+      # Adjust interactive output regarding automated renewal
+      preconfigured-renewal = True
+    dest: /etc/letsencrypt/cli.ini
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Check for existing certificates
+  ansible.builtin.stat:
+    path: "/etc/letsencrypt/live/{{ item.name }}/fullchain.pem"
+  loop: "{{ nginx_mementomori_letsencrypt_certs }}"
+  register: nginx_mementomori_le_cert_stat
+
+- name: Obtain certificates via Cloudflare DNS-01
+  ansible.builtin.command:
+    cmd: >-
+      certbot certonly --non-interactive --agree-tos
+      --email {{ nginx_mementomori_letsencrypt_email }}
+      --dns-cloudflare
+      --dns-cloudflare-credentials /etc/letsencrypt/cloudflare.ini
+      --dns-cloudflare-propagation-seconds {{ nginx_mementomori_letsencrypt_propagation_seconds }}
+      --cert-name {{ item.item.name }}
+      -d {{ item.item.domains | join(' -d ') }}
+      --keep-until-expiring
+  loop: "{{ nginx_mementomori_le_cert_stat.results }}"
+  when: not item.stat.exists
+  register: nginx_mementomori_le_cert_result
+  changed_when: "'Certificate not yet due for renewal' not in nginx_mementomori_le_cert_result.stdout"
+  failed_when: nginx_mementomori_le_cert_result.rc != 0
+
+- name: Ensure cert renewal script
+  ansible.builtin.copy:
+    dest: /usr/local/bin/certbot-renew.sh
+    content: |
+      #!/bin/bash
+      # Sleep for random amount of minutes
+      sleep $[($RANDOM % 15) + 1]m
+      /usr/bin/certbot renew --quiet --no-self-upgrade
+      service nginx reload
+    mode: '0755'
+    owner: root
+    group: root

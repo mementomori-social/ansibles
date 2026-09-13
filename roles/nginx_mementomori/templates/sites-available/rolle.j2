@@ -1,0 +1,41 @@
+# Bluesky AT Protocol for rolle.mementomori.social
+# https://bsky-debug.app/handle?handle=rolle.mementomori.social
+# https://fed.brid.gy/settings
+server {
+    listen 80;
+    listen [::]:80;
+    server_name rolle.mementomori.social;
+
+    root {{ nginx_mementomori_mastodon_home }}/live/public;
+
+    location /.well-known/acme-challenge/ { 
+        allow all; 
+    }
+
+    location / {
+        return 301 https://$host$request_uri;
+    }
+}
+
+server {
+    listen 443 ssl http2;
+    listen [::]:443 ssl http2;
+    server_name rolle.mementomori.social;
+
+    ssl_certificate /etc/letsencrypt/live/rolle.mementomori.social/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/rolle.mementomori.social/privkey.pem;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers HIGH:!MEDIUM:!LOW:!aNULL:!NULL:!SHA;
+    ssl_prefer_server_ciphers on;
+    ssl_session_cache shared:SSL:10m;
+    ssl_session_tickets off;
+
+    location /.well-known/atproto-did {
+        default_type text/plain;
+        alias {{ nginx_mementomori_mastodon_home }}/atproto-did-rolle;
+    }
+
+    location / {
+        return 301 https://mementomori.social/@rolle;
+    }
+}

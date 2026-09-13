@@ -10,6 +10,13 @@
     skip_in_tests: true
   ansible.builtin.import_playbook: ../../mastodon.yml
 
+- name: Nginx
+  tags: nginx
+  vars:
+    skip_in_tests: true
+    nginx_mementomori_letsencrypt_enabled: false
+  ansible.builtin.import_playbook: ../../nginx.yml
+
 - name: Postgresql
   tags: postgresql
   vars:
