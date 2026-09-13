@@ -1,6 +1,6 @@
 # Mementomori automation playbooks
 
-[![Lint](https://img.shields.io/github/actions/workflow/status/mementomori-social/ansibles/lint.yml?style=for-the-badge&label=lint)](https://github.com/mementomori-social/ansibles/actions/workflows/lint.yml)
+[![Build](https://img.shields.io/github/actions/workflow/status/mementomori-social/ansibles/lint.yml?style=for-the-badge&label=build)](https://github.com/mementomori-social/ansibles/actions/workflows/lint.yml)
 
 This repo contains ansible automation to setup and maintain
 [mementomori mastodon instance](https://mementomori.social) infra.
