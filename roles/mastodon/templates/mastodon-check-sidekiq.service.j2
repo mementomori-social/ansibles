@@ -1,12 +1,12 @@
 [Unit]
-Description=Check DB
+Description=Check Sidekiq
 After=network.target
 
 [Service]
 Type=oneshot
 User=mastodon
 WorkingDirectory={{ mastodon_home }}/
-ExecStart=/bin/bash {{ mastodon_home }}/bin/check-db.sh
+ExecStart=/bin/bash {{ mastodon_home }}/bin/check-sidekiq.sh
 StandardOutput=journal
 StandardError=journal
 
