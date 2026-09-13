@@ -1,6 +1,7 @@
 ### 1.1.0: 2026-09-13
 
 * Lint config and CI workflow, Ref: [MEM-50](https://linear.app/mementomori-ry/issue/MEM-50)
+* Build badge in README, Ref: [MEM-50](https://linear.app/mementomori-ry/issue/MEM-50)
 * Search index script uses the correct live path, Ref: [MEM-12](https://linear.app/mementomori-ry/issue/MEM-12)
 
 ### 1.0.0: 2026-09-06
