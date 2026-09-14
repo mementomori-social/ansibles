@@ -204,4 +204,3 @@ mastodon_turnstile_secret_key: "{{ vault_mastodon_turnstile_secret_key }}"
 mastodon_upgrade_scripts_version: 621bef1
 mastodon_finnish_users_version: 78ac545
 mastodon_fedifetch_version: d184f8d
- 
