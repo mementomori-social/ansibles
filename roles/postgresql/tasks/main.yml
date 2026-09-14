@@ -155,6 +155,14 @@
     group: root
     mode: '0755'
 
+- name: Create DB credentials file for backup-db.sh
+  ansible.builtin.copy:
+    dest: /root/.pgpass
+    content: "localhost:5432:{{ postgresql_mastodon_db_name }}:{{ postgresql_mastodon_db_user }}:{{ postgresql_mastodon_db_pass }}"
+    mode: '0600'
+    owner: root
+    group: root
+
 - name: Deploy backup-db.sh script
   ansible.builtin.template:
     src: scripts/backup-db.sh.j2

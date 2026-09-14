@@ -1,19 +1,9 @@
 #!/bin/bash
 
 # Variables
-txtbold=$(tput bold)
-boldyellow=${txtbold}$(tput setaf 3)
-boldgreen=${txtbold}$(tput setaf 2)
-boldwhite=${txtbold}$(tput setaf 7)
-yellow=$(tput setaf 3)
-red=$(tput setaf 1)
-green=$(tput setaf 2)
-white=$(tput setaf 7)
-txtreset=$(tput sgr0)
-
 # Check if required mount exists
 if ! mountpoint -q {{ postgresql_backupdir }}; then
-    echo "${red}Error: Backup drive is not mounted at {{ postgresql_backupdir }}${txtreset}"
+    echo "Error: Backup drive is not mounted at {{ postgresql_backupdir }}"
     exit 1
 fi
 
@@ -25,26 +15,26 @@ cleanup_old_backups() {
     local threshold={{ postgresql_backup_diskspace_threshold }}
     local usage=$(df -h "$backup_dir" | awk 'NR==2 {print $5}' | cut -d'%' -f1)
 
-    echo "${yellow}Starting cleanup. Current disk usage: ${usage}%${txtreset}"
+    echo "Starting cleanup. Current disk usage: ${usage}%"
 
     while [ "$usage" -gt "$threshold" ]; do
         # Find and delete the oldest backup directory
         oldest_backup=$(find "$backup_dir" -maxdepth 1 -type d -name "mastodon_production_*.backup" -printf '%T+ %p\n' | sort | head -1 | cut -d' ' -f2-)
 
         if [ -z "$oldest_backup" ]; then
-            echo "${red}No more backups to clean up${txtreset}"
+            echo "No more backups to clean up"
             break
         fi
 
-        echo "${yellow}Removing old backup: $(basename "$oldest_backup")${txtreset}"
+        echo "Removing old backup: $(basename "$oldest_backup")"
         rm -rf "$oldest_backup"
 
         # Recalculate usage after deletion
         usage=$(df -h "$backup_dir" | awk 'NR==2 {print $5}' | cut -d'%' -f1)
-        echo "${yellow}Current disk usage after deletion: ${usage}%${txtreset}"
+        echo "Current disk usage after deletion: ${usage}%"
     done
 
-    echo "${boldgreen}Cleanup complete. Current disk usage: ${usage}%${txtreset}"
+    echo "Cleanup complete. Current disk usage: ${usage}%"
 
     # Return failure if we couldn't get under threshold
     [ "$usage" -le "$threshold" ]
@@ -52,7 +42,7 @@ cleanup_old_backups() {
 
 # Run cleanup
 if ! cleanup_old_backups; then
-    echo "${red}Warning: Error while cleaning up old backups${txtreset}"
+    echo "Warning: Error while cleaning up old backups"
 fi
 
 # Check disk space usage
@@ -62,7 +52,7 @@ check_disk_space() {
     local usage=$(df -h "$mount_point" | awk 'NR==2 {print $5}' | cut -d'%' -f1)
 
     if [ "$usage" -gt "$threshold" ]; then
-        echo "${red}Error: $mount_point is ${usage}% full (threshold: ${threshold}%)${txtreset}"
+        echo "Error: $mount_point is ${usage}% full (threshold: ${threshold}%)"
         return 1
     fi
     return 0
@@ -70,20 +60,20 @@ check_disk_space() {
 
 # Check storage space on mount point
 if ! check_disk_space "{{ postgresql_backupdir }}"; then
-    echo "${red}Please free up space on backup drive before running backup${txtreset}"
+    echo "Please free up space on backup drive before running backup"
     exit 1
 fi
 
 # Backup to directory format
-echo "${boldyellow}Creating directory format backup with parallel jobs...${txtreset}"
+echo "Creating directory format backup with parallel jobs..."
 if ! sudo ionice -c2 -n7 nice -n19 pg_dump --host={{ postgresql_host }} --username mastodon --port {{ postgresql_port }} --dbname mastodon_production --verbose --jobs=2 --compress=5 --format=directory --file="{{ postgresql_backupdir }}/mastodon_production_$(date +\%Y\-%m\-%d\_%H-%M).backup"; then
-    echo "${red}Error: Directory format backup failed${txtreset}"
+    echo "Error: Directory format backup failed"
     exit 1
 fi
 
-echo "${boldgreen}Backup complete.${txtreset}"
+echo "Backup complete."
 
 # Send a heartbeat on success
-echo "${boldyellow}Sending heartbeat...${txtreset}"
+echo "Sending heartbeat..."
 curl https://uptime.betterstack.com/api/v1/heartbeat/{{ postgresql_backup_betterstack_heartbeat }}
-echo "${boldgreen}Heartbeat sent.${txtreset}"
+echo "Heartbeat sent."
