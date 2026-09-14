@@ -2,6 +2,7 @@
 
 * Lint config and CI workflow, Ref: [MEM-50](https://linear.app/mementomori-ry/issue/MEM-50)
 * Search index cron logs and stops on error, Ref: [MEM-31](https://linear.app/mementomori-ry/issue/MEM-31)
+* Mastodon role points at the live fork branch, Ref: [MEM-33](https://linear.app/mementomori-ry/issue/MEM-33)
 * Build badge in README, Ref: [MEM-50](https://linear.app/mementomori-ry/issue/MEM-50)
 * Search index script uses the correct live path, Ref: [MEM-12](https://linear.app/mementomori-ry/issue/MEM-12)
 
