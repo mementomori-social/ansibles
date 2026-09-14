@@ -1,10 +1,16 @@
 #!/bin/bash
+# Exits on first failure and logs, so a broken run is visible instead of silent.
+set -euo pipefail
 
-# Go to folder
-cd {{ mastodon_home }}/live;
+LOG={{ mastodon_home }}/logs/build-search-index.log
+exec >>"$LOG" 2>&1
+echo "--- $(date -Is) starting ---"
 
-# Run the command
+cd {{ mastodon_home }}/live
+
 # https://github.com/VyrCossont/mastodon/pull/8
-RAILS_ENV=production {{ mastodon_home }}/live/bin/tootctl search deploy --concurrency 16 --batch_size 4096;
-RAILS_ENV=production {{ mastodon_home }}/live/bin/tootctl search deploy --only accounts --concurrency 16 --batch_size 4096;
-RAILS_ENV=production {{ mastodon_home }}/live/bin/tootctl search deploy --only statuses --concurrency 16 --batch_size 4096;
+RAILS_ENV=production {{ mastodon_home }}/live/bin/tootctl search deploy --concurrency 16 --batch_size 4096
+RAILS_ENV=production {{ mastodon_home }}/live/bin/tootctl search deploy --only accounts --concurrency 16 --batch_size 4096
+RAILS_ENV=production {{ mastodon_home }}/live/bin/tootctl search deploy --only statuses --concurrency 16 --batch_size 4096
+
+echo "--- $(date -Is) done ---"
