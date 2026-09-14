@@ -14,6 +14,11 @@ postgresql_service: postgresql
 postgresql_host: localhost
 postgresql_port: 5432
 
+postgresql_mastodon_db_name: "{{ vault_mastodon_db_name }}"
+postgresql_mastodon_db_user: "{{ vault_mastodon_db_user }}"
+postgresql_mastodon_db_pass: "{{ vault_mastodon_db_pass }}"
+
+
 postgresql_tunables:
   - key: listen_addresses
     value: "'localhost,{{ ansible_facts.default_ipv4.address }}'"
