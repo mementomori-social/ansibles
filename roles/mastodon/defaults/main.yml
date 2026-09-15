@@ -182,7 +182,7 @@ mastodon_s3_alias_host: media.mementomori.social
 mastodon_s3_disable_checksum_mode: 'true'
 mastodon_deepl_api_key: "{{ vault_mastodon_deepl_api_key }}"
 mastodon_deepl_plan: pro
-mastodon_version_metadata: mementomods-2026-09-06
+mastodon_version_metadata: mementomods-2026-09-15
 mastodon_github_repository: mastodon/mastodon/compare/main...mementomori-social/mastodon:"{{ mastodon_version_metadata }}"
 mastodon_fetch_replies_enabled: 'true'
 mastodon_fetch_replies_cooldown_minutes: 15

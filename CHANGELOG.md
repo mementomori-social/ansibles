@@ -1,3 +1,7 @@
+### 1.1.1: 2026-09-15
+
+* Mastodon role points at the 2026-09-15 fork branch
+
 ### 1.1.0: 2026-09-13
 
 * Lint config and CI workflow, Ref: [MEM-50](https://linear.app/mementomori-ry/issue/MEM-50)
