@@ -1,0 +1,8 @@
+# {{ ansible_managed }}
+
+[global]
+  hostname = {{ ansible_facts['hostname'] }}
+  dbengine multihost disk space = {{ netdata_dbengine_multihost_disk_space }}
+
+[web]
+  mode = {{ netdata_web_mode }}

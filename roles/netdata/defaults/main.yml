@@ -1,0 +1,17 @@
+# SPDX-License-Identifier: MIT-0
+---
+netdata_apt_uri: "https://repository.netdata.cloud/repos/stable/ubuntu/"
+netdata_apt_key_url: "https://repository.netdata.cloud/netdatabot.gpg.key"
+netdata_apt_suite: "resolute/"
+netdata_packages:
+  - netdata
+netdata_service: netdata
+
+netdata_dbengine_multihost_disk_space: 256
+netdata_web_mode: none
+
+netdata_cloud_claim_token: "{{ vault_netdata_token }}"
+netdata_cloud_claim_rooms: "{{ vault_netdata_rooms }}"
+netdata_cloud_claim_url: "https://app.netdata.cloud"
+
+skip_in_tests: false

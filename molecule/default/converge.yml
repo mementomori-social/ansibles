@@ -34,3 +34,9 @@
   vars:
     skip_in_tests: true
   ansible.builtin.import_playbook: ../../elasticsearch.yml
+
+- name: Netdata
+  tags: netdata
+  vars:
+    skip_in_tests: true
+  ansible.builtin.import_playbook: ../../netdata.yml

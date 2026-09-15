@@ -1,0 +1,13 @@
+# SPDX-License-Identifier: MIT-0
+---
+- name: Restart netdata
+  ansible.builtin.service:
+    name: "{{ netdata_service }}"
+    state: restarted
+  when: not skip_in_tests
+
+- name: Reload netdata
+  ansible.builtin.service:
+    name: "{{ netdata_service }}"
+    state: reloaded
+  when: not skip_in_tests
