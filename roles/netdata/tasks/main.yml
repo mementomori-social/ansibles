@@ -1,0 +1,49 @@
+# SPDX-License-Identifier: MIT-0
+---
+- name: Ensure prerequisite packages are installed
+  ansible.builtin.apt:
+    name:
+      - apt-transport-https
+      - python3-debian
+    state: present
+    update_cache: true
+
+- name: Add Netdata apt repository
+  ansible.builtin.deb822_repository:
+    name: netdata
+    types: deb
+    uris: "{{ netdata_apt_uri }}"
+    suites: "{{ netdata_apt_suite }}"
+    signed_by: "{{ netdata_apt_key_url }}"
+
+- name: Ensure Netdata packages are installed
+  ansible.builtin.apt:
+    name: "{{ netdata_packages }}"
+    state: present
+    update_cache: true
+
+- name: Deploy netdata.conf
+  ansible.builtin.template:
+    src: netdata.conf.j2
+    dest: /etc/netdata/netdata.conf
+    owner: root
+    group: netdata
+    mode: "0640"
+  notify: Restart netdata
+
+- name: Deploy claim.conf for Netdata Cloud
+  ansible.builtin.template:
+    src: claim.conf.j2
+    dest: /etc/netdata/claim.conf
+    owner: root
+    group: netdata
+    mode: "0640"
+  when: netdata_cloud_claim_token | length > 0
+  notify: Restart netdata
+
+- name: Ensure Netdata is started and enabled
+  ansible.builtin.service:
+    name: "{{ netdata_service }}"
+    state: started
+    enabled: true
+  when: not skip_in_tests
