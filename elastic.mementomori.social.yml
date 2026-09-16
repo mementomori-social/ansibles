@@ -1,0 +1,9 @@
+# SPDX-License-Identifier: MIT-0
+---
+- name: Configure elasticsearch server
+  hosts: elastic
+  become: true
+  roles:
+    - common
+    - netdata
+    - elasticsearch

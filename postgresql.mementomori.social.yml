@@ -1,0 +1,9 @@
+# SPDX-License-Identifier: MIT-0
+---
+- name: Configure postgresql server
+  hosts: postgresql.mementomori.social
+  become: true
+  roles:
+    - common
+    - netdata
+    - postgresql
