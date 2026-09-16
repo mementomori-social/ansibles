@@ -1,0 +1,20 @@
+# SPDX-License-Identifier: MIT-0
+---
+wg_interface: wg0
+wg_port: 51820
+wg_address: 10.222.223.1/24
+wg_server_private_key: "{{ lookup('vars', 'vault_wg_server_private_key', default='') }}"
+wg_peers:
+  - name: ikke
+    public_key: "xBFlPqzgePxiNjrMlUZ+YcTiXtx1ZmTHFRwGBhEcAGA="
+    allowed_ips: 10.222.223.10/32
+  - name: rolle
+    public_key: "qwGPb07dsiY1nDeKCQMNNXgTMQ70dVh8VQXY6ndnQ0w="
+    allowed_ips: 10.222.223.11/32
+  - name: possu
+    public_key: "LWJgng7Mb1PLVEyzJbuDlKnYVi2XOEj1YcWEPTikAyU="
+    allowed_ips: 10.222.223.20/32, 10.0.0.4/32
+  - name: mastodon
+    public_key: "UPDIS2rpLTn3y0KcRjiJjfTuWwbtlZxTqntVgt4MRmU="
+    allowed_ips: 10.222.223.21/32, 10.0.0.2/32
+server_public_interface: eth0
