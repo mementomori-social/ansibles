@@ -1,0 +1,11 @@
+# SPDX-License-Identifier: MIT-0
+---
+- name: Configure mastodon host
+  hosts: mastodon-0.mementomori.social
+  become: true
+  roles:
+    - common
+    - netdata
+    - valkey
+    - nginx_mementomori
+    - mastodon
