@@ -1,22 +1,24 @@
 # SPDX-License-Identifier: MIT-0
 ---
-- name: Install valkey
-  block:
-    - name: Ensure valkey is installed
-      ansible.builtin.apt:
-        name:
-          - valkey-server
-          - valkey-tools
-        state: present
-        update_cache: true
+- name: Ensure valkey is installed
+  ansible.builtin.apt:
+    name:
+      - valkey-server
+      - valkey-tools
+    state: present
+    update_cache: true
 
-    - name: Ensure valkey service is enabled and started
-      ansible.builtin.service:
-        name: valkey-server
-        state: started
-        enabled: true
+- name: Apply valkey.conf tunables
+  ansible.builtin.lineinfile:
+    path: /etc/valkey/valkey.conf
+    regexp: "{{ item.regexp | default(omit) }}"
+    insertafter: "{{ item.insertafter | default(omit) }}"
+    line: "{{ item.key }} {{ item.value }}"
+  loop: "{{ valkey_tunables }}"
+  notify: Restart valkey
 
-  rescue:
-    - name: Report failure
-      ansible.builtin.fail:
-        msg: "Failed to install and configure valkey"
+- name: Ensure valkey service is enabled and started
+  ansible.builtin.service:
+    name: valkey-server
+    state: started
+    enabled: true

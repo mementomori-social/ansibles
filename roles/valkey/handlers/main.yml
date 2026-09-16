@@ -4,8 +4,3 @@
   ansible.builtin.service:
     name: valkey-server
     state: restarted
-
-- name: Reload valkey
-  ansible.builtin.service:
-    name: valkey-server
-    state: reloaded

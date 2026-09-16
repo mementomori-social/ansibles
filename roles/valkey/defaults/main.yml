@@ -2,3 +2,14 @@
 ---
 valkey_user: valkey
 valkey_group: valkey
+
+# These settings are put to /etc/valkey.conf
+valkey_tunables:
+  - key: maxmemory
+    value: "2gb"
+    regexp: '^\s*maxmemory[^-]'
+    insertafter: '^\s*# maxmemory[^-]'
+  - key: maxmemory-policy
+    value: "volatile-lru"
+    regexp: '^\s*maxmemory-policy'
+    insertafter: '^\s*# maxmemory-policy'
