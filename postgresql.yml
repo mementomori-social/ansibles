@@ -3,6 +3,3 @@
   hosts: postgresql
   roles:
     - role: postgresql
-      vars:
-        postgresql_backup_betterstack_heartbeat: "{{ vault_postgresql_backup_betterstack_heartbeat }}"
-        postgresql_betterstack_heartbeat: "{{ vault_postgresql_betterstack_heartbeat }}"
