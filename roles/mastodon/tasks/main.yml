@@ -320,12 +320,14 @@
     state: started
     enabled: true
   loop: "{{ mastodon_services }}"
-  when: not skip_in_tests
+  when:
+    - not skip_in_tests
+    - not mastodon_disable_all
 
-- name: Enable and stop mastodon services (test case)
+- name: Disable and stop mastodon services (test case or some maintenance)
   ansible.builtin.systemd_service:
     name: "{{ item }}"
     state: stopped
-    enabled: true
+    enabled: false
   loop: "{{ mastodon_services }}"
-  when: skip_in_tests is defined
+  when: skip_in_tests is defined or not mastodon_disable_all

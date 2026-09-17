@@ -5,6 +5,7 @@ nginx_mementomori_install_nginx: true
 
 # Set to true when testing in containers without systemd.
 nginx_mementomori_skip_systemd: false
+nginx_disable_all: false
 
 nginx_mementomori_mastodon_home: /data/mastodon
 

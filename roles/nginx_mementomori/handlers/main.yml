@@ -4,6 +4,8 @@
   ansible.builtin.systemd_service:
     name: nginx
     state: reloaded
+  when:
+    - not nginx_disable_all
 
 - name: Reload systemd
   ansible.builtin.systemd_service:

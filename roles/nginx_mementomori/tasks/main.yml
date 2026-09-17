@@ -143,8 +143,19 @@
     daemon_reload: true
   loop: "{{ nginx_mementomori_timers }}"
   when:
+    - not nginx_disable_all
     - item.enabled | default(true)
     - not nginx_mementomori_skip_systemd
+
+- name: Enable and start timers
+  ansible.builtin.systemd_service:
+    name: "mementomori-{{ item.name }}.timer"
+    state: stopped
+    enabled: false
+    daemon_reload: true
+  loop: "{{ nginx_mementomori_timers }}"
+  when:
+    - nginx_disable_all
 
 - name: Install nginx-ultimate-bad-bot-blocker
   ansible.builtin.include_tasks: install-bot-blocker.yml
@@ -201,3 +212,13 @@
     name: nginx
     state: started
     enabled: true
+  when:
+    - not nginx_disable_all
+
+- name: Stop and disable nginx
+  ansible.builtin.systemd_service:
+    name: nginx
+    state: stopped
+    enabled: false
+  when:
+    - nginx_disable_all
