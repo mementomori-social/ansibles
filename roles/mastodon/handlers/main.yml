@@ -10,4 +10,4 @@
     name: "{{ item }}"
     state: restarted
   loop: "{{ mastodon_services }}"
-  when: not skip_in_tests
+  when: skip_in_tests is not defined or not mastodon_disable_all

@@ -7,5 +7,9 @@
     - common
     - netdata
     - valkey
-    - nginx_mementomori
-    - mastodon
+    - role: nginx_mementomori
+      vars:
+        nginx_disable_all: true
+    - role: mastodon
+      vars:
+        mastodon_disable_all: true

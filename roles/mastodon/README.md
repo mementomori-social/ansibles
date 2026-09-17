@@ -29,6 +29,7 @@ Role Variables
 | `mastodon_fedifetch_access_token` | `{{ vault_mastodon_fedifetch_access_token }}` | Secret token for Fedifetcher (from vault) |
 | `mastodon_fedifetch_server` | `mementomori.social` | Server hostname for Fedifetcher |
 | `mastodon_betterstack_sidekick` | `{{ vault_mastodon_betterstack_sidekick }}` | Betterstack Sidekick token for log shipping (from vault) |
+| `mastodon_disable_all` | `boolean` | Disable all mastodon services e.g. for maintenance |
 
 Dependencies
 ------------

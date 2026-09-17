@@ -7,6 +7,8 @@ mastodon_mount_fs_type: ext4
 mastodon_mount_opts: defaults
 mastodon_home: "{{ mastodon_data_mountpoint }}/mastodon"
 
+mastodon_disable_all: false
+
 mastodon_packages:
   - autoconf
   - bison
