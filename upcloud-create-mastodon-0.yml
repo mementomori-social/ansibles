@@ -80,7 +80,6 @@
                     ip_addresses:
                       ip_address:
                         - family: IPv4
-                interface:
                   - type: public
                     ip_addresses:
                       ip_address:
