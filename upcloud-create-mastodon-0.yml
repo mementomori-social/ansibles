@@ -76,6 +76,15 @@
             networking:
               interfaces:
                 interface:
+                  - type: public
+                    ip_addresses:
+                      ip_address:
+                        - family: IPv4
+                interface:
+                  - type: public
+                    ip_addresses:
+                      ip_address:
+                        - family: IPv6
                   - type: private
                     source_ip_filtering: 'no'
                     network: "{{ mastodon_network.uuid }}"
