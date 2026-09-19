@@ -4,7 +4,9 @@
   hosts: mastodon-0.mementomori.social
   become: true
   roles:
-    - common
+    - role: common
+      vars:
+        mementomori_sshd_listen_address: "{{ mastodon_0_int_ip }}"
     - netdata
     - valkey
     - role: nginx_mementomori
