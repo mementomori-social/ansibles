@@ -73,6 +73,9 @@
 - name: Mount device - dir "{{ mastodon_data_device }}-{{ mastodon_data_mountpoint }}"
   ansible.posix.mount:
     path: "{{ mastodon_data_mountpoint }}"
+    src: "{{ mastodon_data_device }}"
+    fstype: "{{ mastodon_mount_fs_type }}"
+    opts: "{{ mastodon_mount_opts }}"
     state: mounted
   when: not skip_in_tests
 
