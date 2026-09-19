@@ -1,0 +1,6 @@
+---
+bastion_int_ip: 10.222.222.10
+elastic_int_ip: 10.222.222.11
+mastodon_0_int_ip: 10.222.222.12
+postgresql_int_ip: 10.222.222.13
+
