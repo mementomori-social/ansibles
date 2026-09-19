@@ -165,6 +165,26 @@ nginx_mementomori_letsencrypt_enabled: true
 nginx_mementomori_letsencrypt_email: "{{ vault_letsencrypt_email | default('') }}"
 nginx_mementomori_cloudflare_api_token: "{{ vault_letsencrypt_cloudflare_api_token | default('') }}"
 
+nginx_mementomori_dns_records:
+  - record: '@'
+    type: A
+    value: "{{ ansible_facts.eth0.ipv4.address }}"
+  - record: '@'
+    type: AAAA
+    value: "{{ ansible_facts.eth1.ipv6.address }}"
+  - record: 'www'
+    type: A
+    value: "{{ ansible_facts.eth0.ipv4.address }}"
+  - record: 'www'
+    type: AAAA
+    value: "{{ ansible_facts.eth1.ipv6.address }}"
+  - record: 'rolle'
+    type: A
+    value: "{{ ansible_facts.eth0.ipv4.address }}"
+  - record: 'rolle'
+    type: AAAA
+    value: "{{ ansible_facts.eth1.ipv6.address }}"
+
 # Certificates to obtain. name is the certbot --cert-name (and the
 # /etc/letsencrypt/live/<name>/ symlink the vhosts reference); domains are the
 # names in the certificate.
