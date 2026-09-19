@@ -59,7 +59,9 @@
       -d {{ item.item.domains | join(' -d ') }}
       --keep-until-expiring
   loop: "{{ nginx_mementomori_le_cert_stat.results }}"
-  when: not item.stat.exists
+  when:
+    - not item.stat.exists
+    - not nginx_disable_all
   register: nginx_mementomori_le_cert_result
   changed_when: "'Certificate not yet due for renewal' not in nginx_mementomori_le_cert_result.stdout"
   failed_when: nginx_mementomori_le_cert_result.rc != 0

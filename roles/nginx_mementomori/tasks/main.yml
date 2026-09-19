@@ -156,6 +156,7 @@
   loop: "{{ nginx_mementomori_timers }}"
   when:
     - nginx_disable_all
+    - item.enabled | default(true)
 
 - name: Install nginx-ultimate-bad-bot-blocker
   ansible.builtin.include_tasks: install-bot-blocker.yml
