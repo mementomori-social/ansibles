@@ -161,6 +161,21 @@
   ansible.builtin.include_tasks: install-bot-blocker.yml
   when: nginx_mementomori_bot_blocker_enabled
 
+- name: Ensure DNS points here
+  tags: cf
+  community.general.cloudflare_dns:
+    zone: mementomori.social
+    record: "{{ item.record }}"
+    type: "{{ item.type }}"
+    value: "{{ item.value }}"
+    solo: true
+    proxied: false
+    comment: nginx server
+    api_token: "{{ nginx_mementomori_cloudflare_api_token }}"
+  loop: "{{ nginx_mementomori_dns_records }}"
+  when:
+    - not nginx_disable_all
+
 #
 # We don't want to do letsencrypt on test servers not to interfere
 # with production certs.
