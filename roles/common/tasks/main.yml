@@ -42,6 +42,7 @@
     # deny password or root login
     - { option: 'PermitRootLogin', line: 'PermitRootLogin no' }
     - { option: 'PasswordAuthentication', line: 'PasswordAuthentication no' }
+    - { option: 'ListenAddress', line: "ListenAddress {{ mementomori_sshd_listen_address | default('0.0.0.0')}}" }
   notify: Restart sshd
 
 - name: Give passwordless sudo powers to sudo group
@@ -57,6 +58,7 @@
     name: "{{ item }}"
     state: present
   loop:
+    - acl
     - tmux
     - zsh
     - btop
