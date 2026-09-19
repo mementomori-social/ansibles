@@ -5,6 +5,7 @@
     name: "{{ item }}"
     state: present
     append: true
+    shell: /usr/bin/bash
     groups:
       - sudo
   loop:
