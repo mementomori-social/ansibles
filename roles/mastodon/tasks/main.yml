@@ -226,7 +226,10 @@
     var: bundle_install
 
 - name: Yarn install
-  ansible.builtin.command: yarn install
+  ansible.builtin.expect:
+    command: yarn install
+    responses:
+      '\? Do you want to continue\? \[Y/n\] ': 'y'
   become: true
   become_user: mastodon
   args:
