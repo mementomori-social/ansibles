@@ -72,6 +72,8 @@ mastodon_systemd_files:
   - mastodon-flush-dead-jobs.timer
   - mastodon-media-clear.service
   - mastodon-media-clear.timer
+  - mastodon-finnish-users-fetch.service
+  - mastodon-finnish-users-fetch.timer
   - mastodon-prune.service
   - mastodon-prune.timer
   - mastodon-refetch-preview-cards.service
@@ -126,6 +128,7 @@ mastodon_services:
   - mastodon-flush-dead-jobs.timer
   - mastodon-fedifetcher.timer
   - mastodon-refetch-preview-cards.timer
+  - mastodon-finnish-users-fetch.timer
 
 mastodon_fedifetch_access_token: "{{ vault_mastodon_fedifetch_access_token }}"
 mastodon_fedifetch_server: mementomori.social
@@ -213,4 +216,10 @@ mastodon_blocked_username_patterns: "{{ vault_mastodon_blocked_username_patterns
 
 mastodon_upgrade_scripts_version: 621bef1
 mastodon_finnish_users_version: 78ac545
+mastodon_finnish_users_client_id: "{{ vault_finnish_users_client_id }}"
+mastodon_finnish_users_client_secret: "{{ vault_finnish_users_client_secret }}"
+mastodon_finnish_users_access_token: "{{ vault_finnish_users_access_token }}"
+mastodon_finnish_users_revoke_url: https://mementomori.social/oauth/revoke
+mastodon_finnish_users_token_url: https://mementomori.social/oauth/token
+mastodon_finnish_users_redirect_uri: https://mementomori.social/suomalaiset-mastodon-kayttajat
 mastodon_fedifetch_version: d184f8d

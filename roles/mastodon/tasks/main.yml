@@ -336,6 +336,40 @@
     dest: "{{ mastodon_home }}/suomalaiset-mastodon-kayttajat"
     version: "{{ mastodon_finnish_users_version }}"
 
+- name: Install composer
+  ansible.builtin.apt:
+    name: composer
+    state: present
+
+- name: Install Finnish users list dependencies
+  become: true
+  become_user: mastodon
+  ansible.builtin.command: composer install --no-dev --no-interaction
+  args:
+    chdir: "{{ mastodon_home }}/suomalaiset-mastodon-kayttajat"
+    creates: "{{ mastodon_home }}/suomalaiset-mastodon-kayttajat/vendor/autoload.php"
+
+- name: Ensure Finnish users list writable directories
+  ansible.builtin.file:
+    path: "{{ mastodon_home }}/suomalaiset-mastodon-kayttajat/{{ item }}"
+    state: directory
+    owner: mastodon
+    group: mastodon
+    mode: '0755'
+  loop:
+    - cache
+    - databases
+    - blob_storage
+
+# auth.php reads this from the parent directory, not from the app directory.
+- name: Install Finnish users list credentials
+  ansible.builtin.template:
+    src: templates/finnish-users.env.j2
+    dest: "{{ mastodon_home }}/.env"
+    owner: mastodon
+    group: mastodon
+    mode: '0600'
+
 - name: Deploy systemd files
   ansible.builtin.template:
     src: "templates/{{ item }}.j2"
