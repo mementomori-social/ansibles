@@ -205,6 +205,10 @@ mastodon_experimental_features: inbound_quotes,outgoing_quotes,modern_emojis,wra
 mastodon_captcha_provider: turnstile
 mastodon_turnstile_site_key: "{{ vault_mastodon_turnstile_site_key }}"
 mastodon_turnstile_secret_key: "{{ vault_mastodon_turnstile_secret_key }}"
+mastodon_api_registrations_require_invite: 'true'
+# Comma-separated regexes. Vaulted so the public repo does not hand
+# spammers the exact signature being blocked.
+mastodon_blocked_username_patterns: "{{ vault_mastodon_blocked_username_patterns }}"
 
 
 mastodon_upgrade_scripts_version: 621bef1
