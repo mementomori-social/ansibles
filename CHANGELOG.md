@@ -22,6 +22,7 @@
 * Fix precompile never running on built hosts, Ref: MEM-12
 * Add back invite-only signups and username blocking
 * Fix stray quotes in the fork compare URL
+* Install and schedule the Finnish users list, Ref: MEM-55
 
 ### 1.1.1: 2026-09-15
 
