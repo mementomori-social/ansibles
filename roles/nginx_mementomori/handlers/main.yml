@@ -7,6 +7,11 @@
   when:
     - not nginx_disable_all
 
+- name: Reload php-fpm
+  ansible.builtin.systemd_service:
+    name: php8.5-fpm
+    state: reloaded
+
 - name: Reload systemd
   ansible.builtin.systemd_service:
     daemon_reload: true

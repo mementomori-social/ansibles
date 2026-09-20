@@ -6,6 +6,7 @@
       - nginx
       - libnginx-mod-http-brotli-filter
       - libnginx-mod-http-brotli-static
+      - php-fpm
     state: present
     update_cache: true
 
@@ -55,6 +56,26 @@
       {% endfor %}
       {{ nginx_mementomori_brotli_types[-1] }};
   notify: Reload nginx
+
+- name: Configure php-fpm
+  ansible.builtin.copy:
+    dest: /etc/php/8.5/fpm/pool.d/www.conf
+    mode: '0644'
+    owner: root
+    group: root
+    content: |
+      [www]
+      user = mastodon
+      group = mastodon
+      listen = 127.0.0.1:9074
+      listen.owner = mastodon
+      listen.group = mastodon
+      pm = dynamic
+      pm.max_children = 5
+      pm.start_servers = 2
+      pm.min_spare_servers = 1
+      pm.max_spare_servers = 3
+  notify: Reload php-fpm
 
 - name: Install diagnostic cache-status log
   ansible.builtin.copy:
@@ -176,6 +197,7 @@
   loop: "{{ nginx_mementomori_dns_records }}"
   when:
     - not nginx_disable_all
+    - not skip_in_tests | default(false) | bool
 
 #
 # We don't want to do letsencrypt on test servers not to interfere
@@ -222,6 +244,12 @@
   register: nginx_mementomori_nginx_test
   changed_when: false
   failed_when: nginx_mementomori_nginx_test.rc != 0
+
+- name: Start and enable php-fpm
+  ansible.builtin.systemd_service:
+    name: php8.5-fpm
+    state: started
+    enabled: true
 
 - name: Start and enable nginx
   ansible.builtin.systemd_service:
