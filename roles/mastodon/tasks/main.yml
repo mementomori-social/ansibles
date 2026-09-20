@@ -377,6 +377,7 @@
     owner: root
     group: root
     mode: '0644'
+    validate: systemd-analyze verify %s
   loop: "{{ mastodon_systemd_files }}"
   notify: Reload systemd
 
