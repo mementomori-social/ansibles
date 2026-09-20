@@ -1,3 +1,7 @@
+### 1.1.2: 2026-09-20
+
+* README names the Mastodon instance
+
 ### 1.1.1: 2026-09-15
 
 * Mastodon role points at the 2026-09-15 fork branch

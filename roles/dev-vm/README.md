@@ -2,7 +2,7 @@ dev-vm
 ======
 
 This role is part of [mementomori](https://mementomori.social) ansible automation.
-Developer VM is used for mementomori for of mastodon developers.
+Developer VM is used by mementomori.social Mastodon instance developers.
 
 Requirements
 ------------
