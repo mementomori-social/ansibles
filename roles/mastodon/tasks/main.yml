@@ -246,6 +246,11 @@
   ansible.builtin.debug:
     var: yarn_install
 
+- name: Check for precompiled assets
+  ansible.builtin.stat:
+    path: "{{ mastodon_home }}/live/public/packs/.vite/manifest.json"
+  register: vite_manifest
+
 - name: Precompile yarn packages
   ansible.builtin.command: bundle exec rails assets:precompile
   become: true
@@ -256,7 +261,7 @@
     RAILS_ENV: production
     PATH: "{{ mastodon_home }}/.rbenv/bin:{{ mastodon_home }}/.rbenv/shims:{{ ansible_facts.env.PATH }}"
     RBENV_SHELL: /usr/bin/bash
-  when: live.changed
+  when: live.changed or not vite_manifest.stat.exists
   register: precomp
   notify: Restart mastodon services
 
