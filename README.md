@@ -1,9 +1,9 @@
-# Mementomori automation playbooks
+# Mementomori.social Mastodon instance playbooks
 
 [![Build](https://img.shields.io/github/actions/workflow/status/mementomori-social/ansibles/lint.yml?style=for-the-badge&label=build)](https://github.com/mementomori-social/ansibles/actions/workflows/lint.yml)
 
 This repo contains ansible automation to setup and maintain
-[mementomori mastodon instance](https://mementomori.social) infra.
+[mementomori.social Mastodon instance](https://mementomori.social) infra.
 
 In addition to this repo you will need set of variables defined in
 secrets/vault.yml file. All such variables are named with prefix `vault_` so
@@ -87,7 +87,7 @@ ansible-playbook -i inventory-hetzner.yml -e @secrets/vault.yml postgres1l.yml
 We provision services based on roles. Aim is so we can scale and move services
 between the hosts if later needed.
 
-* **dev-vm** - Create server for developing mementomori features & BirdUI
+* **dev-vm** - Create server for developing mementomori.social features & BirdUI
 * **elasticsearch** - Install and configure elastic search for mastodon search
 * **mastodon** - Install and configure mastodon services
 * **nginx** - Install and configre web server with reverse proxy and cert automation
