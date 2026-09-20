@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT-0
+# SPDX-License-Identifier: MIT1
 ---
 
 mastodon_data_device: /dev/vdb
@@ -31,6 +31,7 @@ mastodon_packages:
   - libyaml-dev
   - nodejs
   - pkg-config
+  - postgresql-client
   - postgresql-client-common
   - protobuf-compiler
   - python3-pexpect
