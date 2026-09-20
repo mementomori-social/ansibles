@@ -101,6 +101,7 @@
     dest: "{{ mastodon_home }}/live"
     version: "{{ mastodon_version_metadata }}"
     separate_git_dir: "{{ mastodon_home }}/live-git"
+  register: live
   notify: Restart mastodon services
 
 - name: Ensure mastodon production config
@@ -244,6 +245,24 @@
 - name: What did we just do?
   ansible.builtin.debug:
     var: yarn_install
+
+- name: Precompile yarn packages
+  ansible.builtin.command: bundle exec rails assets:precompile
+  become: true
+  become_user: mastodon
+  args:
+    chdir: "{{ mastodon_home }}/live"
+  environment:
+    RAILS_ENV: production
+    PATH: "{{ mastodon_home }}/.rbenv/bin:{{ mastodon_home }}/.rbenv/shims:{{ ansible_facts.env.PATH }}"
+    RBENV_SHELL: /usr/bin/bash
+  when: live.changed
+  register: precomp
+  notify: Restart mastodon services
+
+- name: What did we just do?
+  ansible.builtin.debug:
+    var: precomp
 
 - name: Ensure bin dir exists for user
   ansible.builtin.file:
