@@ -103,13 +103,14 @@
     separate_git_dir: "{{ mastodon_home }}/live-git"
   notify: Restart mastodon services
 
-- name: Install mastodon production config
+- name: Ensure mastodon production config
   ansible.builtin.template:
     src: templates/env.production.j2
     dest: "{{ mastodon_home }}/live/.env.production"
     owner: mastodon
     group: mastodon
     mode: '0644'
+  notify: Restart mastodon services
 
 - name: Install ruby
   become: true
