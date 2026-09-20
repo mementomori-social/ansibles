@@ -4,6 +4,12 @@
   tags: common
   ansible.builtin.import_playbook: ../../common.yml
 
+- name: Valkey
+  tags: valkey
+  vars:
+    skip_in_tests: true
+  ansible.builtin.import_playbook: ../../valkey.yml
+
 - name: Mastodon
   tags: mastodon
   vars:
@@ -22,12 +28,6 @@
   vars:
     skip_in_tests: true
   ansible.builtin.import_playbook: ../../postgresql.yml
-
-- name: Valkey
-  tags: valkey
-  vars:
-    skip_in_tests: true
-  ansible.builtin.import_playbook: ../../valkey.yml
 
 - name: Elasticsearch
   tags: elasticsearch
