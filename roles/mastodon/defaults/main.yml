@@ -32,6 +32,7 @@ mastodon_packages:
   - nodejs
   - pkg-config
   - protobuf-compiler
+  - python3-pexpect
   - wget
   - zlib1g-dev
 
