@@ -19,6 +19,7 @@
 * Let Molecule handle role dependencies
 * Name the Mastodon instance in the README
 * Fix status search scope back to classic, Ref: MEM-31
+* Fix precompile never running on built hosts, Ref: MEM-12
 
 ### 1.1.1: 2026-09-15
 
