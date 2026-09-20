@@ -308,7 +308,8 @@
   become_user: mastodon
   ansible.builtin.git:
     repo: 'https://github.com/mementomori-social/finnish-mastodon-users'
-    dest: "{{ mastodon_home }}/finnish-mastodon-users"
+    separate_git_dir: "{{ mastodon_home }}/suomalaiset-mastodon-kayttajat-git"
+    dest: "{{ mastodon_home }}/suomalaiset-mastodon-kayttajat"
     version: "{{ mastodon_finnish_users_version }}"
 
 - name: Deploy systemd files
