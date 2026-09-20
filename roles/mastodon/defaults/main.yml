@@ -193,7 +193,10 @@ mastodon_fetch_replies_initial_wait_minutes: 5
 mastodon_fetch_replies_max_global: 1000
 mastodon_fetch_replies_max_single: 500
 mastodon_fetch_replies_max_pages: 500
-mastodon_status_search_scope: discoverable
+# classic, not discoverable: StatusesIndex discards any status whose
+# searchable_by is empty, so wider scopes scan millions of rows to keep
+# the same documents. Measured 14.9.2026: 22 months versus minutes.
+mastodon_status_search_scope: classic
 mastodon_account_search_scope: discoverable
 mastodon_active_record_encryption_primary_key: "{{ vault_mastodon_active_record_encryption_primary_key }}"
 mastodon_active_record_encryption_deterministic_key: "{{ vault_mastodon_active_record_encryption_deterministic_key }}"

@@ -18,6 +18,7 @@
 * Restart Mastodon when the env file changes
 * Let Molecule handle role dependencies
 * Name the Mastodon instance in the README
+* Fix status search scope back to classic, Ref: MEM-31
 
 ### 1.1.1: 2026-09-15
 
