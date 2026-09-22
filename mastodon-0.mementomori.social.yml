@@ -16,3 +16,4 @@
       vars:
         mastodon_disable_all: true
         mastodon_db_host: 10.222.223.20
+        mastodon_replica_db_host: 10.222.222.13
