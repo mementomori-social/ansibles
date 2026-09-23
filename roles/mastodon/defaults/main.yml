@@ -44,13 +44,13 @@ mastodon_systemd_sidekiq_files:
   - mastodon-sidekiq-1-ingress@.service
   - mastodon-sidekiq-2-default@.service
   - mastodon-sidekiq-2-ingress@.service
+  - mastodon-sidekiq-fasp@.service
   - mastodon-sidekiq-mailers@.service
   - mastodon-sidekiq-pull@.service
   - mastodon-sidekiq-push@.service
   - mastodon-sidekiq-scheduler@.service
 
 mastodon_systemd_files:
-  - mastodon-sidekiq-fasp@.service
   - mastodon-streaming.service
   - mastodon-streaming@.service
   - mastodon-web.service
