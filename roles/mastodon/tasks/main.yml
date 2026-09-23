@@ -381,6 +381,18 @@
   loop: "{{ mastodon_systemd_files }}"
   notify: Reload systemd
 
+- name: Deploy systemd sidekiq templated files
+  ansible.builtin.template:
+    # They all use the same systemd template
+    src: "templates/mastodon-sidekiq@.service.j2"
+    dest: "/etc/systemd/system/{{ item }}"
+    owner: root
+    group: root
+    mode: '0644'
+    validate: systemd-analyze verify %s
+  loop: "{{ mastodon_systemd_sidekiq_files }}"
+  notify: Reload systemd
+
 - name: Enable and start mastodon services
   ansible.builtin.systemd_service:
     name: "{{ item }}"
