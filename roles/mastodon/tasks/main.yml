@@ -282,8 +282,8 @@
     src: "templates/{{ item }}.j2"
     dest: "{{ mastodon_home }}/bin/{{ item }}"
     owner: root
-    group: root
-    mode: '0755'
+    group: mastodon
+    mode: '0750'
   loop:
     - flush-dead-jobs.rb
     - mastodon-prune.sh
