@@ -6,15 +6,16 @@ ELASTICSEARCH_URL="http://$ELASTICSEARCH_HOST:$ELASTICSEARCH_PORT"
 ELASTICSEARCH_USERNAME="{{ vault_mastodon_elasticearch_user }}"
 ELASTICSEARCH_PASSWORD="{{ vault_mastodon_elasticearch_pass }}"
 
-# Check with curl
-ELASTICSEACH_COMMAND=`curl -s -u $ELASTICSEARCH_USERNAME:$ELASTICSEARCH_PASSWORD $ELASTICSEARCH_URL/_cluster/health?pretty`
+# --max-time: an unreachable host must not hang a per-minute job.
+HEALTH=$(curl -s --max-time 10 -u "$ELASTICSEARCH_USERNAME:$ELASTICSEARCH_PASSWORD" "$ELASTICSEARCH_URL/_cluster/health")
 
-# Check if elasticsearch is running
-if [[ $ELASTICSEACH_COMMAND == *"timed out"* ]]; then
-    echo "Elasticsearch is not running"
-    exit 1
-else
+# Heartbeat only on a positive match, as in the sibling checks. An unreachable
+# host returns an empty body, which any "is it broken" test reads as healthy.
+if [[ $HEALTH == *'"status":"green"'* || $HEALTH == *'"status":"yellow"'* ]]; then
     echo "Elasticsearch is running"
-    curl https://uptime.betterstack.com/api/v1/heartbeat/{{ mastodon_betterstack_elastic }};
+    curl -s --max-time 10 https://uptime.betterstack.com/api/v1/heartbeat/{{ mastodon_betterstack_elastic }}
     exit 0
+else
+    echo "Elasticsearch is not running: ${HEALTH:-no response}"
+    exit 1
 fi

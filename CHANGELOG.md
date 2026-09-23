@@ -23,6 +23,7 @@
 * Add back invite-only signups and username blocking
 * Fix stray quotes in the fork compare URL
 * Install and schedule the Finnish users list, Ref: MEM-55
+* Fix Elasticsearch check never detecting failure
 
 ### 1.1.1: 2026-09-15
 
