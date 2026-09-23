@@ -1,12 +1,12 @@
 [Unit]
-Description=Check Streaming
+Description=Check service %i
 After=network.target
 
 [Service]
 Type=oneshot
 User=mastodon
 WorkingDirectory={{ mastodon_home }}/
-ExecStart=/bin/bash {{ mastodon_home }}/bin/check-streaming.sh
+ExecStart=/bin/bash {{ mastodon_home }}/bin/check-%i.sh
 StandardOutput=journal
 StandardError=journal
 

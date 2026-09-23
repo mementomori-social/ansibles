@@ -38,36 +38,31 @@ mastodon_packages:
   - wget
   - zlib1g-dev
 
-mastodon_systemd_files:
+mastodon_systemd_sidekiq_files:
+  - mastodon-sidekiq@.service
   - mastodon-sidekiq-1-default@.service
   - mastodon-sidekiq-1-ingress@.service
   - mastodon-sidekiq-2-default@.service
   - mastodon-sidekiq-2-ingress@.service
-  - mastodon-sidekiq-default@.service
-  - mastodon-sidekiq-fasp@.service
-  - mastodon-sidekiq-ingress@.service
   - mastodon-sidekiq-mailers@.service
   - mastodon-sidekiq-pull@.service
   - mastodon-sidekiq-push@.service
   - mastodon-sidekiq-scheduler@.service
-  - mastodon-sidekiq.service
-  - mastodon-sidekiq-template.service
+
+mastodon_systemd_files:
+  - mastodon-sidekiq-fasp@.service
   - mastodon-streaming.service
   - mastodon-streaming@.service
   - mastodon-web.service
   # timers
   - mastodon-build-search-index.service
   - mastodon-build-search-index.timer
-  - mastodon-check-db.service
-  - mastodon-check-db.timer
-  - mastodon-check-diskspace.service
-  - mastodon-check-diskspace.timer
-  - mastodon-check-elasticsearch.service
-  - mastodon-check-elasticsearch.timer
-  - mastodon-check-sidekiq.service
-  - mastodon-check-sidekiq.timer
-  - mastodon-check-streaming.service
-  - mastodon-check-streaming.timer
+  - mastodon-check@.service
+  - mastodon-check@db.timer
+  - mastodon-check@diskspace.timer
+  - mastodon-check@elasticsearch.timer
+  - mastodon-check@sidekiq.timer
+  - mastodon-check@streaming.timer
   - mastodon-fedifetcher.service
   - mastodon-fedifetcher.timer
   - mastodon-flush-dead-jobs.service
@@ -83,35 +78,16 @@ mastodon_systemd_files:
   - mastodon-sidekiq-restart.service
   - mastodon-sidekiq-restart.timer
 
-# XXX The following list has such entries commented out which existed on the
-# old server, but were not enabled. Do we need them anymore?
 mastodon_services:
-  # - mastodon-fasp.service
-  # - mastodon-sidekiq-default.service
-  # - mastodon-sidekiq-default@.service
-  # - mastodon-sidekiq-default@20.service
-  # - mastodon-sidekiq-default@40.service
-  # - mastodon-sidekiq-1-default@25.service
   - mastodon-sidekiq-1-default@35.service
-  # - mastodon-sidekiq-1-default@40.service
   - mastodon-sidekiq-1-ingress@25.service
-  # - mastodon-sidekiq-2-default@25.service
   - mastodon-sidekiq-2-default@35.service
-  # - mastodon-sidekiq-2-default@40.service
-  # - mastodon-sidekiq-2-default@60.service
   - mastodon-sidekiq-2-ingress@25.service
   - mastodon-sidekiq-fasp@1.service
-  # - mastodon-sidekiq-ingress@.service
-  # - mastodon-sidekiq-mailer@20.service
-  # - mastodon-sidekiq-mailers@.service
   - mastodon-sidekiq-mailers@20.service
-  # - mastodon-sidekiq-pull@.service
   - mastodon-sidekiq-pull@40.service
-  # - mastodon-sidekiq-push@.service
   - mastodon-sidekiq-push@35.service
-  # - mastodon-sidekiq-scheduler@.service
   - mastodon-sidekiq-scheduler@5.service
-  # - mastodon-sidekiq.service
   - mastodon-streaming.service
   - mastodon-streaming@4000.service
   - mastodon-streaming@4001.service
@@ -119,11 +95,11 @@ mastodon_services:
   - mastodon-streaming@4003.service
   - mastodon-web.service
   # timers
-  - mastodon-check-db.timer
-  - mastodon-check-diskspace.timer
-  - mastodon-check-elasticsearch.timer
-  - mastodon-check-sidekiq.timer
-  - mastodon-check-streaming.timer
+  - mastodon-check@db.timer
+  - mastodon-check@diskspace.timer
+  - mastodon-check@elasticsearch.timer
+  - mastodon-check@sidekiq.timer
+  - mastodon-check@streaming.timer
   - mastodon-media-clear.timer
   - mastodon-prune.timer
   - mastodon-build-search-index.timer

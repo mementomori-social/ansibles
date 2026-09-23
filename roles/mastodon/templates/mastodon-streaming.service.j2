@@ -1,7 +1,7 @@
 [Unit]
 Description=mastodon-streaming
 After=network.target
-Wants=mastodon-streaming@4000.service
+Wants=mastodon-streaming@4000.service mastodon-streaming@4001.service mastodon-streaming@4002.service mastodon-streaming@4003.service
 
 [Service]
 Type=oneshot
