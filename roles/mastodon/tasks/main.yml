@@ -472,4 +472,4 @@
     state: stopped
     enabled: false
   loop: "{{ mastodon_services }}"
-  when: skip_in_tests is defined or not mastodon_disable_all
+  when: skip_in_tests | default(false) | bool or mastodon_disable_all
