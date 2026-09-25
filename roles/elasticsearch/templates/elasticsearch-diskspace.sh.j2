@@ -1,0 +1,17 @@
+#!/bin/bash
+# Pings Better Stack only while the data disk is below the limit, so a full
+# disk (Elasticsearch blocks writes at 85/90/95 %) shows up as a missed beat.
+set -euo pipefail
+
+MOUNTPOINT="{{ elasticsearch_datadir }}"
+LIMIT="{{ elasticsearch_disk_used_limit_percent }}"
+
+findmnt --real -rno TARGET "$MOUNTPOINT" > /dev/null
+USED=$(df --output=pcent "$MOUNTPOINT" | tail -1 | tr -dc '0-9')
+
+if [ "$USED" -ge "$LIMIT" ]; then
+  echo "${MOUNTPOINT} is ${USED}% full, limit ${LIMIT}%"
+  exit 1
+fi
+
+curl -fsS -m 30 "https://uptime.betterstack.com/api/v1/heartbeat/{{ elasticsearch_betterstack_heartbeat }}" > /dev/null

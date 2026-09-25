@@ -51,6 +51,7 @@ vault_nginx_cloudflare_api_token: "ci-nginx-cloudflare-api-token"
 vault_nginx_letsencrypt_email: "ci@example.invalid"
 vault_postgresql_backup_betterstack_heartbeat: "ci-postgresql-backup-betterstack-heartbeat"
 vault_postgresql_betterstack_heartbeat: "ci-postgresql-betterstack-heartbeat"
+vault_elasticsearch_betterstack_heartbeat: "ci-elasticsearch-betterstack-heartbeat"
 vault_postgresql_pg_hba_block: |
   host all all 127.0.0.1/32 scram-sha-256
 vault_room_id: "ci-room-id"

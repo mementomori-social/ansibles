@@ -29,3 +29,7 @@ elasticsearch_security_enabled: true
 
 # for molecule podman tests
 skip_in_tests: false
+
+# Heartbeat stops under this usage, before the 85 % low watermark.
+elasticsearch_disk_used_limit_percent: 80
+elasticsearch_betterstack_heartbeat: "{{ vault_elasticsearch_betterstack_heartbeat }}"
