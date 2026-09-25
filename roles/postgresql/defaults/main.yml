@@ -63,7 +63,7 @@ postgresql_tunables:
   - key: random_page_cost
     value: 1.1
 
-postgresql_disk_space_limit_gb: 5
+postgresql_disk_space_limit_gb: 20
 postgresql_betterstack_heartbeat: "{{ vault_postgresql_betterstack_heartbeat }}"
 
 postgresql_backupdir: /mnt/backup
