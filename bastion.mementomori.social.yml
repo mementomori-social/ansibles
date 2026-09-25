@@ -7,3 +7,15 @@
     - common
     - netdata
     - wireguard
+  tasks:
+
+    - name: Ensure DNS points here
+      community.general.cloudflare_dns:
+        zone: mementomori.social
+        record: "bastion.mementomori.social"
+        type: A
+        value: "{{ ansible_facts.eth0.ipv4.address }}"
+        solo: true
+        proxied: false
+        comment: bastion
+        api_token: "{{ vault_letsencrypt_cloudflare_api_token }}"
