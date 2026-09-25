@@ -25,6 +25,7 @@
 * Install and schedule the Finnish users list, Ref: MEM-55
 * Fix Elasticsearch check never detecting failure
 * Keep the Elasticsearch password out of world-readable scripts
+* Tune the kernel for Mastodon on new hosts
 
 ### 1.1.1: 2026-09-15
 

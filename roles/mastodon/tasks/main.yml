@@ -1,5 +1,15 @@
 ---
 
+- name: Tune kernel for Mastodon
+  ansible.posix.sysctl:
+    name: "{{ item.key }}"
+    value: "{{ item.value }}"
+    sysctl_file: /etc/sysctl.d/99-mastodon.conf
+    state: present
+    reload: true
+  loop: "{{ mastodon_sysctl_tunables | dict2items }}"
+  when: not skip_in_tests | default(false) | bool
+
 - name: Install base packages to get nodejs repo
   # package list from https://docs.joinmastodon.org/admin/install/
   ansible.builtin.apt:
