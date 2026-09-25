@@ -38,6 +38,7 @@
 * Fix sidekiq check working directory
 * Check database disk space every minute
 * Alert when database disk has under 20 GB free
+* Refetch preview cards that lack an image
 
 ### 1.1.1: 2026-09-15
 
