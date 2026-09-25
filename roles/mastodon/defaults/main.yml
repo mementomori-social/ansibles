@@ -48,6 +48,7 @@ mastodon_packages:
   - postgresql-client-common
   - protobuf-compiler
   - python3-pexpect
+  - rustc
   - wget
   - zlib1g-dev
 
