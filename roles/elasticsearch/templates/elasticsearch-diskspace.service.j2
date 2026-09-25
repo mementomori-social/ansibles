@@ -1,0 +1,6 @@
+[Unit]
+Description=Elasticsearch disk space heartbeat
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/elasticsearch-diskspace.sh

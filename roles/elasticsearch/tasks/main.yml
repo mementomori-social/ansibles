@@ -105,3 +105,29 @@
     state: started
     enabled: true
   when: not skip_in_tests
+
+- name: Deploy disk space heartbeat script
+  ansible.builtin.template:
+    src: elasticsearch-diskspace.sh.j2
+    dest: /usr/local/bin/elasticsearch-diskspace.sh
+    owner: root
+    group: root
+    mode: '0700'
+
+- name: Deploy disk space heartbeat units
+  ansible.builtin.template:
+    src: "elasticsearch-diskspace.{{ item }}.j2"
+    dest: "/etc/systemd/system/elasticsearch-diskspace.{{ item }}"
+    mode: '0644'
+  loop:
+    - service
+    - timer
+  notify: Reload systemd
+
+- name: Enable disk space heartbeat timer
+  ansible.builtin.systemd_service:
+    name: elasticsearch-diskspace.timer
+    state: started
+    enabled: true
+    daemon_reload: true
+  when: not skip_in_tests
