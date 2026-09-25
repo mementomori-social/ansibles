@@ -73,7 +73,7 @@
   gather_facts: true
   vars:
     skip_in_tests: true
-    postgresql_version: 17
+    postgresql_version: 18
   tasks:
 
     - name: Symlink for persistent data exists
