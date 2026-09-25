@@ -29,6 +29,7 @@
 * Watch web, nginx and valkey with monit
 * Install FediFetcher dependencies, Ref: MEM-55
 * Ship journald to Better Stack with vector
+* Start Mastodon services when the role is enabled
 
 ### 1.1.1: 2026-09-15
 
