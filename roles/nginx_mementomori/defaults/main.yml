@@ -171,19 +171,19 @@ nginx_mementomori_dns_records:
     value: "{{ ansible_facts.eth0.ipv4.address }}"
   - record: '@'
     type: AAAA
-    value: "{{ ansible_facts.eth1.ipv6.address }}"
+    value: "{{ (ansible_facts.eth1.ipv6 | selectattr('scope', 'equalto', 'global') | first).address }}"
   - record: 'www'
     type: A
     value: "{{ ansible_facts.eth0.ipv4.address }}"
   - record: 'www'
     type: AAAA
-    value: "{{ ansible_facts.eth1.ipv6.address }}"
+    value: "{{ (ansible_facts.eth1.ipv6 | selectattr('scope', 'equalto', 'global') | first).address }}"
   - record: 'rolle'
     type: A
     value: "{{ ansible_facts.eth0.ipv4.address }}"
   - record: 'rolle'
     type: AAAA
-    value: "{{ ansible_facts.eth1.ipv6.address }}"
+    value: "{{ (ansible_facts.eth1.ipv6 | selectattr('scope', 'equalto', 'global') | first).address }}"
 
 # Certificates to obtain. name is the certbot --cert-name (and the
 # /etc/letsencrypt/live/<name>/ symlink the vhosts reference); domains are the
