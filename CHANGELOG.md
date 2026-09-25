@@ -31,6 +31,7 @@
 * Ship journald to Better Stack with vector
 * Start Mastodon services when the role is enabled
 * Listen on IPv6 for HTTPS, Ref: MEM-66
+* Use the http2 directive, not the listen parameter
 
 ### 1.1.1: 2026-09-15
 
