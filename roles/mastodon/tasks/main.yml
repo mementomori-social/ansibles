@@ -147,6 +147,13 @@
     uid: 1100
     group: mastodon
 
+# nginx serves public/ from under the home, so it needs traverse.
+- name: Let nginx traverse the mastodon home
+  ansible.builtin.file:
+    path: "{{ mastodon_home }}"
+    state: directory
+    mode: '0751'
+
 - name: Ensure proper version of mementomods installed
   become: true
   become_user: mastodon
