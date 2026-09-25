@@ -36,6 +36,7 @@
 * Let nginx serve assets from the mastodon home
 * Run health checks every minute
 * Fix sidekiq check working directory
+* Check database disk space every minute
 
 ### 1.1.1: 2026-09-15
 
