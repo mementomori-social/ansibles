@@ -42,6 +42,7 @@
 * Verify PostgreSQL 18 in Molecule
 * Run Molecule in GitHub CI, Ref: MEM-51
 * Heartbeat for Elasticsearch disk space, Ref: MEM-69
+* Tune PostgreSQL WAL, autovacuum and checkpoints, Ref: MEM-71
 
 ### 1.1.1: 2026-09-15
 
