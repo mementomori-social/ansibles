@@ -39,6 +39,7 @@
 * Check database disk space every minute
 * Alert when database disk has under 20 GB free
 * Refetch preview cards that lack an image
+* Verify PostgreSQL 18 in Molecule
 
 ### 1.1.1: 2026-09-15
 
