@@ -37,6 +37,7 @@
 * Run health checks every minute
 * Fix sidekiq check working directory
 * Check database disk space every minute
+* Alert when database disk has under 20 GB free
 
 ### 1.1.1: 2026-09-15
 
