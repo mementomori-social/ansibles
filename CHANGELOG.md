@@ -30,6 +30,7 @@
 * Install FediFetcher dependencies, Ref: MEM-55
 * Ship journald to Better Stack with vector
 * Start Mastodon services when the role is enabled
+* Listen on IPv6 for HTTPS, Ref: MEM-66
 
 ### 1.1.1: 2026-09-15
 
