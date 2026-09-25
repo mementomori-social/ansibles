@@ -24,7 +24,9 @@ map $sent_http_content_type $expires {
 }
 
 server {
-  listen 443 ssl http2;
+  listen 443 ssl;
+  listen [::]:443 ssl ipv6only=off;
+  http2 on;
   server_name mementomori.social;
 
 {% if nginx_mementomori_bot_blocker_enabled %}
