@@ -122,6 +122,13 @@
     group: postgres
     force: true
 
+- name: Reserve huge pages for shared buffers
+  ansible.posix.sysctl:
+    name: vm.nr_hugepages
+    value: "{{ postgresql_nr_hugepages }}"
+    sysctl_file: /etc/sysctl.d/60-postgresql-hugepages.conf
+  when: not skip_in_tests
+
 - name: Tune postgresql
   ansible.builtin.lineinfile:
     path: /etc/postgresql/{{ postgresql_version }}/main/postgresql.conf
