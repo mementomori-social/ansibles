@@ -15,6 +15,8 @@ Status.local
   .each do |status|
     card = status.preview_card
     next unless card.nil? || card.image_file_name.blank?
+    # FetchLinkCardService skips statuses that already have a card attached.
+    PreviewCardsStatus.where(status_id: status.id).delete_all if card
     LinkCrawlWorker.perform_async(status.id)
   end
 '
