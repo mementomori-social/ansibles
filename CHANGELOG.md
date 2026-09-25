@@ -27,6 +27,7 @@
 * Keep the Elasticsearch password out of world-readable scripts
 * Tune the kernel for Mastodon on new hosts
 * Watch web, nginx and valkey with monit
+* Install FediFetcher dependencies, Ref: MEM-55
 
 ### 1.1.1: 2026-09-15
 
