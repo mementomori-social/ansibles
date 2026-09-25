@@ -19,3 +19,4 @@
         proxied: false
         comment: bastion
         api_token: "{{ vault_letsencrypt_cloudflare_api_token }}"
+      when: not skip_in_tests | default(false) | bool
