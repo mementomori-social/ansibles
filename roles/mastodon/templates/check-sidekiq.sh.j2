@@ -1,8 +1,7 @@
 #!/bin/bash
-# Crontab: /bin/bash -l -c 'cd /home/mastodon/live && bash {{ mastodon_home }}/bin/check-sidekiq.sh'
-COMMAND=$(RAILS_ENV=production {{ mastodon_home }}/.rbenv/shims/bundle exec sidekiqmon processes | grep -Po '\d' | awk '{s+=$1} END {print s}')
+cd {{ mastodon_home }}/live || exit 1
 
-cd /home/mastodon/live
+COMMAND=$(RAILS_ENV=production {{ mastodon_home }}/.rbenv/shims/bundle exec sidekiqmon processes | grep -Po '\d' | awk '{s+=$1} END {print s}')
 
 # Check if more than 0
 if [ $COMMAND -gt 0 ]; then
