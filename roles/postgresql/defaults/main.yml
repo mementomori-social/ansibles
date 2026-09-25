@@ -72,6 +72,11 @@ postgresql_tunables:
     value: 15min
   - key: track_io_timing
     value: 'on'
+  - key: shared_preload_libraries
+    value: "'pg_stat_statements'"
+
+# SHOW shared_memory_size_in_huge_pages gives 4251 for 8GB shared_buffers.
+postgresql_nr_hugepages: 4300
 
 postgresql_disk_space_limit_gb: 20
 postgresql_betterstack_heartbeat: "{{ vault_postgresql_betterstack_heartbeat }}"
