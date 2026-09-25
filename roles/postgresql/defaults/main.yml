@@ -62,6 +62,16 @@ postgresql_tunables:
     value: 100
   - key: random_page_cost
     value: 1.1
+  - key: wal_compression
+    value: zstd
+  - key: autovacuum_max_workers
+    value: 6
+  - key: autovacuum_vacuum_cost_limit
+    value: 2000
+  - key: checkpoint_timeout
+    value: 15min
+  - key: track_io_timing
+    value: 'on'
 
 postgresql_disk_space_limit_gb: 20
 postgresql_betterstack_heartbeat: "{{ vault_postgresql_betterstack_heartbeat }}"
