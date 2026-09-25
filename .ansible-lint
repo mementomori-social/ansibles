@@ -8,9 +8,10 @@ exclude_paths:
   - collections/ansible_collections/
   - .ansible/
 
-# molecule/default/inventory.yml is an inventory, not a playbook
+# Inventory and fake CI vault are plain YAML, not playbooks
 kinds:
   - yaml: "molecule/*/inventory.yml"
+  - vars: "molecule/*/ci-vault.yml"
 
 skip_list:
   - name
