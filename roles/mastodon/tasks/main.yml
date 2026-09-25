@@ -1,5 +1,26 @@
 ---
 
+- name: Install vector
+  ansible.builtin.apt:
+    deb: "https://github.com/vectordotdev/vector/releases/download/v{{ mastodon_vector_version }}/vector_{{ mastodon_vector_version }}-1_amd64.deb"
+    state: present
+
+- name: Configure vector
+  ansible.builtin.template:
+    src: templates/vector.yaml.j2
+    dest: /etc/vector/vector.yaml
+    owner: root
+    group: vector
+    mode: '0640'
+  notify: Restart vector
+
+- name: Enable and start vector
+  ansible.builtin.systemd_service:
+    name: vector
+    state: started
+    enabled: true
+  when: not skip_in_tests | default(false) | bool
+
 - name: Install monit
   ansible.builtin.apt:
     name: monit

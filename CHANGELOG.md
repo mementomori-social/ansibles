@@ -28,6 +28,7 @@
 * Tune the kernel for Mastodon on new hosts
 * Watch web, nginx and valkey with monit
 * Install FediFetcher dependencies, Ref: MEM-55
+* Ship journald to Better Stack with vector
 
 ### 1.1.1: 2026-09-15
 
