@@ -20,3 +20,10 @@
     state: reloaded
   when:
     - not skip_in_tests | default(false) | bool
+
+- name: Restart vector
+  ansible.builtin.systemd_service:
+    name: vector
+    state: restarted
+  when:
+    - not skip_in_tests | default(false) | bool

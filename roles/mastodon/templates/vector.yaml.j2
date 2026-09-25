@@ -1,0 +1,31 @@
+# Minimal log shipping to Better Stack. The whole journal rather than a unit
+# filter: journald carries web, sidekiq, streaming, nginx and monit already,
+# and template units make include_units matching fragile. The Hetzner host also
+# tails files and ships host metrics; port those here if they turn out missed.
+
+data_dir: /var/lib/vector
+
+sources:
+  journald:
+    type: journald
+    current_boot_only: true
+
+transforms:
+  shaped:
+    type: remap
+    inputs: ["journald"]
+    source: |
+      .dt = del(.timestamp)
+      .unit = del(._SYSTEMD_UNIT)
+
+sinks:
+  better_stack:
+    type: http
+    method: post
+    inputs: ["shaped"]
+    uri: "{{ mastodon_vector_endpoint }}"
+    encoding:
+      codec: json
+    auth:
+      strategy: bearer
+      token: "{{ mastodon_betterstack_vector_token }}"
