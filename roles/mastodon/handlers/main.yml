@@ -13,3 +13,10 @@
   when:
     - not skip_in_tests
     - not mastodon_disable_all
+
+- name: Reload monit
+  ansible.builtin.systemd_service:
+    name: monit
+    state: reloaded
+  when:
+    - not skip_in_tests | default(false) | bool

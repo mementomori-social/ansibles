@@ -1,5 +1,28 @@
 ---
 
+- name: Install monit
+  ansible.builtin.apt:
+    name: monit
+    state: present
+
+- name: Configure monit checks
+  ansible.builtin.template:
+    src: templates/monit-mastodon.j2
+    dest: /etc/monit/conf.d/mastodon
+    owner: root
+    group: root
+    mode: '0600'
+  notify: Reload monit
+
+- name: Enable and start monit
+  ansible.builtin.systemd_service:
+    name: monit
+    state: started
+    enabled: true
+  when:
+    - not skip_in_tests | default(false) | bool
+    - not mastodon_disable_all
+
 - name: Tune kernel for Mastodon
   ansible.posix.sysctl:
     name: "{{ item.key }}"
@@ -312,6 +335,15 @@
     owner: mastodon
     group: mastodon
     mode: '0755'
+
+# From FediFetcher's requirements.txt. Without these find_posts.py fails on
+# first run, and the timer is the only thing that would surface it.
+- name: Install Fedifetcher dependencies
+  ansible.builtin.apt:
+    name:
+      - python3-defusedxml
+      - python3-xxhash
+    state: present
 
 - name: Install Fedifetcher
   become: true

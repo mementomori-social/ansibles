@@ -1,0 +1,28 @@
+# systemd Restart=always already covers process death. These checks catch what
+# it cannot see: a process that is alive but no longer answering, and memory
+# growth from Ruby heap fragmentation.
+
+check process mastodon-web matching "puma.*\[live\]"
+    start program = "/usr/sbin/service mastodon-web start"
+    stop program = "/usr/sbin/service mastodon-web stop"
+    if failed host 127.0.0.1 port 3000 protocol http
+        and request "/health" with timeout 15 seconds
+    then restart
+    if totalmem > 4.5 GB for 3 cycles then restart
+    if cpu > 90% for 5 cycles then restart
+    if 5 restarts within 5 cycles then unmonitor
+
+check process nginx with pidfile /run/nginx.pid
+    start program = "/usr/sbin/service nginx start"
+    stop program = "/usr/sbin/service nginx stop"
+    if failed host 127.0.0.1 port 80 protocol http
+        and request "/" with timeout 10 seconds
+    then restart
+    if 5 restarts within 5 cycles then unmonitor
+
+check process valkey matching "valkey-server"
+    start program = "/usr/sbin/service valkey-server start"
+    stop program = "/usr/sbin/service valkey-server stop"
+    if failed host 127.0.0.1 port {{ mastodon_redis_port }} type tcp with timeout 10 seconds then restart
+    if totalmem > 2 GB for 3 cycles then restart
+    if 5 restarts within 5 cycles then unmonitor

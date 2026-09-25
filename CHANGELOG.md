@@ -26,6 +26,7 @@
 * Fix Elasticsearch check never detecting failure
 * Keep the Elasticsearch password out of world-readable scripts
 * Tune the kernel for Mastodon on new hosts
+* Watch web, nginx and valkey with monit
 
 ### 1.1.1: 2026-09-15
 
