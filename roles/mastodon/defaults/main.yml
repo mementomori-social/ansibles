@@ -2,6 +2,19 @@
 ---
 
 mastodon_data_device: /dev/vdb
+
+# Ported from the Hetzner host's /etc/sysctl.d/99-mastodon.conf. Kernel
+# defaults give ~28k ephemeral ports, which a federating instance exhausts.
+mastodon_sysctl_tunables:
+  vm.swappiness: 10
+  net.ipv4.ip_local_port_range: 1024 65535
+  net.ipv4.tcp_max_syn_backlog: 8192
+  net.core.netdev_max_backlog: 5000
+  net.ipv4.tcp_tw_reuse: 1
+  net.ipv4.tcp_keepalive_time: 600
+  net.ipv4.tcp_keepalive_intvl: 30
+  net.ipv4.tcp_keepalive_probes: 5
+  fs.file-max: 2097152
 mastodon_data_mountpoint: /data
 mastodon_mount_fs_type: ext4
 mastodon_mount_opts: defaults
