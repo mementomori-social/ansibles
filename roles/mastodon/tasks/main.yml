@@ -373,6 +373,14 @@
       - python3-xxhash
     state: present
 
+- name: Install the Mastodon list page
+  become: true
+  become_user: mastodon
+  ansible.builtin.git:
+    repo: 'https://github.com/mementomori-social/the-mastodon-list.git'
+    dest: "{{ mastodon_home }}/the-mastodon-list"
+    version: master
+
 - name: Install Fedifetcher
   become: true
   become_user: mastodon
