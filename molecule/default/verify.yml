@@ -183,7 +183,6 @@
       loop:
         - /etc/nginx/conf.d/diagnostic-log.conf
         - /etc/nginx/conf.d/static-asset-ratelimit.conf
-        - /etc/nginx/cors_support
         - /etc/nginx/snippets/stub-status.conf
         - /etc/nginx/sites-available/mastodon
         - /etc/nginx/sites-available/rolle
