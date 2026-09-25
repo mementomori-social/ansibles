@@ -45,6 +45,7 @@
 * Tune PostgreSQL WAL, autovacuum and checkpoints, Ref: MEM-71
 * Build Ruby with YJIT, Ref: MEM-70
 * Huge pages and pg_stat_statements, Ref: MEM-71
+* Install the Mastodon list page
 
 ### 1.1.1: 2026-09-15
 
