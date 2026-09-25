@@ -33,6 +33,7 @@
 * Listen on IPv6 for HTTPS, Ref: MEM-66
 * Use the http2 directive, not the listen parameter
 * Pick the global IPv6 address for AAAA, Ref: MEM-66
+* Let nginx serve assets from the mastodon home
 
 ### 1.1.1: 2026-09-15
 
