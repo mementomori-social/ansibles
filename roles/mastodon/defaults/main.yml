@@ -210,7 +210,7 @@ mastodon_api_registrations_require_invite: 'true'
 mastodon_blocked_username_patterns: "{{ vault_mastodon_blocked_username_patterns }}"
 
 
-mastodon_upgrade_scripts_version: 621bef1
+mastodon_upgrade_scripts_version: "1.6.1"
 mastodon_finnish_users_version: 78ac545
 mastodon_finnish_users_client_id: "{{ vault_finnish_users_client_id }}"
 mastodon_finnish_users_client_secret: "{{ vault_finnish_users_client_secret }}"
