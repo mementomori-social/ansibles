@@ -15,7 +15,5 @@ cd {{ mastodon_home }}/live
 
 # https://github.com/VyrCossont/mastodon/pull/8
 bundle exec bin/tootctl search deploy --concurrency 16 --batch_size 4096
-bundle exec bin/tootctl search deploy --only accounts --concurrency 16 --batch_size 4096
-bundle exec bin/tootctl search deploy --only statuses --concurrency 16 --batch_size 4096
 
 echo "--- $(date -Is) done ---"
