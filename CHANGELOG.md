@@ -46,6 +46,7 @@
 * Build Ruby with YJIT, Ref: MEM-70
 * Huge pages and pg_stat_statements, Ref: MEM-71
 * Install the Mastodon list page
+* Pin upgrade scripts to 1.6.1
 
 ### 1.1.1: 2026-09-15
 
