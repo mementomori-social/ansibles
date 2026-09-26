@@ -8,7 +8,7 @@ RAILS_ENV=production bin/rails runner '
 cutoff = 6.hours.ago
 
 Status.local
-  .where("created_at > ?", cutoff)
+  .where("statuses.id > ?", Mastodon::Snowflake.id_at(cutoff, with_random: false))
   .where("text LIKE ?", "%https://%")
   .order(id: :desc)
   .limit(200)
