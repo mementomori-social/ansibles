@@ -49,6 +49,7 @@
 * Pin upgrade scripts to 1.6.1
 * Fix preview card refetch scanning all statuses
 * Run search reindex weekly, once
+* Sweep old posts for missing preview cards
 
 ### 1.1.1: 2026-09-15
 

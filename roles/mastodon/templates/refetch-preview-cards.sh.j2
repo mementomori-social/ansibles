@@ -1,11 +1,25 @@
 #!/bin/bash
-# Re-fetch preview cards for recent local statuses with URLs but missing/broken cards.
-# Runs as mastodon user via cron every 30 minutes.
+# Re-fetch preview cards for local statuses with URLs but missing/broken cards.
+# Runs as mastodon user every 30 minutes: all recent posts, plus a capped slice
+# of older ones so the whole history is swept without load spikes.
 
 cd {{ mastodon_home }}/live || exit 1
 
 RAILS_ENV=production bin/rails runner '
 cutoff = 6.hours.ago
+cursor_file = "{{ mastodon_home }}/logs/refetch-preview-cards.cursor"
+sweep_limit = 100
+
+# FetchLinkCardService skips statuses that already have a card, so detach first
+# and put the old card back if the refetch fails.
+refresh = lambda do |status, card|
+  PreviewCardsStatus.where(status_id: status.id).delete_all
+  FetchLinkCardService.new.call(status.reload)
+  next if status.reload.preview_card
+
+  PreviewCardsStatus.create!(status: status, preview_card: card, url: card.url)
+  Rails.cache.delete(status)
+end
 
 Status.local
   .where("statuses.id > ?", Mastodon::Snowflake.id_at(cutoff, with_random: false))
@@ -19,4 +33,37 @@ Status.local
     PreviewCardsStatus.where(status_id: status.id).delete_all if card
     LinkCrawlWorker.perform_async(status.id)
   end
+
+# Older posts, one local account at a time so every query stays on the
+# account_id index. A card without an image is retried at most monthly.
+account_from, status_from = File.exist?(cursor_file) ? File.read(cursor_file).split.map(&:to_i) : [0, 0]
+work = 0
+finished = catch(:full) do
+  Account.local.where("id >= ?", account_from).order(:id).pluck(:id).each do |account_id|
+    start = account_id == account_from ? status_from + 1 : 0
+    Status.where(account_id: account_id, reblog_of_id: nil)
+      .where("text LIKE ?", "%https://%")
+      .includes(preview_cards_status: :preview_card)
+      .find_each(start: start) do |status|
+        File.write(cursor_file, "#{account_id} #{status.id}")
+        card = status.preview_card
+        if card.nil?
+          tried = "refetch-preview-cards:#{status.id}"
+          next if Rails.cache.exist?(tried)
+
+          Rails.cache.write(tried, true, expires_in: 30.days)
+          LinkCrawlWorker.perform_async(status.id)
+        elsif card.image_file_name.blank? && card.updated_at < 30.days.ago
+          refresh.call(status, card)
+        else
+          next
+        end
+        work += 1
+        throw :full, false if work >= sweep_limit
+      end
+  end
+  true
+end
+File.delete(cursor_file) if finished && File.exist?(cursor_file)
+puts "sweep: #{work} refreshed, #{finished ? "history done, restarting" : File.read(cursor_file)}"
 '
