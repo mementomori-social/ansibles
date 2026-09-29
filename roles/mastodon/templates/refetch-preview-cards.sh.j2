@@ -43,9 +43,12 @@ finished = catch(:full) do
     start = account_id == account_from ? status_from + 1 : 0
     Status.where(account_id: account_id, reblog_of_id: nil)
       .where("text LIKE ?", "%https://%")
-      .includes(preview_cards_status: :preview_card)
+      .includes(:media_attachments, preview_cards_status: :preview_card)
       .find_each(start: start) do |status|
         File.write(cursor_file, "#{account_id} #{status.id}")
+        # Mastodon shows no link card on posts with media.
+        next if status.with_media?
+
         card = status.preview_card
         if card.nil?
           tried = "refetch-preview-cards:#{status.id}"
