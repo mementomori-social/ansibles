@@ -18,7 +18,8 @@
 * Change upgrade scripts to 1.6.1
 * Fix missing preview card images
 * Change search reindex to weekly
-* Fix media cleanup and dead job timers
+* Fix dead job flush timer
+* Remove duplicate media cleanup timers
 * Fix package installs failing on stale package lists
 * Fix private network route winning over the public one
 

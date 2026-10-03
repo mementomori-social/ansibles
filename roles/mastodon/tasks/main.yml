@@ -347,7 +347,6 @@
     mode: '0750'
   loop:
     - flush-dead-jobs.rb
-    - mastodon-prune.sh
     - refetch-preview-cards.sh
     - check-db.sh
     - check-diskspace.sh
