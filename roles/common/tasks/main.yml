@@ -53,6 +53,12 @@
       # Ansible managed
       %sudo ALL=(ALL) NOPASSWD:ALL
 
+- name: Refresh apt package lists
+  tags: pkgs
+  ansible.builtin.apt:
+    update_cache: true
+    cache_valid_time: 3600
+
 - name: Install some basic goodies
   tags: pkgs
   ansible.builtin.package:
