@@ -8,7 +8,7 @@ check process mastodon-web matching "puma.*\[live\]"
     if failed host 127.0.0.1 port 3000 protocol http
         and request "/health" with timeout 15 seconds
     then restart
-    if totalmem > 4.5 GB for 3 cycles then restart
+    if totalmem > {{ mastodon_web_concurrency + 1 }} GB for 3 cycles then restart
     if cpu > 90% for 5 cycles then restart
     if 5 restarts within 5 cycles then unmonitor
 

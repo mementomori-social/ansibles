@@ -13,7 +13,7 @@ Environment="PORT=3000"
 # In the example above with WEB_CONCURRENCY = 3 estimated amount of RAM necessary is 9 GB.
 # For MAX_THREADS we recommend starting with some generic value like 15 and increasing it until 70% of CPU is used on average.
 # This means you need to observe the machines running your Web services to understand if you can squeeze more threads.
-Environment="WEB_CONCURRENCY=7"
+Environment="WEB_CONCURRENCY={{ mastodon_web_concurrency }}"
 Environment="MAX_THREADS=10"
 Environment="LD_PRELOAD=libjemalloc.so"
 ExecStart={{ mastodon_home }}/.rbenv/shims/bundle exec puma -C config/puma.rb
