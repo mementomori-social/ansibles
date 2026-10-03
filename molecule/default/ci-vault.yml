@@ -56,6 +56,7 @@ vault_postgresql_pg_hba_block: |
   host all all 127.0.0.1/32 scram-sha-256
 vault_room_id: "ci-room-id"
 vault_ssh_user_chat: "ci"
+vault_root_password_hash: "$6$cisalt$vdGBxKyz46k/Y6QcLjaG635mo75napOvFhVDqg30jrcirvnK9q.DdUJZwed0LkFTZQEAhdgbuPXW6CAStPjMC0"
 vault_ssh_user_elastic: "ci"
 vault_ssh_user_mastodon: "ci"
 vault_ssh_user_postgresql: "ci"

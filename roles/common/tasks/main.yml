@@ -33,6 +33,13 @@
     - pubkeys-rolle.pub
     - pubkeys-ikke.pub
 
+# Only for the UpCloud web console: SSH below refuses passwords and root.
+- name: Set the root password
+  ansible.builtin.user:
+    name: root
+    password: "{{ vault_root_password_hash }}"
+  no_log: true
+
 - name: Fix SSH options
   ansible.builtin.lineinfile:
     path: /etc/ssh/sshd_config
