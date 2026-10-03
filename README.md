@@ -9,7 +9,7 @@ In addition to this repo you will need set of variables defined in
 secrets/vault.yml file. All such variables are named with prefix `vault_` so
 you know to create your own vault if you want to try this automation yourself.
 
-# Prerequisites
+## Prerequisites
 
 1. [Install ansible](https://docs.ansible.com/projects/ansible/latest/getting_started/get_started_ansible.html).
 2. Clone this repo and goto that directory
@@ -25,7 +25,7 @@ you know to create your own vault if you want to try this automation yourself.
 6. If you want messages sent to matrix install matrix-client
    `pip install matrix-client`
 
-# Inventories
+## Inventories
 
 * inventory - is static file for hetzner env.
 * inventory-uplcoud.yml is dynamic inventory for Upcloud.
@@ -40,7 +40,7 @@ inventory contents like this:
 PYTHONPATH=collections ansible-inventory -i inventory-upcloud.yml --graph --vars
 ```
 
-# Secrets Vault
+## Secrets Vault
 
 We have secrets in ansible vault. It's a good idea to put link to vault in `group_vars/all/` directory.
 
@@ -49,11 +49,11 @@ cd group_vars/all
 ln -s ../../secrets/vault.yml .
 ```
 
-# Playbooks
+## Playbooks
 
 Here are some use cases for the playbooks:
 
-## Quick health check of the machines
+### Quick health check of the machines
 
 This will check the hosts are reachable, and posts a summary of some details to
 matrix channel if `-e send_to=matrix` is added.
@@ -64,7 +64,7 @@ ansible-playbook -i inventory-hetzner.yml -e @secrets/vault.yml ping.yml
 ```
 
 
-## Update hosts
+### Update hosts
 
 Updates the hosts software packages and reboots the host if seem necessary.
 Also warns if you should reboot anyway due deleted files in use.
@@ -73,7 +73,7 @@ Also warns if you should reboot anyway due deleted files in use.
 ansible-playbook -i inventory-hetzner.yml -e @secrets/vault.yml update-host.yml
 ```
 
-## Setup PostgreSQL
+### Setup PostgreSQL
 
 This imports postgresql role to postgresql server.
 
@@ -82,7 +82,7 @@ ansible-playbook -i inventory-hetzner.yml -e @secrets/vault.yml postgres1l.yml
 ```
 
 
-# Roles
+## Roles
 
 We provision services based on roles. Aim is so we can scale and move services
 between the hosts if later needed.
@@ -94,7 +94,7 @@ between the hosts if later needed.
 * **postgresql** - Install and configure database for mastodon
 * **valkey** - Install and configure key-val store for mastodon
 
-# Testing
+## Testing
 
 [Molecule](https://docs.ansible.com/projects/molecule/) can be used to test the playbooks created.
 It is set to use podman with Ubuntu 26.04 images, the same as the UpCloud template, for testing the playbooks.
