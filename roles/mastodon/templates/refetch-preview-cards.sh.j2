@@ -14,7 +14,11 @@ sweep_limit = 100
 # and put the old card back if the refetch fails.
 refresh = lambda do |status, card|
   PreviewCardsStatus.where(status_id: status.id).delete_all
-  FetchLinkCardService.new.call(status.reload)
+  begin
+    FetchLinkCardService.new.call(status.reload)
+  rescue StandardError => e
+    warn "#{status.id}: #{e.class}"
+  end
   next if status.reload.preview_card
 
   PreviewCardsStatus.create!(status: status, preview_card: card, url: card.url)
