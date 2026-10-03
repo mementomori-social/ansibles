@@ -147,7 +147,7 @@ mastodon_elasticearch_port: 9200
 mastodon_elasticearch_user: "{{ vault_mastodon_elasticearch_user }}"
 mastodon_elasticearch_pass: "{{ vault_mastodon_elasticearch_pass }}"
 
-mastodon_web_concurrency: 6
+mastodon_web_concurrency: 7
 mastodon_max_threads: 10
 mastodon_db_pool: 25
 mastodon_redis_host: localhost
