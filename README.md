@@ -27,14 +27,12 @@ you know to create your own vault if you want to try this automation yourself.
 
 ## Inventories
 
-* inventory - is static file for hetzner env.
-* inventory-uplcoud.yml is dynamic inventory for Upcloud.
+* `inventory-upcloud.yml` is the dynamic inventory for UpCloud, see
+  [the docs](https://upcloud.com/docs/guides/get-started-ansible-inventory/).
+  Hosts are grouped by their `role` label, and every host except the bastion
+  is reached through the bastion.
 
-Upcloud inventory is a dynamic inventory, see usage
-[from docs](https://upcloud.com/docs/guides/get-started-ansible-inventory/).
-
-I had bunch of warnings unless I set `PYTHHON_PATH`. You can check
-inventory contents like this:
+Check the inventory contents:
 
 ```sh
 PYTHONPATH=collections ansible-inventory -i inventory-upcloud.yml --graph --vars
@@ -49,36 +47,50 @@ cd group_vars/all
 ln -s ../../secrets/vault.yml .
 ```
 
-## Playbooks
+## Build a server
 
-Here are some use cases for the playbooks:
+Servers live in UpCloud zone `fi-hel2` on the private network `10.222.222.0/24`.
+
+1. Create the private network, router and NAT gateway, once per zone:
+   ```sh
+   ansible-playbook upcloud-network.yml
+   ```
+2. Create the data disks the server needs, then put each UUID in its
+   `upcloud-create-*.yml` (`data_storage_uuid`, `backup_storage_uuid`).
+   Data disks live apart from the server, so rebuilding a server keeps its data:
+   ```sh
+   upctl storage create --zone fi-hel2 --tier maxiops --size 300 --title postgresql.mementomori.social-data
+   ```
+3. Create the server. Build the bastion first, the other servers are reached
+   through it:
+   ```sh
+   ansible-playbook upcloud-create-bastion.yml
+   ansible-playbook upcloud-create-postgresql.yml
+   ansible-playbook upcloud-create-elastic.yml
+   ansible-playbook upcloud-create-mastodon-0.yml
+   ```
+4. Configure it, or every server at once with `site.yml`:
+   ```sh
+   ansible-playbook -i inventory-upcloud.yml postgresql.mementomori.social.yml
+   ```
+
+## Playbooks
 
 ### Quick health check of the machines
 
-This will check the hosts are reachable, and posts a summary of some details to
-matrix channel if `-e send_to=matrix` is added.
-
+Checks the hosts are reachable and, with `-e send_to=matrix`, posts a summary
+to the Matrix channel.
 
 ```sh
-ansible-playbook -i inventory-hetzner.yml -e @secrets/vault.yml ping.yml
+ansible-playbook -i inventory-upcloud.yml ping.yml
 ```
-
 
 ### Update hosts
 
-Updates the hosts software packages and reboots the host if seem necessary.
-Also warns if you should reboot anyway due deleted files in use.
+Updates the software packages and restarts a host when the update needs it.
 
 ```sh
-ansible-playbook -i inventory-hetzner.yml -e @secrets/vault.yml update-host.yml
-```
-
-### Setup PostgreSQL
-
-This imports postgresql role to postgresql server.
-
-```sh
-ansible-playbook -i inventory-hetzner.yml -e @secrets/vault.yml postgres1l.yml
+ansible-playbook -i inventory-upcloud.yml update-host.yml
 ```
 
 
