@@ -24,6 +24,7 @@
 * Fix private network route winning over the public one
 * Fix monit restarting web every few hours
 * Fix preview card refetch stopping on upload timeouts
+* Add root password for the UpCloud web console
 
 ### 1.2.0: 2026-09-20
 

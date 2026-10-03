@@ -68,6 +68,18 @@
           - ssh_opt_check is not failed
         fail_msg: "SSH option missing"
 
+    - name: Read the root shadow entry
+      ansible.builtin.command: getent shadow root
+      changed_when: false
+      register: root_shadow
+      no_log: true
+
+    - name: Assert root has a password
+      ansible.builtin.assert:
+        that:
+          - root_shadow.stdout.split(':')[1] is match('\$6\$')
+        fail_msg: "root has no password"
+
 - name: Verify postgresql
   hosts: postgresql
   gather_facts: true
