@@ -1,59 +1,47 @@
 ### 1.3.0: 2026-10-03
 
-* Fix Elasticsearch check never detecting failure
-* Keep the Elasticsearch password out of world-readable scripts
-* Tune the kernel for Mastodon on new hosts
-* Watch web, nginx and valkey with monit
-* Install FediFetcher dependencies, Ref: MEM-55
-* Ship journald to Better Stack with vector
-* Start Mastodon services when the role is enabled
-* Listen on IPv6 for HTTPS, Ref: MEM-66
-* Use the http2 directive, not the listen parameter
-* Pick the global IPv6 address for AAAA, Ref: MEM-66
-* Let nginx serve assets from the mastodon home
-* Run health checks every minute
-* Fix sidekiq check working directory
-* Check database disk space every minute
-* Alert when database disk has under 20 GB free
-* Refetch preview cards that lack an image
-* Verify PostgreSQL 18 in Molecule
-* Run Molecule in GitHub CI, Ref: MEM-51
-* Heartbeat for Elasticsearch disk space, Ref: MEM-69
-* Tune PostgreSQL WAL, autovacuum and checkpoints, Ref: MEM-71
-* Build Ruby with YJIT, Ref: MEM-70
-* Huge pages and pg_stat_statements, Ref: MEM-71
-* Install the Mastodon list page
-* Pin upgrade scripts to 1.6.1
-* Fix preview card refetch scanning all statuses
-* Run search reindex weekly, once
-* Sweep old posts for missing preview cards
-* Fix failing media prune and dead job flush timers
+* Fix Elasticsearch health check and hide its password
+* Tune the kernel for Mastodon hosts
+* Add monit for web, nginx and Valkey
+* Add FediFetcher dependencies, Ref: MEM-55
+* Add log shipping to Better Stack
+* Fix Mastodon services not starting when enabled
+* Add IPv6 for HTTPS, Ref: MEM-66
+* Fix nginx not serving assets from the Mastodon home
+* Fix health checks and run them every minute
+* Add database disk space alert
+* Add Molecule tests to GitHub CI, Ref: MEM-51
+* Add Elasticsearch disk space alert, Ref: MEM-69
+* Tune PostgreSQL for speed, Ref: MEM-71
+* Add faster Ruby build, Ref: MEM-70
+* Add the Mastodon list page
+* Change upgrade scripts to 1.6.1
+* Fix missing preview card images
+* Change search reindex to weekly
+* Fix media cleanup and dead job timers
 
 ### 1.2.0: 2026-09-20
 
-* Monitor every host with Netdata, Ref: MEM-22
-* Split playbooks per server, Ref: MEM-21
-* Move common and wireguard into roles
-* Move PostgreSQL variables into role defaults
+* Add Netdata monitoring on every host, Ref: MEM-22
+* Change playbooks to one per server, Ref: MEM-21
+* Change common and WireGuard into roles
+* Change PostgreSQL settings into role defaults
 * Tune Valkey for Mastodon, Ref: MEM-32
-* Build the Mastodon host without starting services
-* Give mastodon-0 a data volume and public interface, Ref: MEM-60
-* Name VM internal addresses in one place
-* Reach UpCloud hosts over the internal network
-* Allow a per-host SSH listen address
-* Update Cloudflare DNS from Ansible, Ref: MEM-59
-* Stop Yarn install waiting for input
-* Build assets after checkout, Ref: MEM-12
-* Serve the Finnish users list through php-fpm, Ref: MEM-55
-* Clone the Finnish users list to its Finnish path, Ref: MEM-55
-* Restart Mastodon when the env file changes
-* Let Molecule handle role dependencies
-* Name the Mastodon instance in the README
-* Fix status search scope back to classic, Ref: MEM-31
-* Fix precompile never running on built hosts, Ref: MEM-12
+* Change Mastodon host build to not start services
+* Add data volume and public interface to mastodon-0, Ref: MEM-60
+* Change internal addresses into one place
+* Fix reaching UpCloud hosts over the internal network
+* Add per-host SSH listen address
+* Add Cloudflare DNS updates, Ref: MEM-59
+* Fix Yarn install waiting for input
+* Fix assets not building on new hosts, Ref: MEM-12
+* Add the Finnish users list, Ref: MEM-55
+* Add Mastodon restart when its settings change
+* Fix Molecule role dependencies
+* Change README to name the Mastodon instance
+* Fix search scope, Ref: MEM-31
 * Add back invite-only signups and username blocking
-* Fix stray quotes in the fork compare URL
-* Install and schedule the Finnish users list, Ref: MEM-55
+* Fix fork compare URL
 
 ### 1.1.1: 2026-09-15
 
