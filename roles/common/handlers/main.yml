@@ -4,3 +4,7 @@
   ansible.builtin.service:
     name: ssh
     state: restarted
+
+- name: Apply netplan
+  ansible.builtin.command: netplan apply
+  changed_when: true

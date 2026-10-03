@@ -69,3 +69,37 @@
     - tmux
     - zsh
     - btop
+
+- name: Find the private network interface
+  ansible.builtin.set_fact:
+    private_iface: "{{ item }}"
+  loop: "{{ ansible_facts.interfaces }}"
+  when:
+    - ansible_facts[item].ipv4 is defined
+    - ansible_facts[item].ipv4.address is match(private_net_prefix | regex_escape)
+
+- name: Find whether the host has a public interface
+  ansible.builtin.set_fact:
+    has_public_iface: true
+  loop: "{{ ansible_facts.interfaces }}"
+  when:
+    - ansible_facts[item].ipv4 is defined
+    - ansible_facts[item].ipv4.address is not match('10\.')
+    - ansible_facts[item].ipv4.address is not match('127\.')
+
+# Both DHCP default routes arrive with metric 100 and the private one wins at
+# random, which cuts the host off from the internet.
+- name: Prefer the public default route over the private one
+  ansible.builtin.copy:
+    dest: /etc/netplan/60-private-route-metric.yaml
+    mode: "0600"
+    content: |
+      # Ansible managed
+      network:
+        version: 2
+        ethernets:
+          {{ private_iface }}:
+            dhcp4-overrides:
+              route-metric: {{ private_route_metric }}
+  when: has_public_iface | default(false) and private_iface is defined
+  notify: Apply netplan

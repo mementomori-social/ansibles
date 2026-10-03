@@ -20,6 +20,7 @@
 * Change search reindex to weekly
 * Fix media cleanup and dead job timers
 * Fix package installs failing on stale package lists
+* Fix private network route winning over the public one
 
 ### 1.2.0: 2026-09-20
 
