@@ -23,6 +23,7 @@
 * Fix package installs failing on stale package lists
 * Fix private network route winning over the public one
 * Fix monit restarting web every few hours
+* Fix preview card refetch stopping on upload timeouts
 
 ### 1.2.0: 2026-09-20
 
