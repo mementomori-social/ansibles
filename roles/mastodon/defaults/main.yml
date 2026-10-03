@@ -81,8 +81,6 @@ mastodon_systemd_files:
   - mastodon-fedifetcher.timer
   - mastodon-flush-dead-jobs.service
   - mastodon-flush-dead-jobs.timer
-  - mastodon-media-clear.service
-  - mastodon-media-clear.timer
   - mastodon-finnish-users-fetch.service
   - mastodon-finnish-users-fetch.timer
   - mastodon-prune.service
@@ -114,7 +112,6 @@ mastodon_services:
   - mastodon-check@elasticsearch.timer
   - mastodon-check@sidekiq.timer
   - mastodon-check@streaming.timer
-  - mastodon-media-clear.timer
   - mastodon-prune.timer
   - mastodon-build-search-index.timer
   - mastodon-flush-dead-jobs.timer

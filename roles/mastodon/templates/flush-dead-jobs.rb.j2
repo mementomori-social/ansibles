@@ -6,7 +6,7 @@
 # cd /home/mastodon/live && RAILS_ENV=production ruby ~/flush-dead-jobs.rb
 # Purpose: Flush Sidekiq's dead queue and log deleted jobs to a timestamped log file
 
-require_relative {{ mastodon_home }}/live/config/environment.rb
+require "{{ mastodon_home }}/live/config/environment"
 require 'sidekiq/api'
 require 'fileutils'
 

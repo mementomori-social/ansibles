@@ -50,6 +50,7 @@
 * Fix preview card refetch scanning all statuses
 * Run search reindex weekly, once
 * Sweep old posts for missing preview cards
+* Fix failing media prune and dead job flush timers
 
 ### 1.1.1: 2026-09-15
 

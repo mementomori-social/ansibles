@@ -6,6 +6,8 @@ After=network.target
 Type=oneshot
 User=mastodon
 WorkingDirectory={{ mastodon_home }}/live
+Environment="RAILS_ENV=production"
+Environment="PATH={{ mastodon_home }}/.rbenv/shims:{{ mastodon_home }}/.rbenv/bin:/usr/local/bin:/usr/bin:/bin"
 ExecStart=/bin/bash {{ mastodon_home }}/bin/mastodon-prune.sh
 StandardOutput=journal
 StandardError=journal
