@@ -1,28 +1,5 @@
-### 1.2.0: 2026-09-20
+### 1.3.0: 2026-10-03
 
-* Monitor every host with Netdata, Ref: MEM-22
-* Split playbooks per server, Ref: MEM-21
-* Move common and wireguard into roles
-* Move PostgreSQL variables into role defaults
-* Tune Valkey for Mastodon, Ref: MEM-32
-* Build the Mastodon host without starting services
-* Give mastodon-0 a data volume and public interface, Ref: MEM-60
-* Name VM internal addresses in one place
-* Reach UpCloud hosts over the internal network
-* Allow a per-host SSH listen address
-* Update Cloudflare DNS from Ansible, Ref: MEM-59
-* Stop Yarn install waiting for input
-* Build assets after checkout, Ref: MEM-12
-* Serve the Finnish users list through php-fpm, Ref: MEM-55
-* Clone the Finnish users list to its Finnish path, Ref: MEM-55
-* Restart Mastodon when the env file changes
-* Let Molecule handle role dependencies
-* Name the Mastodon instance in the README
-* Fix status search scope back to classic, Ref: MEM-31
-* Fix precompile never running on built hosts, Ref: MEM-12
-* Add back invite-only signups and username blocking
-* Fix stray quotes in the fork compare URL
-* Install and schedule the Finnish users list, Ref: MEM-55
 * Fix Elasticsearch check never detecting failure
 * Keep the Elasticsearch password out of world-readable scripts
 * Tune the kernel for Mastodon on new hosts
@@ -51,6 +28,32 @@
 * Run search reindex weekly, once
 * Sweep old posts for missing preview cards
 * Fix failing media prune and dead job flush timers
+
+### 1.2.0: 2026-09-20
+
+* Monitor every host with Netdata, Ref: MEM-22
+* Split playbooks per server, Ref: MEM-21
+* Move common and wireguard into roles
+* Move PostgreSQL variables into role defaults
+* Tune Valkey for Mastodon, Ref: MEM-32
+* Build the Mastodon host without starting services
+* Give mastodon-0 a data volume and public interface, Ref: MEM-60
+* Name VM internal addresses in one place
+* Reach UpCloud hosts over the internal network
+* Allow a per-host SSH listen address
+* Update Cloudflare DNS from Ansible, Ref: MEM-59
+* Stop Yarn install waiting for input
+* Build assets after checkout, Ref: MEM-12
+* Serve the Finnish users list through php-fpm, Ref: MEM-55
+* Clone the Finnish users list to its Finnish path, Ref: MEM-55
+* Restart Mastodon when the env file changes
+* Let Molecule handle role dependencies
+* Name the Mastodon instance in the README
+* Fix status search scope back to classic, Ref: MEM-31
+* Fix precompile never running on built hosts, Ref: MEM-12
+* Add back invite-only signups and username blocking
+* Fix stray quotes in the fork compare URL
+* Install and schedule the Finnish users list, Ref: MEM-55
 
 ### 1.1.1: 2026-09-15
 
