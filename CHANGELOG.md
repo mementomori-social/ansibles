@@ -1,3 +1,7 @@
+### 1.3.1: 2026-10-11
+
+* Mastodon role points at the 2026-10-11 fork branch
+
 ### 1.3.0: 2026-10-03
 
 * Fix Elasticsearch health check and hide its password
