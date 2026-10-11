@@ -24,6 +24,8 @@ New files installed:
 
 - `/etc/nginx/conf.d/diagnostic-log.conf` — JSONL access log recording
   `$upstream_cache_status` and timings for non-cache-hit requests.
+- `/etc/logrotate.d/nginx-diagnostic` — daily rotation for `diag.jsonl`,
+  which the stock nginx `*.log` rule does not match.
 - `/etc/nginx/conf.d/static-asset-ratelimit.conf` — `staticassets` limit_req
   zone used to opt static asset locations out of the `flood` rate limit.
 - `/etc/nginx/snippets/stub-status.conf` — `/stub_status` location for

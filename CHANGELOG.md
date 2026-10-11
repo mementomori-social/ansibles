@@ -1,6 +1,7 @@
 ### 1.3.1: 2026-10-11
 
 * Mastodon role points at the 2026-10-11 fork branch
+* Fix diagnostic log filling the disk
 
 ### 1.3.0: 2026-10-03
 

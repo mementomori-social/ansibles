@@ -1,0 +1,14 @@
+# diag.jsonl sits outside the stock nginx *.log rule on purpose (see diagnostic-log.conf).
+/var/log/nginx/diag.jsonl {
+	daily
+	missingok
+	rotate 7
+	compress
+	delaycompress
+	notifempty
+	create 0640 www-data adm
+	sharedscripts
+	postrotate
+		invoke-rc.d nginx rotate >/dev/null 2>&1
+	endscript
+}
