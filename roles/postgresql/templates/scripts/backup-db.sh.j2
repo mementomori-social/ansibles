@@ -14,30 +14,40 @@ backup_dir="{{ postgresql_backupdir }}/"
 cleanup_old_backups() {
     local threshold={{ postgresql_backup_diskspace_threshold }}
     local usage=$(df -h "$backup_dir" | awk 'NR==2 {print $5}' | cut -d'%' -f1)
+    local avail_kb=$(df -k --output=avail "$backup_dir" | tail -1 | tr -d ' ')
 
-    echo "Starting cleanup. Current disk usage: ${usage}%"
+    # The next dump needs room too: keep free space above the newest dump plus 10%
+    local newest_backup=$(find "$backup_dir" -maxdepth 1 -type d -name "mastodon_production_*.backup" -printf '%T+ %p\n' | sort | tail -1 | cut -d' ' -f2-)
+    local needed_kb=0
+    if [ -n "$newest_backup" ]; then
+        needed_kb=$(( $(du -sk "$newest_backup" | cut -f1) * 11 / 10 ))
+    fi
 
-    while [ "$usage" -gt "$threshold" ]; do
-        # Find and delete the oldest backup directory
-        oldest_backup=$(find "$backup_dir" -maxdepth 1 -type d -name "mastodon_production_*.backup" -printf '%T+ %p\n' | sort | head -1 | cut -d' ' -f2-)
+    echo "Starting cleanup. Current disk usage: ${usage}%, free: $((avail_kb / 1048576))G, next dump needs: $((needed_kb / 1048576))G"
 
-        if [ -z "$oldest_backup" ]; then
-            echo "No more backups to clean up"
+    while [ "$usage" -gt "$threshold" ] || [ "$avail_kb" -lt "$needed_kb" ]; do
+        # Never delete the last backup
+        if [ "$(find "$backup_dir" -maxdepth 1 -type d -name "mastodon_production_*.backup" | wc -l)" -le 1 ]; then
+            echo "Only one backup left, not deleting it"
             break
         fi
+
+        # Find and delete the oldest backup directory
+        oldest_backup=$(find "$backup_dir" -maxdepth 1 -type d -name "mastodon_production_*.backup" -printf '%T+ %p\n' | sort | head -1 | cut -d' ' -f2-)
 
         echo "Removing old backup: $(basename "$oldest_backup")"
         rm -rf "$oldest_backup"
 
         # Recalculate usage after deletion
         usage=$(df -h "$backup_dir" | awk 'NR==2 {print $5}' | cut -d'%' -f1)
-        echo "Current disk usage after deletion: ${usage}%"
+        avail_kb=$(df -k --output=avail "$backup_dir" | tail -1 | tr -d ' ')
+        echo "Current disk usage after deletion: ${usage}%, free: $((avail_kb / 1048576))G"
     done
 
-    echo "Cleanup complete. Current disk usage: ${usage}%"
+    echo "Cleanup complete. Current disk usage: ${usage}%, free: $((avail_kb / 1048576))G"
 
-    # Return failure if we couldn't get under threshold
-    [ "$usage" -le "$threshold" ]
+    # Return failure if there is still not enough room
+    [ "$usage" -le "$threshold" ] && [ "$avail_kb" -ge "$needed_kb" ]
 }
 
 # Run cleanup
