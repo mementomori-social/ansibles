@@ -2,6 +2,7 @@
 
 * Mastodon role points at the 2026-10-11 fork branch
 * Fix diagnostic log filling the disk
+* Add starship prompt and bash for mastodon
 
 ### 1.3.0: 2026-10-03
 
