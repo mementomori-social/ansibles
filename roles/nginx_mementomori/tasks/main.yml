@@ -86,6 +86,14 @@
     mode: '0644'
   notify: Reload nginx
 
+- name: Rotate diagnostic cache-status log
+  ansible.builtin.copy:
+    src: diagnostic-log.logrotate
+    dest: /etc/logrotate.d/nginx-diagnostic
+    owner: root
+    group: root
+    mode: '0644'
+
 - name: Install static asset rate limit zone
   ansible.builtin.copy:
     src: static-asset-ratelimit.conf
