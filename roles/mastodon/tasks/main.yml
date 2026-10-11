@@ -144,6 +144,7 @@
     password: '!'
     home: "{{ mastodon_home }}"
     comment: Mastodon server user
+    shell: /usr/bin/bash
     uid: 1100
     group: mastodon
 

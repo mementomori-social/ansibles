@@ -76,6 +76,32 @@
     - tmux
     - zsh
     - btop
+    - bash-completion
+    - starship
+
+- name: Configure the starship prompt
+  ansible.builtin.copy:
+    dest: /etc/starship.toml
+    mode: "0644"
+    content: |
+      # Ansible managed
+      [hostname]
+      ssh_only = false
+      format = "🌐 [$hostname]($style) "
+      style = "#0092D6"
+
+      [username]
+      show_always = true
+
+      [php]
+      disabled = true
+
+- name: Use the starship prompt in every bash shell
+  ansible.builtin.blockinfile:
+    path: /etc/bash.bashrc
+    block: |
+      export STARSHIP_CONFIG=/etc/starship.toml
+      eval "$(starship init bash)"
 
 - name: Find the private network interface
   ansible.builtin.set_fact:
