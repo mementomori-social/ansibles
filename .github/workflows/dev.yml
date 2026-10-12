@@ -63,7 +63,7 @@ jobs:
       # runner is uid 1001. On a developer's machine the first user is 1000.
       - name: Clone the fork where the container can write
         run: |
-          branch=${FORK_BRANCH:-$(git ls-remote --heads "$FORK" 'mementomods-*' | sed 's#.*refs/heads/##' | sort | tail -1)}
+          branch=${FORK_BRANCH:-$(git ls-remote --heads "$FORK" | grep -oE 'refs/heads/mementomods-[0-9]{4}-[0-9]{2}-[0-9]{2}$' | sed 's#refs/heads/##' | sort | tail -1)}
           echo "Fork branch: $branch"
           git clone --depth 1 --branch "$branch" "$FORK" "$CHECKOUT"
           chmod -R a+rwX "$CHECKOUT"
@@ -134,7 +134,7 @@ jobs:
 
       - name: Clone the fork
         run: |
-          branch=${FORK_BRANCH:-$(git ls-remote --heads "$FORK" 'mementomods-*' | sed 's#.*refs/heads/##' | sort | tail -1)}
+          branch=${FORK_BRANCH:-$(git ls-remote --heads "$FORK" | grep -oE 'refs/heads/mementomods-[0-9]{4}-[0-9]{2}-[0-9]{2}$' | sed 's#refs/heads/##' | sort | tail -1)}
           echo "Fork branch: $branch"
           git clone --depth 1 --branch "$branch" "$FORK" "$CHECKOUT"
 
