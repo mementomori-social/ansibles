@@ -4,6 +4,7 @@
 * Fix diagnostic log filling the disk
 * Add starship prompt and bash for mastodon
 * Keep room for one full dump on the backup disk
+* Add dev environment pointer to README
 
 ### 1.3.0: 2026-10-03
 

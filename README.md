@@ -9,6 +9,16 @@ In addition to this repo you will need set of variables defined in
 secrets/vault.yml file. All such variables are named with prefix `vault_` so
 you know to create your own vault if you want to try this automation yourself.
 
+> [!IMPORTANT]
+> **Interested in running the mementomori.test development environment on
+> your Mac or Linux machine?** It is not in this repo. It runs in Docker from
+> our Mastodon fork: clone
+> [mementomori-social/mastodon](https://github.com/mementomori-social/mastodon),
+> switch to the newest `mementomods-YYYY-MM-DD` branch and follow
+> `dev/README.md` there
+> ([current one](https://github.com/mementomori-social/mastodon/blob/mementomods-2026-10-11/dev/README.md)).
+> These playbooks are for the production servers only.
+
 ## Prerequisites
 
 1. [Install ansible](https://docs.ansible.com/projects/ansible/latest/getting_started/get_started_ansible.html).
