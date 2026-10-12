@@ -26,7 +26,7 @@ for path, text in files:
     for pattern in re.findall(r'^\s*include\s+([^;]+);', code, flags=re.M):
         includes.append(os.path.join(conf_dir, pattern.strip()))
 
-    names = [n for d in re.findall(r'server_name\s+([^;]+);', code) for n in d.split()]
+    names = [n for d in re.findall(r'(?<![\w])server_name\s+([^;]+);', code) for n in d.split()]
     if domain in names:
         others = sorted({n for n in names if n not in (domain, '_')})
         existing.append({'path': path, 'others': others, 'managed': MARKER in text})
