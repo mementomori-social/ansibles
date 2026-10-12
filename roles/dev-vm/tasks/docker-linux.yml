@@ -15,9 +15,10 @@
     append: true
 
 # A new group only applies to new logins, so this run goes through sg.
+# Docker commands are passed in DEV_VM_CMD so their quotes stay intact.
 - name: Run docker through the docker group
   ansible.builtin.set_fact:
-    dev_vm_wrap: "sg docker -c '%s'"
+    dev_vm_shell: sg docker -c "$DEV_VM_CMD"
 
 - name: Check Docker Compose
   ansible.builtin.include_tasks: compose-version.yml

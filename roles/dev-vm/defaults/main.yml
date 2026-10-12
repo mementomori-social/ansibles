@@ -8,12 +8,20 @@ dev_vm_checkout: "{{ ansible_facts.env.HOME }}/Projects/mastodon"
 # existing checkout is never switched or updated.
 dev_vm_branch: ""
 
-# Empty uses 443, or 8443 when something else already listens on 443.
+# Empty uses 443 when free. When a local nginx owns 443, the stack listens on
+# dev_vm_fallback_https_port and nginx forwards https://mementomori.test to it,
+# replacing any other mementomori.test site. Anything else on 443 means the
+# address gets :8443. A fixed port turns all of this off.
 dev_vm_https_port: ""
 dev_vm_fallback_https_port: 8443
+dev_vm_nginx_proxy: true
+dev_vm_nginx_backup_dir: "{{ ansible_facts.env.HOME }}/.local/share/mementomori-dev/nginx-backup"
 
 # small, default or large, see dev/README.md in the fork. Empty skips seeding.
 dev_vm_seed_scale: small
+# Wipe and reseed when local posts were made under another address, for
+# example after moving from :8443 to the nginx-forwarded plain address.
+dev_vm_reset_on_address_change: true
 
 # bin/mementomori-dev uses `ports: !reset`, which needs Compose 2.24.
 dev_vm_compose_min_version: 2.24.0
