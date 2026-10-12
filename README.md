@@ -1,6 +1,6 @@
 # Mementomori.social Mastodon instance playbooks
 
-[![Build](https://img.shields.io/github/actions/workflow/status/mementomori-social/ansibles/lint.yml?style=for-the-badge&label=build)](https://github.com/mementomori-social/ansibles/actions/workflows/lint.yml)
+![Version](https://img.shields.io/badge/version-1.4.0-blue?style=for-the-badge) ![Mastodon](https://img.shields.io/badge/-MASTODON-%236364FF?style=for-the-badge&logo=mastodon&logoColor=white) ![Ansible](https://img.shields.io/badge/Ansible-EE0000?style=for-the-badge&logo=ansible&logoColor=white) ![linux](https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black) ![macOS](https://img.shields.io/badge/macOS-000000?style=for-the-badge&logo=apple&logoColor=white) [![Build](https://img.shields.io/github/actions/workflow/status/mementomori-social/ansibles/lint.yml?style=for-the-badge&label=build)](https://github.com/mementomori-social/ansibles/actions/workflows/lint.yml) [![Dev environment](https://img.shields.io/github/actions/workflow/status/mementomori-social/ansibles/dev.yml?style=for-the-badge&label=dev%20environment)](https://github.com/mementomori-social/ansibles/actions/workflows/dev.yml)
 
 This repo contains ansible automation to setup and maintain
 [mementomori.social Mastodon instance](https://mementomori.social) infra.
