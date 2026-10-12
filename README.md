@@ -10,19 +10,13 @@ secrets/vault.yml file. All such variables are named with prefix `vault_` so
 you know to create your own vault if you want to try this automation yourself.
 
 > [!IMPORTANT]
-> **Want the mementomori.test development environment on your Mac or Linux
-> machine?** Run this, nothing else is needed:
+> **Want the mementomori.test development environment on your Mac or Linux machine?** Run this, nothing else is needed:
 >
 > ```sh
 > git clone https://github.com/mementomori-social/ansibles.git && ansibles/dev.sh
 > ```
 >
-> It installs Docker, mkcert and Ansible if missing, trusts the local
-> certificate, adds `mementomori.test` to `/etc/hosts`, clones
-> [our Mastodon fork](https://github.com/mementomori-social/mastodon) to
-> `~/Projects/mastodon` and starts it with demo data. See
-> [Development environment](#development-environment). The rest of this repo
-> is for the production servers.
+> It installs Docker, mkcert and Ansible if missing, trusts the local certificate, adds `mementomori.test` to `/etc/hosts`, clones [our Mastodon fork](https://github.com/mementomori-social/mastodon) to `~/Projects/mastodon` and starts it with demo data. See [Development environment](#development-environment). The rest of this repo is for the production servers.
 
 ## Prerequisites
 
@@ -123,10 +117,7 @@ between the hosts if later needed.
 
 ## Development environment
 
-`dev.sh` runs `dev.yml` with the `dev-vm` role against your own machine. It
-works on macOS, Arch Linux, Debian and Ubuntu, and asks for your password once
-for the system changes. The stack itself is Docker from the Mastodon fork,
-described in `dev/README.md` there.
+`dev.sh` runs `dev.yml` with the `dev-vm` role against your own machine. It works on macOS, Arch Linux, Debian and Ubuntu, and asks for your sudo password once for the system changes, unless sudo needs none. The stack itself is Docker from the Mastodon fork, described in `dev/README.md` there.
 
 ```mermaid
 flowchart LR
@@ -144,40 +135,17 @@ flowchart LR
 | Docker | Docker Desktop with Homebrew, skipped when Docker Compose 2.24 or newer is already there | `docker`, `docker-buildx`, `docker-compose`, and you in the `docker` group | Docker's apt repository, and you in the `docker` group |
 | Certificate | System keychain, macOS asks to confirm | System trust store | System trust store |
 
-Two things need you at the keyboard on macOS: Docker Desktop's licence on its
-first start, and the keychain confirmation. On Linux log out and in once
-afterwards so the `docker` group applies to your own shell.
+Two things need you at the keyboard on macOS: Docker Desktop's licence on its first start, and the keychain confirmation. On Linux log out and in once afterwards so the `docker` group applies to your own shell.
 
-Running it again is safe. An existing checkout is never switched or pulled,
-and an already seeded database is left alone.
+Running it again is safe. An existing checkout is never switched or pulled, and an already seeded database is left alone.
 
-The site is always https://mementomori.test when port 443 is free or held by
-a local nginx, such as a LEMP setup for other `.test` sites. With nginx on 443
-the stack listens on 8443 and the playbook adds a `mementomori.test` site to
-nginx that forwards to it, then reloads nginx. Any earlier `mementomori.test`
-site, for example a hand-built one, is moved to
-`~/.local/share/mementomori-dev/nginx-backup/` first. If that file also serves
-other sites, the playbook stops instead. When something other than nginx holds
-443, the address is https://mementomori.test:8443. The playbook prints the
-address and remembers the ports for `bin/mementomori-dev`.
+The site is always https://mementomori.test when port 443 is free or held by a local nginx, such as a LEMP setup for other `.test` sites. With nginx on 443 the stack listens on 8443 and the playbook adds a `mementomori.test` site to nginx that forwards to it, then reloads nginx. Any earlier `mementomori.test` site, for example a hand-built one, is moved to `~/.local/share/mementomori-dev/nginx-backup/` first. If that file also serves other sites, the playbook stops instead. When something other than nginx holds 443, the address is https://mementomori.test:8443. The playbook prints the address and remembers the ports for `bin/mementomori-dev`.
 
-Demo posts store the full address, so when it changes (for example from
-`:8443` to the plain address) the playbook wipes and reseeds the demo data. Log in as `demo@mementomori.test`,
-`admin@mementomori.test` or `moderator@mementomori.test`, password `mementomori`.
+Demo posts store the full address, so when it changes (for example from `:8443` to the plain address) the playbook wipes and reseeds the demo data. Log in as `demo@mementomori.test`, `admin@mementomori.test` or `moderator@mementomori.test`, password `mementomori`.
 
-The playbook ends by loading the site over HTTPS with certificate checking on,
-so a certificate the system doesn't trust fails the run. On Linux it also
-creates Chrome's certificate store (`~/.pki/nssdb`) when missing, since mkcert
-only adds its CA to stores that exist.
+The playbook ends by loading the site over HTTPS with certificate checking on, so a certificate the system doesn't trust fails the run. On Linux it also creates Chrome's certificate store (`~/.pki/nssdb`) when missing, since mkcert only adds its CA to stores that exist.
 
-CI (`.github/workflows/dev.yml`) runs `dev.sh` twice on clean machines, once
-with port 443 free and once behind an nginx that already has other sites. The
-second run must change nothing. Ubuntu runs the whole stack and the fork's
-`bin/mementomori-dev check`; macOS 26 runs everything except Docker, which
-GitHub's macOS runners can't run, with a stand-in HTTPS server instead. Both
-open the site in headless Chrome (`tests/dev-browser-check.sh`) and fail on a
-certificate warning. The repository variable `DEV_FORK_BRANCH` picks the fork
-branch to test; without it CI uses the newest `mementomods-*` branch.
+CI (`.github/workflows/dev.yml`) runs `dev.sh` twice on clean machines, once with port 443 free and once behind an nginx that already has other sites. The second run must change nothing. Ubuntu runs the whole stack and the fork's `bin/mementomori-dev check`; macOS 26 runs everything except Docker, which GitHub's macOS runners can't run, with a stand-in HTTPS server instead. Both open the site in headless Chrome (`tests/dev-browser-check.sh`) and fail on a certificate warning. The repository variable `DEV_FORK_BRANCH` picks the fork branch to test; without it CI uses the newest `mementomods-*` branch.
 
 Settings, given with `-e`, for example `./dev.sh -e dev_vm_seed_scale=default`:
 
