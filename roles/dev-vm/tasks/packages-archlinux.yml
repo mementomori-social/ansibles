@@ -1,15 +1,31 @@
 #SPDX-License-Identifier: MIT-0
 ---
-- name: Install Docker, mkcert and nss
+- name: Install mkcert and nss
+  become: true
+  community.general.pacman:
+    name:
+      - mkcert
+      - nss
+    state: present
+
+- name: Install Podman
+  become: true
+  community.general.pacman:
+    name:
+      - podman
+      - docker-compose
+    state: present
+  when: dev_vm_engine == 'podman'
+
+- name: Install Docker
   become: true
   community.general.pacman:
     name:
       - docker
       - docker-buildx
       - docker-compose
-      - mkcert
-      - nss
     state: present
+  when: dev_vm_engine == 'docker'
 
-- name: Linux Docker setup
-  ansible.builtin.include_tasks: docker-linux.yml
+- name: Linux engine setup
+  ansible.builtin.include_tasks: "{{ dev_vm_engine }}-linux.yml"

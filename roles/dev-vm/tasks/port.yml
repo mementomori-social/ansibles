@@ -6,7 +6,7 @@
 - name: Read the port of a running stack
   ansible.builtin.shell: "{{ dev_vm_shell }}"
   environment:
-    DEV_VM_CMD: docker port mementomori-dev-caddy-1 443/tcp
+    DEV_VM_CMD: "{{ dev_vm_engine }} port mementomori-dev-caddy-1 443/tcp"
   register: dev_vm_running_port
   changed_when: false
   failed_when: false
@@ -33,7 +33,7 @@
     dev_vm_behind_nginx: "{{ dev_vm_nginx_ok }}"
   vars:
     dev_vm_running: "{{ (dev_vm_running_port.stdout_lines | first | default('')).split(':') | last if dev_vm_running_port.rc == 0 else '' }}"
-    dev_vm_owners: "{{ dev_vm_443.stdout_lines | reject('match', '^(com\\.docke|docker|vpnkit)') | list }}"
+    dev_vm_owners: "{{ dev_vm_443.stdout_lines | reject('match', '^(com\\.docke|docker|vpnkit|gvproxy|rootlessp|pasta|slirp4net|conmon)') | list }}"
     dev_vm_on_443: "{{ dev_vm_running == '443' or dev_vm_owners | length == 0 }}"
     dev_vm_nginx_ok: >-
       {{ not dev_vm_https_port and not dev_vm_on_443 and dev_vm_nginx_proxy

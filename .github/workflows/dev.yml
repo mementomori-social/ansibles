@@ -3,8 +3,9 @@ name: Dev environment
 # Runs dev.sh on clean machines, twice, and checks the site in curl and Chrome.
 # Each OS has a job with port 443 free and one with a local nginx on 443 that
 # already serves another site and an older mementomori.test site.
-# Ubuntu runs the whole Docker stack and the fork's bin/mementomori-dev check.
-# GitHub's macOS runners can't run Docker (no nested virtualisation), so the
+# Ubuntu runs the whole stack, with Podman and with Docker, and the fork's
+# bin/mementomori-dev check.
+# GitHub's macOS runners can't run a container VM (no nested virtualisation), so the
 # macOS job sets everything else up and puts a stand-in HTTPS server where the
 # stack would listen.
 
@@ -36,6 +37,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        engine: [podman, docker]
         front: [none, nginx]
     env:
       FORK: https://github.com/mementomori-social/mastodon.git
@@ -59,8 +61,8 @@ jobs:
           echo '127.0.0.1 other.test' | sudo tee -a /etc/hosts
           sudo systemctl restart nginx
 
-      # The app container runs as uid 1000 and writes into the checkout; the
-      # runner is uid 1001. On a developer's machine the first user is 1000.
+      # With Docker the app container runs as uid 1000 and writes into the
+      # checkout; the runner is uid 1001. Rootless Podman maps it to the runner.
       - name: Clone the fork where the container can write
         run: |
           branch=${FORK_BRANCH:-$(git ls-remote --heads "$FORK" | grep -oE 'refs/heads/mementomods-[0-9]{4}-[0-9]{2}-[0-9]{2}$' | sed 's#refs/heads/##' | sort | tail -1)}
@@ -69,11 +71,11 @@ jobs:
           chmod -R a+rwX "$CHECKOUT"
 
       - name: Run dev.sh
-        run: ./dev.sh
+        run: ./dev.sh -e dev_vm_engine=${{ matrix.engine }}
 
       - name: Run dev.sh again, nothing should change
         run: |
-          ./dev.sh | tee "$RUNNER_TEMP/second-run.log"
+          ./dev.sh -e dev_vm_engine=${{ matrix.engine }} | tee "$RUNNER_TEMP/second-run.log"
           grep -E 'localhost +: ok=[0-9]+ +changed=0 ' "$RUNNER_TEMP/second-run.log"
 
       - name: Check the stack

@@ -13,8 +13,16 @@
     path: "{{ dev_vm_brew.stdout }}/bin"
     state: present
 
+- name: Podman
+  ansible.builtin.include_tasks: podman-darwin.yml
+  when:
+    - dev_vm_stack | bool
+    - dev_vm_engine == 'podman'
+
 - name: Docker Desktop
-  when: dev_vm_stack | bool
+  when:
+    - dev_vm_stack | bool
+    - dev_vm_engine == 'docker'
   block:
     - name: Check Docker Compose
       ansible.builtin.include_tasks: compose-version.yml
@@ -48,6 +56,6 @@
         that: dev_vm_compose_ok
         fail_msg: "Docker Compose {{ dev_vm_compose_min_version }} or newer is needed, found '{{ dev_vm_compose_version }}'. Update Docker Desktop or OrbStack."
 
-- name: Run docker as this user
+- name: Run the engine as this user
   ansible.builtin.set_fact:
     dev_vm_shell: eval "$DEV_VM_CMD"

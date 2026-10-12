@@ -1,7 +1,7 @@
 #SPDX-License-Identifier: MIT-0
 ---
-# Docker from Docker's own apt repository, as dev/README.md in the fork says.
-# The distro packages can ship a Compose older than dev_vm_compose_min_version.
+# With Docker: Docker's own apt repository, as dev/README.md in the fork says,
+# since the distro packages can ship a Compose older than the minimum.
 - name: Install apt prerequisites, mkcert and nss
   become: true
   ansible.builtin.apt:
@@ -13,33 +13,45 @@
     state: present
     update_cache: true
 
-- name: Add Docker's apt key
-  become: true
-  ansible.builtin.get_url:
-    url: "{{ dev_vm_docker_apt_repo }}/{{ ansible_facts.distribution | lower }}/gpg"
-    dest: /etc/apt/keyrings/docker.asc
-    mode: '0644'
-
-- name: Add Docker's apt repository
-  become: true
-  ansible.builtin.apt_repository:
-    repo: >-
-      deb [arch={{ 'arm64' if ansible_facts.architecture == 'aarch64' else 'amd64' }} signed-by=/etc/apt/keyrings/docker.asc]
-      {{ dev_vm_docker_apt_repo }}/{{ ansible_facts.distribution | lower }} {{ ansible_facts.distribution_release }} stable
-    filename: docker
-    state: present
-
-- name: Install Docker
+- name: Install Podman
   become: true
   ansible.builtin.apt:
     name:
-      - docker-ce
-      - docker-ce-cli
-      - containerd.io
-      - docker-buildx-plugin
-      - docker-compose-plugin
+      - podman
+      - "{{ dev_vm_podman_compose_package[ansible_facts.distribution] | default('docker-compose') }}"
     state: present
-    update_cache: true
+  when: dev_vm_engine == 'podman'
 
-- name: Linux Docker setup
-  ansible.builtin.include_tasks: docker-linux.yml
+- name: Docker from Docker's apt repository
+  when: dev_vm_engine == 'docker'
+  block:
+    - name: Add Docker's apt key
+      become: true
+      ansible.builtin.get_url:
+        url: "{{ dev_vm_docker_apt_repo }}/{{ ansible_facts.distribution | lower }}/gpg"
+        dest: /etc/apt/keyrings/docker.asc
+        mode: '0644'
+
+    - name: Add Docker's apt repository
+      become: true
+      ansible.builtin.apt_repository:
+        repo: >-
+          deb [arch={{ 'arm64' if ansible_facts.architecture == 'aarch64' else 'amd64' }} signed-by=/etc/apt/keyrings/docker.asc]
+          {{ dev_vm_docker_apt_repo }}/{{ ansible_facts.distribution | lower }} {{ ansible_facts.distribution_release }} stable
+        filename: docker
+        state: present
+
+    - name: Install Docker
+      become: true
+      ansible.builtin.apt:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+          - docker-buildx-plugin
+          - docker-compose-plugin
+        state: present
+        update_cache: true
+
+- name: Linux engine setup
+  ansible.builtin.include_tasks: "{{ dev_vm_engine }}-linux.yml"

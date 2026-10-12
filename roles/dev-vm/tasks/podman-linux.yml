@@ -1,0 +1,29 @@
+#SPDX-License-Identifier: MIT-0
+---
+# Rootless Podman can't open ports under 1024 by default
+- name: Let rootless Podman use ports 80 and 443
+  become: true
+  ansible.posix.sysctl:
+    name: net.ipv4.ip_unprivileged_port_start
+    value: '80'
+    sysctl_file: /etc/sysctl.d/90-mementomori-dev.conf
+
+# podman compose talks to Podman through this socket
+- name: Start the Podman socket
+  ansible.builtin.systemd_service:
+    name: podman.socket
+    scope: user
+    state: started
+    enabled: true
+
+- name: Run podman as this user
+  ansible.builtin.set_fact:
+    dev_vm_shell: eval "$DEV_VM_CMD"
+
+- name: Check Docker Compose
+  ansible.builtin.include_tasks: compose-version.yml
+
+- name: Fail on an old Docker Compose
+  ansible.builtin.assert:
+    that: dev_vm_compose_ok
+    fail_msg: "Docker Compose {{ dev_vm_compose_min_version }} or newer is needed for podman compose, found '{{ dev_vm_compose_version }}'."

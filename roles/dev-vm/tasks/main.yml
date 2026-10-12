@@ -27,15 +27,17 @@
 - name: Choose the HTTPS port
   ansible.builtin.include_tasks: port.yml
 
-# bin/mementomori-dev reads these when HTTPS_PORT and PUBLIC_PORT are not set.
-- name: Remember the HTTPS ports
+# bin/mementomori-dev reads these when HTTPS_PORT, PUBLIC_PORT and DEV_ENGINE
+# are not set.
+- name: Remember the ports and the engine
   ansible.builtin.copy:
-    content: "{{ item.port }}\n"
+    content: "{{ item.value }}\n"
     dest: "{{ dev_vm_checkout }}/dev/{{ item.file }}"
     mode: '0644'
   loop:
-    - { file: https-port, port: "{{ dev_vm_port }}" }
-    - { file: public-port, port: "{{ dev_vm_public_port }}" }
+    - { file: https-port, value: "{{ dev_vm_port }}" }
+    - { file: public-port, value: "{{ dev_vm_public_port }}" }
+    - { file: engine, value: "{{ dev_vm_engine }}" }
 
 - name: Create the certificate directory
   ansible.builtin.file:
