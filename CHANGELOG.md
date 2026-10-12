@@ -1,3 +1,7 @@
+### 1.4.1: 2026-10-12
+
+* Fix dev setup picking a wrong fork branch
+
 ### 1.4.0: 2026-10-12
 
 * Add dev environment setup, Ref: MEM-15
