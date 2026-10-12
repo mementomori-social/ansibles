@@ -16,7 +16,7 @@ you know to create your own vault if you want to try this automation yourself.
 > git clone https://github.com/mementomori-social/ansibles.git && ansibles/dev.sh
 > ```
 >
-> It installs Docker, mkcert and Ansible if missing, trusts the local certificate, adds `mementomori.test` to `/etc/hosts`, clones [our Mastodon fork](https://github.com/mementomori-social/mastodon) to `~/Projects/mastodon` and starts it with demo data. See [Development environment](#development-environment). The rest of this repo is for the production servers.
+> It installs Docker, mkcert and Ansible if missing, trusts the local certificate, adds `mementomori.test` to `/etc/hosts`, clones [our Mastodon fork](https://github.com/mementomori-social/mastodon) to `~/Projects/mastodon` and starts it with demo data. See [Development environment](#development-environment). To then build a feature, for mementomori.social or as a pull request to Mastodon itself, follow [Developing a feature](https://github.com/mementomori-social/mastodon/blob/mementomods-2026-10-11/dev/README.md#developing-a-feature) in the fork. The rest of this repo is for the production servers.
 
 ## Prerequisites
 
@@ -117,7 +117,7 @@ between the hosts if later needed.
 
 ## Development environment
 
-`dev.sh` runs `dev.yml` with the `dev-vm` role against your own machine. It works on macOS, Arch Linux, Debian and Ubuntu, and asks for your sudo password once for the system changes, unless sudo needs none. The stack itself is Docker from the Mastodon fork, described in `dev/README.md` there.
+`dev.sh` runs `dev.yml` with the `dev-vm` role against your own machine. It works on macOS, Arch Linux, Debian and Ubuntu, and asks for your sudo password once for the system changes, unless sudo needs none. The stack itself is Docker from the Mastodon fork, described in `dev/README.md` there, including [how to develop a feature](https://github.com/mementomori-social/mastodon/blob/mementomods-2026-10-11/dev/README.md#developing-a-feature) for mementomori.social or for Mastodon.
 
 ```mermaid
 flowchart LR
