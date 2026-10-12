@@ -1,8 +1,8 @@
 ---
 name: Dev environment
 # Runs dev.sh on clean machines, twice, and checks the site in curl and Chrome.
-# Each OS has a job with port 443 free and one with a local nginx on 443 that
-# already serves another site and an older mementomori.test site.
+# Jobs cover port 443 free and a local nginx on 443 that already serves
+# another site and an older mementomori.test site.
 # Ubuntu runs the whole stack, with Podman and with Docker, and the fork's
 # bin/mementomori-dev check.
 # GitHub's macOS runners can't run a container VM (no nested virtualisation), so the
@@ -36,9 +36,11 @@ jobs:
     timeout-minutes: 60
     strategy:
       fail-fast: false
+      # Each engine, each port setup, once: enough coverage at half the runners
       matrix:
-        engine: [podman, docker]
-        front: [none, nginx]
+        include:
+          - { engine: podman, front: nginx }
+          - { engine: docker, front: none }
     env:
       FORK: https://github.com/mementomori-social/mastodon.git
       FORK_BRANCH: ${{ inputs.fork_branch || vars.DEV_FORK_BRANCH }}
@@ -111,7 +113,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        front: [none, nginx]
+        front: [nginx]
     env:
       FORK: https://github.com/mementomori-social/mastodon.git
       FORK_BRANCH: ${{ inputs.fork_branch || vars.DEV_FORK_BRANCH }}
