@@ -1,0 +1,22 @@
+#SPDX-License-Identifier: MIT-0
+---
+# Keep the port of a stack that already runs, so a second run does not see
+# its own Caddy on 443 and move to the fallback.
+- name: Read the port of a running stack
+  ansible.builtin.shell: "{{ dev_vm_wrap | format('docker port mementomori-dev-caddy-1 443/tcp') }}"
+  register: dev_vm_running_port
+  changed_when: false
+  failed_when: false
+
+- name: Check whether something listens on 443
+  ansible.builtin.command: bash -c '</dev/tcp/127.0.0.1/443'
+  register: dev_vm_443
+  changed_when: false
+  failed_when: false
+
+- name: Set the HTTPS port
+  ansible.builtin.set_fact:
+    dev_vm_port: "{{ dev_vm_https_port or dev_vm_running or dev_vm_free }}"
+  vars:
+    dev_vm_running: "{{ (dev_vm_running_port.stdout_lines | first | default('')).split(':') | last if dev_vm_running_port.rc == 0 else '' }}"
+    dev_vm_free: "{{ dev_vm_fallback_https_port if dev_vm_443.rc == 0 else 443 }}"
