@@ -1,3 +1,20 @@
 #SPDX-License-Identifier: MIT-0
 ---
-# defaults file for dev-vm
+dev_vm_domain: mementomori.test
+dev_vm_repo: https://github.com/mementomori-social/mastodon.git
+dev_vm_checkout: "{{ ansible_facts.env.HOME }}/Projects/mastodon"
+
+# Empty picks the newest mementomods-YYYY-MM-DD branch on first clone. An
+# existing checkout is never switched or updated.
+dev_vm_branch: ""
+
+# Empty uses 443, or 8443 when something else already listens on 443.
+dev_vm_https_port: ""
+dev_vm_fallback_https_port: 8443
+
+# small, default or large, see dev/README.md in the fork. Empty skips seeding.
+dev_vm_seed_scale: small
+
+# bin/mementomori-dev uses `ports: !reset`, which needs Compose 2.24.
+dev_vm_compose_min_version: 2.24.0
+dev_vm_docker_ready_retries: 120

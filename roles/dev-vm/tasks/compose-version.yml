@@ -1,0 +1,15 @@
+#SPDX-License-Identifier: MIT-0
+---
+- name: Read the Docker Compose version
+  ansible.builtin.command: docker compose version --short
+  register: dev_vm_compose
+  changed_when: false
+  failed_when: false
+
+- name: Compare the Docker Compose version
+  ansible.builtin.set_fact:
+    dev_vm_compose_version: "{{ dev_vm_compose.stdout | default('') | regex_replace('^v', '') }}"
+    dev_vm_compose_ok: >-
+      {{ dev_vm_compose.rc == 0
+         and (dev_vm_compose.stdout | regex_replace('^v', '') | regex_search('^[0-9.]+') | default('0', true))
+             is version(dev_vm_compose_min_version, '>=') }}

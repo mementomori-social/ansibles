@@ -1,0 +1,51 @@
+#SPDX-License-Identifier: MIT-0
+---
+# mkcert -install calls sudo itself, which has no terminal under Ansible.
+# So mkcert only creates the CA and fills the browser (NSS) stores, and the
+# system trust store is done here with become, the same way mkcert does it.
+- name: Create the mkcert CA and trust it in browser stores
+  ansible.builtin.command: mkcert -install
+  environment:
+    TRUST_STORES: nss
+  register: dev_vm_mkcert
+  changed_when: "'is now installed' in dev_vm_mkcert.stdout + dev_vm_mkcert.stderr"
+
+- name: Find the mkcert CA
+  ansible.builtin.command: mkcert -CAROOT
+  register: dev_vm_caroot
+  changed_when: false
+
+- name: Check the system trusts the mkcert CA
+  ansible.builtin.command: security verify-cert -c "{{ dev_vm_caroot.stdout }}/rootCA.pem"
+  register: dev_vm_ca_trusted
+  changed_when: false
+  failed_when: false
+  when: ansible_facts.os_family == 'Darwin'
+
+- name: Trust the mkcert CA in the macOS System keychain (accept the prompt)
+  become: true
+  ansible.builtin.command: >-
+    security add-trusted-cert -d -r trustRoot
+    -k /Library/Keychains/System.keychain "{{ dev_vm_caroot.stdout }}/rootCA.pem"
+  changed_when: true
+  when:
+    - ansible_facts.os_family == 'Darwin'
+    - dev_vm_ca_trusted.rc != 0
+
+- name: Copy the mkcert CA to the Linux trust store
+  become: true
+  ansible.builtin.copy:
+    src: "{{ dev_vm_caroot.stdout }}/rootCA.pem"
+    dest: "{{ dev_vm_ca_anchor[ansible_facts.os_family] }}"
+    remote_src: true
+    mode: '0644'
+  register: dev_vm_ca_copy
+  when: ansible_facts.os_family != 'Darwin'
+
+- name: Rebuild the Linux trust store
+  become: true
+  ansible.builtin.command: "{{ dev_vm_ca_update[ansible_facts.os_family] }}"
+  changed_when: true
+  when:
+    - ansible_facts.os_family != 'Darwin'
+    - dev_vm_ca_copy.changed

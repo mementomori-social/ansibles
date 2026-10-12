@@ -1,0 +1,8 @@
+---
+dev:
+  hosts:
+    localhost:
+      ansible_connection: local
+      ansible_python_interpreter: "{{ ansible_playbook_python }}"
+      # Set by dev.sh, so sudo is asked once in plain words.
+      ansible_become_password: "{{ lookup('env', 'DEV_SUDO_PASS') }}"

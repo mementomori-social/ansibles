@@ -1,0 +1,28 @@
+#SPDX-License-Identifier: MIT-0
+---
+- name: Start Docker
+  become: true
+  ansible.builtin.systemd_service:
+    name: docker
+    state: started
+    enabled: true
+
+- name: Let this user run docker
+  become: true
+  ansible.builtin.user:
+    name: "{{ ansible_facts.user_id }}"
+    groups: docker
+    append: true
+
+# A new group only applies to new logins, so this run goes through sg.
+- name: Run docker through the docker group
+  ansible.builtin.set_fact:
+    dev_vm_wrap: "sg docker -c '%s'"
+
+- name: Check Docker Compose
+  ansible.builtin.include_tasks: compose-version.yml
+
+- name: Fail on an old Docker Compose
+  ansible.builtin.assert:
+    that: dev_vm_compose_ok
+    fail_msg: "Docker Compose {{ dev_vm_compose_min_version }} or newer is needed, found '{{ dev_vm_compose_version }}'."
