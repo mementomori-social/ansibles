@@ -1,0 +1,96 @@
+---
+name: Dev environment
+# Runs dev.sh on a clean Ubuntu machine, twice, and checks the result with the
+# fork's bin/mementomori-dev check. One job has port 443 free, the other a
+# local nginx on 443 with another site and an older mementomori.test site.
+
+"on":
+  push:
+    branches: [main]
+    paths: &paths
+      - 'dev.sh'
+      - 'dev.yml'
+      - 'inventory-dev.yml'
+      - 'roles/dev-vm/**'
+      - '.github/workflows/dev.yml'
+  pull_request:
+    paths: *paths
+  workflow_dispatch:
+    inputs:
+      fork_branch:
+        description: Fork branch to set up, empty for the newest mementomods branch
+        default: ''
+
+permissions:
+  contents: read
+
+jobs:
+  dev:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        front: [none, nginx]
+    env:
+      FORK: https://github.com/mementomori-social/mastodon.git
+      FORK_BRANCH: ${{ inputs.fork_branch || vars.DEV_FORK_BRANCH }}
+      CHECKOUT: /home/runner/Projects/mastodon
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Put nginx on 443 with another site and an older mementomori.test
+        if: matrix.front == 'nginx'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y nginx
+          sudo openssl req -x509 -newkey rsa:2048 -nodes -days 1 -subj /CN=local \
+            -keyout /etc/nginx/local.key -out /etc/nginx/local.pem
+          for site in other.test mementomori.test; do
+            printf 'server {\n  listen 443 ssl;\n  server_name %s;\n  ssl_certificate /etc/nginx/local.pem;\n  ssl_certificate_key /etc/nginx/local.key;\n  return 200 "old %s\\n";\n}\n' \
+              "$site" "$site" | sudo tee "/etc/nginx/sites-available/$site"
+            sudo ln -s "../sites-available/$site" "/etc/nginx/sites-enabled/$site"
+          done
+          echo '127.0.0.1 other.test' | sudo tee -a /etc/hosts
+          sudo systemctl restart nginx
+
+      # The app container runs as uid 1000 and writes into the checkout; the
+      # runner is uid 1001. On a developer's machine the first user is 1000.
+      - name: Clone the fork where the container can write
+        run: |
+          branch=${FORK_BRANCH:-$(git ls-remote --heads "$FORK" 'mementomods-*' | sed 's#.*refs/heads/##' | sort | tail -1)}
+          echo "Fork branch: $branch"
+          git clone --depth 1 --branch "$branch" "$FORK" "$CHECKOUT"
+          chmod -R a+rwX "$CHECKOUT"
+
+      - name: Run dev.sh
+        run: ./dev.sh
+
+      - name: Run dev.sh again, nothing should change
+        run: |
+          ./dev.sh | tee "$RUNNER_TEMP/second-run.log"
+          grep -E 'localhost +: ok=[0-9]+ +changed=0 ' "$RUNNER_TEMP/second-run.log"
+
+      - name: Check the stack
+        working-directory: ${{ env.CHECKOUT }}
+        run: |
+          if grep -q '^  check)' bin/mementomori-dev; then
+            bin/mementomori-dev check
+          else
+            curl -fsS https://mementomori.test/health
+          fi
+
+      - name: Check nginx kept the other site and moved the old one aside
+        if: matrix.front == 'nginx'
+        run: |
+          curl -fsSk https://other.test | grep 'old other.test'
+          ls ~/.local/share/mementomori-dev/nginx-backup/mementomori.test.*
+          if curl -fsS https://mementomori.test/ | grep -q 'old mementomori.test'; then
+            echo "nginx still serves the old mementomori.test site"
+            exit 1
+          fi
+
+      - name: Show logs
+        if: failure()
+        working-directory: ${{ env.CHECKOUT }}
+        run: bin/mementomori-dev compose logs --tail 300
