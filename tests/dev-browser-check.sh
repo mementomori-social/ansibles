@@ -20,7 +20,7 @@ profile=$(mktemp -d)
 out=$(mktemp)
 # perl alarm, because macOS has no timeout command. Output goes to a file: a
 # Chrome helper can outlive Chrome and keep a pipe open.
-perl -e 'alarm 60; exec @ARGV' "$chrome" --headless=new --disable-gpu --no-first-run \
+perl -e 'alarm 60; exec @ARGV' "$chrome" --headless=new --disable-gpu --no-first-run --use-mock-keychain \
   --user-data-dir="$profile" --dump-dom "$url" > "$out" 2>/dev/null || true
 page=$(head -c 200000 "$out")
 loaded=$(grep -c '[^[:space:]]' "$out" || true)
