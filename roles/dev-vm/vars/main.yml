@@ -7,6 +7,10 @@ dev_vm_ca_anchor:
 dev_vm_ca_update:
   Archlinux: trust extract-compat
   Debian: update-ca-certificates
+# Compose program that `podman compose` runs, per distribution
+dev_vm_podman_compose_package:
+  Ubuntu: docker-compose-v2
+  Debian: docker-compose
 dev_vm_os_families:
   - Darwin
   - Archlinux

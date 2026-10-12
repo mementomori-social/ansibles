@@ -1,7 +1,7 @@
 #SPDX-License-Identifier: MIT-0
 ---
 - name: Read the Docker Compose version
-  ansible.builtin.command: docker compose version --short
+  ansible.builtin.command: "{{ dev_vm_engine }} compose version --short"
   register: dev_vm_compose
   changed_when: false
   failed_when: false

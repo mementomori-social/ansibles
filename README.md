@@ -1,6 +1,6 @@
 # Mementomori.social Mastodon instance playbooks
 
-![Version](https://img.shields.io/badge/version-1.4.1-blue?style=for-the-badge) ![Mastodon](https://img.shields.io/badge/-MASTODON-%236364FF?style=for-the-badge&logo=mastodon&logoColor=white) ![Ansible](https://img.shields.io/badge/Ansible-5CBEC1?style=for-the-badge&logo=ansible&logoColor=white) [![Build](https://img.shields.io/github/actions/workflow/status/mementomori-social/ansibles/lint.yml?style=for-the-badge&label=build)](https://github.com/mementomori-social/ansibles/actions/workflows/lint.yml) [![Dev environment](https://img.shields.io/github/actions/workflow/status/mementomori-social/ansibles/dev.yml?style=for-the-badge&label=dev%20environment)](https://github.com/mementomori-social/ansibles/actions/workflows/dev.yml)
+![Version](https://img.shields.io/badge/version-1.5.0-blue?style=for-the-badge) ![Mastodon](https://img.shields.io/badge/-MASTODON-%236364FF?style=for-the-badge&logo=mastodon&logoColor=white) ![Ansible](https://img.shields.io/badge/Ansible-5CBEC1?style=for-the-badge&logo=ansible&logoColor=white) [![Build](https://img.shields.io/github/actions/workflow/status/mementomori-social/ansibles/lint.yml?style=for-the-badge&label=build)](https://github.com/mementomori-social/ansibles/actions/workflows/lint.yml) [![Dev environment](https://img.shields.io/github/actions/workflow/status/mementomori-social/ansibles/dev.yml?style=for-the-badge&label=dev%20environment)](https://github.com/mementomori-social/ansibles/actions/workflows/dev.yml)
 
 This repo contains ansible automation to setup and maintain
 [mementomori.social Mastodon instance](https://mementomori.social) infra.
@@ -16,7 +16,7 @@ you know to create your own vault if you want to try this automation yourself.
 > git clone https://github.com/mementomori-social/ansibles.git && ansibles/dev.sh
 > ```
 >
-> It installs Docker, mkcert and Ansible if missing, trusts the local certificate, adds `mementomori.test` to `/etc/hosts`, clones [our Mastodon fork](https://github.com/mementomori-social/mastodon) to `~/Projects/mastodon` and starts it with demo data. See [Development environment](#development-environment). To then build a feature, for mementomori.social or as a pull request to Mastodon itself, follow [Developing a feature](https://github.com/mementomori-social/mastodon/blob/mementomods-2026-10-11/dev/README.md#developing-a-feature) in the fork. The rest of this repo is for the production servers.
+> It installs Podman, mkcert and Ansible if missing, trusts the local certificate, adds `mementomori.test` to `/etc/hosts`, clones [our Mastodon fork](https://github.com/mementomori-social/mastodon) to `~/Projects/mastodon` and starts it with demo data. See [Development environment](#development-environment). To then build a feature, for mementomori.social or as a pull request to Mastodon itself, follow [Developing a feature](https://github.com/mementomori-social/mastodon/blob/mementomods-2026-10-11/dev/README.md#developing-a-feature) in the fork. The rest of this repo is for the production servers.
 
 ## Prerequisites
 
@@ -117,12 +117,12 @@ between the hosts if later needed.
 
 ## Development environment
 
-`dev.sh` runs `dev.yml` with the `dev-vm` role against your own machine. It works on macOS, Arch Linux, Debian and Ubuntu, and asks for your sudo password once for the system changes, unless sudo needs none. The stack itself is Docker from the Mastodon fork, described in `dev/README.md` there, including [how to develop a feature](https://github.com/mementomori-social/mastodon/blob/mementomods-2026-10-11/dev/README.md#developing-a-feature) for mementomori.social or for Mastodon.
+`dev.sh` runs `dev.yml` with the `dev-vm` role against your own machine. It works on macOS, Arch Linux, Debian and Ubuntu, and asks for your sudo password once for the system changes, unless sudo needs none. The stack itself runs in containers from the Mastodon fork, with Podman by default or Docker, described in `dev/README.md` there, including [how to develop a feature](https://github.com/mementomori-social/mastodon/blob/mementomods-2026-10-11/dev/README.md#developing-a-feature) for mementomori.social or for Mastodon.
 
 ```mermaid
 flowchart LR
   devsh["dev.sh"] --> playbook["dev.yml<br/>role dev-vm"]
-  playbook --> pkgs["Docker, mkcert, nss"]
+  playbook --> pkgs["Podman (or Docker), mkcert, nss"]
   playbook --> trust["mkcert CA trusted<br/>by the system and browsers"]
   playbook --> hosts["127.0.0.1 mementomori.test<br/>in /etc/hosts"]
   playbook --> nginx["mementomori.test site in a local<br/>nginx on 443, when there is one"]
@@ -132,10 +132,11 @@ flowchart LR
 
 | Step | macOS | Arch | Debian, Ubuntu |
 | --- | --- | --- | --- |
-| Docker | Docker Desktop with Homebrew, skipped when Docker Compose 2.24 or newer is already there | `docker`, `docker-buildx`, `docker-compose`, and you in the `docker` group | Docker's apt repository, and you in the `docker` group |
+| Podman (default) | `podman` and `docker-compose` with Homebrew, and a rootful Podman machine (VM) created and started when missing | `podman`, `docker-compose`, the user's `podman.socket`, and ports from 80 allowed for rootless use | `podman`, `docker-compose-v2` (Ubuntu) or `docker-compose` (Debian), the same socket and port setting |
+| Docker (`-e dev_vm_engine=docker`) | Docker Desktop with Homebrew, skipped when Docker Compose 2.24 or newer is already there | `docker`, `docker-buildx`, `docker-compose`, and you in the `docker` group | Docker's apt repository, and you in the `docker` group |
 | Certificate | System keychain, macOS asks to confirm | System trust store | System trust store |
 
-Two things need you at the keyboard on macOS: Docker Desktop's licence on its first start, and the keychain confirmation. On Linux log out and in once afterwards so the `docker` group applies to your own shell.
+On macOS the keychain may ask you to confirm the certificate, and with Docker, Docker Desktop's licence needs accepting on its first start. With Docker on Linux, log out and in once afterwards so the `docker` group applies to your own shell.
 
 Running it again is safe. An existing checkout is never switched or pulled, and an already seeded database is left alone.
 
@@ -145,7 +146,7 @@ Demo posts store the full address, so when it changes (for example from `:8443` 
 
 The playbook ends by loading the site over HTTPS with certificate checking on, so a certificate the system doesn't trust fails the run. On Linux it also creates Chrome's certificate store (`~/.pki/nssdb`) when missing, since mkcert only adds its CA to stores that exist.
 
-CI (`.github/workflows/dev.yml`) runs `dev.sh` twice on clean machines, once with port 443 free and once behind an nginx that already has other sites. The second run must change nothing. Ubuntu runs the whole stack and the fork's `bin/mementomori-dev check`; macOS 26 runs everything except Docker, which GitHub's macOS runners can't run, with a stand-in HTTPS server instead. Ubuntu also opens the site in headless Chrome (`tests/dev-browser-check.sh`) and fails on a certificate warning. On the macOS runners headless Chrome hangs even for a plain page, so there that step may fail without failing the job; curl still checks the certificate. The repository variable `DEV_FORK_BRANCH` picks the fork branch to test; without it CI uses the newest `mementomods-*` branch.
+CI (`.github/workflows/dev.yml`) runs `dev.sh` twice on clean machines, once with port 443 free and once behind an nginx that already has other sites. The second run must change nothing. Ubuntu runs the whole stack with Podman and with Docker and the fork's `bin/mementomori-dev check`; macOS 26 runs everything except the containers, since GitHub's macOS runners can't run a container VM, with a stand-in HTTPS server instead. Ubuntu also opens the site in headless Chrome (`tests/dev-browser-check.sh`) and fails on a certificate warning. On the macOS runners headless Chrome hangs even for a plain page, so there that step may fail without failing the job; curl still checks the certificate. The repository variable `DEV_FORK_BRANCH` picks the fork branch to test; without it CI uses the newest `mementomods-*` branch.
 
 Settings, given with `-e`, for example `./dev.sh -e dev_vm_seed_scale=default`:
 
@@ -157,7 +158,9 @@ Settings, given with `-e`, for example `./dev.sh -e dev_vm_seed_scale=default`:
 | `dev_vm_https_port` | 443, or 8443 behind nginx or when taken | Fixed port, turns off the nginx forwarding |
 | `dev_vm_nginx_proxy` | `true` | `false` keeps nginx untouched and uses `:8443` |
 | `dev_vm_reset_on_address_change` | `true` | `false` keeps demo data when the address changes |
-| `dev_vm_stack` | `true` | `false` skips Docker on macOS and starting the stack, for CI |
+| `dev_vm_engine` | `podman` | `docker` to use Docker instead |
+| `dev_vm_podman_cpus`, `dev_vm_podman_memory_mb`, `dev_vm_podman_disk_gb` | 4, 8192, 60 | Size of a new Podman machine on macOS |
+| `dev_vm_stack` | `true` | `false` skips the container engine on macOS and starting the stack, for CI |
 | `dev_vm_seed_scale` | `small` | `small`, `default`, `large`, or empty to skip |
 
 ## Testing

@@ -17,7 +17,14 @@ dev_vm_fallback_https_port: 8443
 dev_vm_nginx_proxy: true
 dev_vm_nginx_backup_dir: "{{ ansible_facts.env.HOME }}/.local/share/mementomori-dev/nginx-backup"
 
-# false skips Docker Desktop on macOS and everything that runs the stack: up,
+# podman or docker. bin/mementomori-dev in the fork works with either.
+dev_vm_engine: podman
+# Size of the Podman machine (VM) on macOS, created only when missing
+dev_vm_podman_cpus: 4
+dev_vm_podman_memory_mb: 8192
+dev_vm_podman_disk_gb: 60
+
+# false skips the container engine on macOS and everything that runs the stack: up,
 # seed and the final check. For CI on machines that cannot run Docker.
 dev_vm_stack: true
 
