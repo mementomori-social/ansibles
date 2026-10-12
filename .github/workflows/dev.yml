@@ -1,8 +1,12 @@
 ---
 name: Dev environment
-# Runs dev.sh on a clean Ubuntu machine, twice, and checks the result with the
-# fork's bin/mementomori-dev check. One job has port 443 free, the other a
-# local nginx on 443 with another site and an older mementomori.test site.
+# Runs dev.sh on clean machines, twice, and checks the site in curl and Chrome.
+# Each OS has a job with port 443 free and one with a local nginx on 443 that
+# already serves another site and an older mementomori.test site.
+# Ubuntu runs the whole Docker stack and the fork's bin/mementomori-dev check.
+# GitHub's macOS runners can't run Docker (no nested virtualisation), so the
+# macOS job sets everything else up and puts a stand-in HTTPS server where the
+# stack would listen.
 
 "on":
   push:
@@ -12,6 +16,7 @@ name: Dev environment
       - 'dev.yml'
       - 'inventory-dev.yml'
       - 'roles/dev-vm/**'
+      - 'tests/dev-browser-check.sh'
       - '.github/workflows/dev.yml'
   pull_request:
     paths: *paths
@@ -80,6 +85,9 @@ jobs:
             curl -fsS https://mementomori.test/health
           fi
 
+      - name: Open the site in Chrome
+        run: tests/dev-browser-check.sh https://mementomori.test/about Mastodon
+
       - name: Check nginx kept the other site and moved the old one aside
         if: matrix.front == 'nginx'
         run: |
@@ -94,3 +102,78 @@ jobs:
         if: failure()
         working-directory: ${{ env.CHECKOUT }}
         run: bin/mementomori-dev compose logs --tail 300
+
+  dev-macos:
+    runs-on: macos-26
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        front: [none, nginx]
+    env:
+      FORK: https://github.com/mementomori-social/mastodon.git
+      FORK_BRANCH: ${{ inputs.fork_branch || vars.DEV_FORK_BRANCH }}
+      CHECKOUT: /Users/runner/Projects/mastodon
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Put nginx on 443 with another site and an older mementomori.test
+        if: matrix.front == 'nginx'
+        run: |
+          brew install nginx
+          servers="$(brew --prefix)/etc/nginx/servers"
+          mkdir -p "$servers"
+          openssl req -x509 -newkey rsa:2048 -nodes -days 1 -subj /CN=local \
+            -keyout "$servers/../local.key" -out "$servers/../local.pem"
+          for site in other.test mementomori.test; do
+            printf 'server {\n  listen 443 ssl;\n  server_name %s;\n  ssl_certificate local.pem;\n  ssl_certificate_key local.key;\n  return 200 "old %s\\n";\n}\n' \
+              "$site" "$site" > "$servers/$site.conf"
+          done
+          echo '127.0.0.1 other.test' | sudo tee -a /etc/hosts
+          sudo "$(brew --prefix)/bin/nginx"
+
+      - name: Clone the fork
+        run: |
+          branch=${FORK_BRANCH:-$(git ls-remote --heads "$FORK" 'mementomods-*' | sed 's#.*refs/heads/##' | sort | tail -1)}
+          echo "Fork branch: $branch"
+          git clone --depth 1 --branch "$branch" "$FORK" "$CHECKOUT"
+
+      - name: Run dev.sh without the Docker stack
+        run: ./dev.sh -e dev_vm_stack=false
+
+      - name: Run dev.sh again, nothing should change
+        run: |
+          ./dev.sh -e dev_vm_stack=false | tee "$RUNNER_TEMP/second-run.log"
+          grep -E 'localhost +: ok=[0-9]+ +changed=0 ' "$RUNNER_TEMP/second-run.log"
+
+      # Serves the stack's certificate on the port the stack would use
+      - name: Start a stand-in for the stack
+        working-directory: ${{ env.CHECKOUT }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/site" && echo OK > "$RUNNER_TEMP/site/health"
+          cat > "$RUNNER_TEMP/stand-in.py" <<'PY'
+          import http.server, ssl, sys
+          port, cert, key, root = int(sys.argv[1]), sys.argv[2], sys.argv[3], sys.argv[4]
+          handler = lambda *a: http.server.SimpleHTTPRequestHandler(*a, directory=root)
+          server = http.server.ThreadingHTTPServer(('127.0.0.1', port), handler)
+          context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+          context.load_cert_chain(cert, key)
+          server.socket = context.wrap_socket(server.socket, server_side=True)
+          server.serve_forever()
+          PY
+          sudo nohup python3 "$RUNNER_TEMP/stand-in.py" "$(cat dev/https-port)" \
+            dev/certs/mementomori.test.pem dev/certs/mementomori.test-key.pem "$RUNNER_TEMP/site" \
+            > "$RUNNER_TEMP/stand-in.log" 2>&1 &
+          sleep 2
+
+      - name: Check the site in curl
+        run: curl -fsS https://mementomori.test/health | grep OK
+
+      - name: Open the site in Chrome
+        run: tests/dev-browser-check.sh https://mementomori.test/health OK
+
+      - name: Check nginx kept the other site and moved the old one aside
+        if: matrix.front == 'nginx'
+        run: |
+          curl -fsSk https://other.test | grep 'old other.test'
+          ls ~/.local/share/mementomori-dev/nginx-backup/mementomori.test.conf.*

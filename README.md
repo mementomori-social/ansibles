@@ -165,10 +165,18 @@ Demo posts store the full address, so when it changes (for example from
 `:8443` to the plain address) the playbook wipes and reseeds the demo data. Log in as `demo@mementomori.test`,
 `admin@mementomori.test` or `moderator@mementomori.test`, password `mementomori`.
 
-CI (`.github/workflows/dev.yml`) runs `dev.sh` twice on a clean Ubuntu
-machine, once with port 443 free and once behind an nginx that already has
-other sites, and runs `bin/mementomori-dev check` from the fork. The second run
-must change nothing. The repository variable `DEV_FORK_BRANCH` picks the fork
+The playbook ends by loading the site over HTTPS with certificate checking on,
+so a certificate the system doesn't trust fails the run. On Linux it also
+creates Chrome's certificate store (`~/.pki/nssdb`) when missing, since mkcert
+only adds its CA to stores that exist.
+
+CI (`.github/workflows/dev.yml`) runs `dev.sh` twice on clean machines, once
+with port 443 free and once behind an nginx that already has other sites. The
+second run must change nothing. Ubuntu runs the whole stack and the fork's
+`bin/mementomori-dev check`; macOS 26 runs everything except Docker, which
+GitHub's macOS runners can't run, with a stand-in HTTPS server instead. Both
+open the site in headless Chrome (`tests/dev-browser-check.sh`) and fail on a
+certificate warning. The repository variable `DEV_FORK_BRANCH` picks the fork
 branch to test; without it CI uses the newest `mementomods-*` branch.
 
 Settings, given with `-e`, for example `./dev.sh -e dev_vm_seed_scale=default`:
@@ -181,6 +189,7 @@ Settings, given with `-e`, for example `./dev.sh -e dev_vm_seed_scale=default`:
 | `dev_vm_https_port` | 443, or 8443 behind nginx or when taken | Fixed port, turns off the nginx forwarding |
 | `dev_vm_nginx_proxy` | `true` | `false` keeps nginx untouched and uses `:8443` |
 | `dev_vm_reset_on_address_change` | `true` | `false` keeps demo data when the address changes |
+| `dev_vm_stack` | `true` | `false` skips Docker on macOS and starting the stack, for CI |
 | `dev_vm_seed_scale` | `small` | `small`, `default`, `large`, or empty to skip |
 
 ## Testing
