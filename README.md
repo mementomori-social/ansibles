@@ -165,6 +165,12 @@ Demo posts store the full address, so when it changes (for example from
 `:8443` to the plain address) the playbook wipes and reseeds the demo data. Log in as `demo@mementomori.test`,
 `admin@mementomori.test` or `moderator@mementomori.test`, password `mementomori`.
 
+CI (`.github/workflows/dev.yml`) runs `dev.sh` twice on a clean Ubuntu
+machine, once with port 443 free and once behind an nginx that already has
+other sites, and runs `bin/mementomori-dev check` from the fork. The second run
+must change nothing. The repository variable `DEV_FORK_BRANCH` picks the fork
+branch to test; without it CI uses the newest `mementomods-*` branch.
+
 Settings, given with `-e`, for example `./dev.sh -e dev_vm_seed_scale=default`:
 
 | Variable | Default | |
