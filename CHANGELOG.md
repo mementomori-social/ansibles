@@ -1,3 +1,7 @@
+### 1.5.1: 2026-10-12
+
+* Run dev setup on any branch, Ref: MEM-15
+
 ### 1.5.0: 2026-10-12
 
 * Change dev setup to Podman, Ref: MEM-15

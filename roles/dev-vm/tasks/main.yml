@@ -59,6 +59,19 @@
 - name: Run the stack
   when: dev_vm_stack | bool
   block:
+    # Both engines want the same ports, so stop the stack on the other one.
+    # Its containers and data stay.
+    - name: Stop the stack on the other engine
+      ansible.builtin.shell: |
+        command -v {{ dev_vm_other_engine }} >/dev/null || exit 0
+        ids=$({{ dev_vm_other_engine }} ps -q --filter label=com.docker.compose.project=mementomori-dev 2>/dev/null) || exit 0
+        [ -n "$ids" ] || exit 0
+        {{ dev_vm_other_engine }} stop $ids >/dev/null && echo stopped
+      vars:
+        dev_vm_other_engine: "{{ 'docker' if dev_vm_engine == 'podman' else 'podman' }}"
+      register: dev_vm_other_stack
+      changed_when: "'stopped' in dev_vm_other_stack.stdout"
+
     - name: Start the stack
       ansible.builtin.shell: "{{ dev_vm_shell }}"
       environment:

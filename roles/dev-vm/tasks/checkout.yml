@@ -11,9 +11,7 @@
     | grep -oE 'refs/heads/mementomods-[0-9]{4}-[0-9]{2}-[0-9]{2}$' | sed 's#refs/heads/##' | sort | tail -1
   register: dev_vm_newest
   changed_when: false
-  when:
-    - not dev_vm_git.stat.exists
-    - dev_vm_branch | length == 0
+  when: dev_vm_branch | length == 0
 
 - name: Clone the fork
   ansible.builtin.git:
@@ -21,6 +19,33 @@
     dest: "{{ dev_vm_checkout }}"
     version: "{{ dev_vm_branch or dev_vm_newest.stdout }}"
   when: not dev_vm_git.stat.exists
+
+# On a branch without the dev stack, such as upstream main for a pull request
+# to Mastodon, copy the dev files from the fork without committing them.
+- name: Bring the dev files to a branch without them
+  ansible.builtin.shell: |
+    set -e
+    paths="dev bin/mementomori-dev lib/tasks/mementomori_seed.rake"
+    if git ls-files --error-unmatch bin/mementomori-dev >/dev/null 2>&1; then
+      exit 0
+    fi
+    git fetch --quiet {{ dev_vm_repo | quote }} {{ (dev_vm_branch or dev_vm_newest.stdout) | quote }}
+    for path in $paths; do
+      grep -qxF "/$path" .git/info/exclude 2>/dev/null || echo "/$path" >> .git/info/exclude
+    done
+    stale=
+    for file in $(git ls-tree -r --name-only FETCH_HEAD -- $paths); do
+      git show "FETCH_HEAD:$file" | cmp -s - "$file" || stale=1
+    done
+    if [ -n "$stale" ]; then
+      git checkout FETCH_HEAD -- $paths
+      git reset --quiet -- $paths
+      echo refreshed
+    fi
+  args:
+    chdir: "{{ dev_vm_checkout }}"
+  register: dev_vm_dev_files
+  changed_when: "'refreshed' in dev_vm_dev_files.stdout"
 
 - name: Check the checkout has the dev stack
   ansible.builtin.stat:
@@ -30,4 +55,4 @@
 - name: Fail on a checkout without the dev stack
   ansible.builtin.assert:
     that: dev_vm_script.stat.exists
-    fail_msg: "{{ dev_vm_checkout }} has no bin/mementomori-dev. Switch it to the newest mementomods-YYYY-MM-DD branch."
+    fail_msg: "{{ dev_vm_checkout }} has no bin/mementomori-dev."
