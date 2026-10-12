@@ -1,3 +1,60 @@
 #SPDX-License-Identifier: MIT-0
 ---
-# tasks file for dev-vm
+# Prepares this machine for the fork's Docker dev stack and starts it.
+# Run as yourself with -K; only system changes use become.
+
+- name: Check the operating system is supported
+  ansible.builtin.assert:
+    that: ansible_facts.os_family in dev_vm_os_families
+    fail_msg: "Supported: macOS, Arch Linux, Debian and Ubuntu. This is {{ ansible_facts.distribution }}."
+
+- name: Install packages
+  ansible.builtin.include_tasks: "packages-{{ ansible_facts.os_family | lower }}.yml"
+
+- name: Trust the mkcert certificate authority
+  ansible.builtin.include_tasks: mkcert.yml
+
+- name: Point {{ dev_vm_domain }} to this machine
+  become: true
+  ansible.builtin.lineinfile:
+    path: /etc/hosts
+    regexp: '^[^#]*\s{{ dev_vm_domain | regex_escape }}(\s|$)'
+    line: "127.0.0.1 {{ dev_vm_domain }}"
+
+- name: Get the checkout
+  ansible.builtin.include_tasks: checkout.yml
+
+- name: Choose the HTTPS port
+  ansible.builtin.include_tasks: port.yml
+
+# bin/mementomori-dev reads this when HTTPS_PORT is not set.
+- name: Remember the HTTPS port
+  ansible.builtin.copy:
+    content: "{{ dev_vm_port }}\n"
+    dest: "{{ dev_vm_checkout }}/dev/https-port"
+    mode: '0644'
+
+- name: Start the stack
+  ansible.builtin.shell: "{{ dev_vm_wrap | format('HTTPS_PORT=' ~ dev_vm_port ~ ' bin/mementomori-dev up') }}"
+  args:
+    chdir: "{{ dev_vm_checkout }}"
+  register: dev_vm_up
+  changed_when: "'Started' in dev_vm_up.stdout + dev_vm_up.stderr"
+
+- name: Seed demo data
+  ansible.builtin.shell: "{{ dev_vm_wrap | format('HTTPS_PORT=' ~ dev_vm_port ~ ' bin/mementomori-dev seed ' ~ dev_vm_seed_scale) }}"
+  args:
+    chdir: "{{ dev_vm_checkout }}"
+  register: dev_vm_seed
+  changed_when: "'Done.' in dev_vm_seed.stdout"
+  failed_when:
+    - dev_vm_seed.rc != 0
+    - "'Already seeded' not in dev_vm_seed.stdout + dev_vm_seed.stderr"
+  when: dev_vm_seed_scale | length > 0
+
+- name: Show where it runs
+  ansible.builtin.debug:
+    msg:
+      - "https://{{ dev_vm_domain }}{{ '' if dev_vm_port | int == 443 else ':' ~ dev_vm_port }}"
+      - "Log in as demo@{{ dev_vm_domain }}, admin@{{ dev_vm_domain }} or moderator@{{ dev_vm_domain }}, password mementomori"
+      - "Checkout: {{ dev_vm_checkout }}, commands: bin/mementomori-dev (see dev/README.md)"

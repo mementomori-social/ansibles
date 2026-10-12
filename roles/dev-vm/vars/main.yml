@@ -1,3 +1,13 @@
 #SPDX-License-Identifier: MIT-0
 ---
-# vars file for dev-vm
+dev_vm_docker_apt_repo: https://download.docker.com/linux
+dev_vm_ca_anchor:
+  Archlinux: /etc/ca-certificates/trust-source/anchors/mkcert-rootCA.crt
+  Debian: /usr/local/share/ca-certificates/mkcert-rootCA.crt
+dev_vm_ca_update:
+  Archlinux: trust extract-compat
+  Debian: update-ca-certificates
+dev_vm_os_families:
+  - Darwin
+  - Archlinux
+  - Debian
