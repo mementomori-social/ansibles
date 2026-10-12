@@ -1,22 +1,44 @@
 #SPDX-License-Identifier: MIT-0
 ---
-# Keep the port of a stack that already runs, so a second run does not see
-# its own Caddy on 443 and move to the fallback.
+# dev_vm_port is where Caddy listens, dev_vm_public_port is the port in the
+# site's address. They differ when a local nginx on 443 forwards to Caddy.
+
 - name: Read the port of a running stack
-  ansible.builtin.shell: "{{ dev_vm_wrap | format('docker port mementomori-dev-caddy-1 443/tcp') }}"
+  ansible.builtin.shell: "{{ dev_vm_shell }}"
+  environment:
+    DEV_VM_CMD: docker port mementomori-dev-caddy-1 443/tcp
   register: dev_vm_running_port
   changed_when: false
   failed_when: false
 
-- name: Check whether something listens on 443
-  ansible.builtin.command: bash -c '</dev/tcp/127.0.0.1/443'
+- name: Find what listens on 443
+  become: true
+  ansible.builtin.shell: "{{ dev_vm_listeners_cmd[ansible_facts.os_family == 'Darwin'] }}"
   register: dev_vm_443
   changed_when: false
   failed_when: false
 
-- name: Set the HTTPS port
+- name: Check the checkout supports a separate public port
+  ansible.builtin.command: grep -q PUBLIC_PORT bin/mementomori-dev
+  args:
+    chdir: "{{ dev_vm_checkout }}"
+  register: dev_vm_public_port_support
+  changed_when: false
+  failed_when: false
+
+- name: Set the HTTPS ports
   ansible.builtin.set_fact:
-    dev_vm_port: "{{ dev_vm_https_port or dev_vm_running or dev_vm_free }}"
+    dev_vm_port: "{{ dev_vm_https_port or (443 if dev_vm_on_443 else dev_vm_fallback_https_port) }}"
+    dev_vm_public_port: "{{ dev_vm_https_port or (443 if dev_vm_on_443 or dev_vm_nginx_ok else dev_vm_fallback_https_port) }}"
+    dev_vm_behind_nginx: "{{ dev_vm_nginx_ok }}"
   vars:
     dev_vm_running: "{{ (dev_vm_running_port.stdout_lines | first | default('')).split(':') | last if dev_vm_running_port.rc == 0 else '' }}"
-    dev_vm_free: "{{ dev_vm_fallback_https_port if dev_vm_443.rc == 0 else 443 }}"
+    dev_vm_owners: "{{ dev_vm_443.stdout_lines | reject('match', '^(com\\.docke|docker|vpnkit)') | list }}"
+    dev_vm_on_443: "{{ dev_vm_running == '443' or dev_vm_owners | length == 0 }}"
+    dev_vm_nginx_ok: >-
+      {{ not dev_vm_https_port and not dev_vm_on_443 and dev_vm_nginx_proxy
+         and dev_vm_owners == ['nginx'] and dev_vm_public_port_support.rc == 0 }}
+
+- name: Set the site address
+  ansible.builtin.set_fact:
+    dev_vm_address: "{{ dev_vm_domain }}{{ '' if dev_vm_public_port | int == 443 else ':' ~ dev_vm_public_port }}"

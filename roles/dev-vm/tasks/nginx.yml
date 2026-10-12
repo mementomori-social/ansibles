@@ -1,0 +1,79 @@
+#SPDX-License-Identifier: MIT-0
+---
+# A local nginx owns 443, so it gets a mementomori.test site that forwards to
+# Caddy. Any other mementomori.test site is moved to dev_vm_nginx_backup_dir.
+
+# The running master process names its binary, which may not be on PATH
+# (a second Homebrew prefix, /usr/sbin).
+- name: Find nginx
+  ansible.builtin.shell: |
+    found=$(ps -axo command= | sed -n 's/^nginx: master process \([^ ]*\).*/\1/p' | head -1)
+    case "$found" in /*) ;; *) found=$(command -v "${found:-nginx}" || true) ;; esac
+    for candidate in "$found" /opt/homebrew/bin/nginx /usr/local/bin/nginx /usr/sbin/nginx; do
+      if [ -x "$candidate" ]; then echo "$candidate"; exit 0; fi
+    done
+    exit 1
+  register: dev_vm_nginx
+  changed_when: false
+
+- name: Read the nginx configuration
+  become: true
+  ansible.builtin.command: "{{ dev_vm_nginx.stdout }} -T"
+  register: dev_vm_nginx_conf
+  changed_when: false
+
+- name: Find the site directory and existing mementomori.test sites
+  ansible.builtin.command:
+    cmd: "{{ ansible_playbook_python }} {{ role_path }}/files/nginx-sites.py {{ dev_vm_domain }}"
+    stdin: "{{ dev_vm_nginx_conf.stdout }}"
+  register: dev_vm_nginx_sites_raw
+  changed_when: false
+
+- name: Parse the nginx sites
+  ansible.builtin.set_fact:
+    dev_vm_nginx_sites: "{{ dev_vm_nginx_sites_raw.stdout | from_json }}"
+
+- name: Fail on a mementomori.test site shared with other sites
+  ansible.builtin.assert:
+    that: item.others | length == 0
+    fail_msg: "{{ item.path }} also serves {{ item.others | join(', ') }}. Move the mementomori.test server block to its own file and run again."
+  loop: "{{ dev_vm_nginx_sites.existing }}"
+  loop_control:
+    label: "{{ item.path }}"
+
+- name: Create the backup directory
+  ansible.builtin.file:
+    path: "{{ dev_vm_nginx_backup_dir }}"
+    state: directory
+    mode: '0755'
+
+- name: Move older mementomori.test sites aside
+  become: true
+  ansible.builtin.command: >-
+    mv {{ item.path | quote }}
+    {{ (dev_vm_nginx_backup_dir ~ '/' ~ (item.path | basename) ~ '.' ~ now(fmt='%Y%m%d%H%M%S')) | quote }}
+  changed_when: true
+  loop: "{{ dev_vm_nginx_sites.existing | rejectattr('managed') | list }}"
+  loop_control:
+    label: "{{ item.path }}"
+  register: dev_vm_nginx_moved
+
+- name: Add the mementomori.test site
+  become: true
+  ansible.builtin.template:
+    src: nginx-site.conf.j2
+    dest: "{{ dev_vm_nginx_sites.site_dir }}/{{ dev_vm_domain }}{{ dev_vm_nginx_sites.suffix }}"
+    mode: '0644'
+  register: dev_vm_nginx_site
+
+- name: Check the nginx configuration
+  become: true
+  ansible.builtin.command: "{{ dev_vm_nginx.stdout }} -t"
+  changed_when: false
+  when: dev_vm_nginx_site.changed or dev_vm_nginx_moved.changed
+
+- name: Reload nginx
+  become: true
+  ansible.builtin.command: "{{ dev_vm_nginx.stdout ~ ' -s reload' if ansible_facts.os_family == 'Darwin' else 'systemctl reload nginx' }}"
+  changed_when: true
+  when: dev_vm_nginx_site.changed or dev_vm_nginx_moved.changed

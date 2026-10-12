@@ -47,4 +47,4 @@
 
 - name: Run docker as this user
   ansible.builtin.set_fact:
-    dev_vm_wrap: "%s"
+    dev_vm_shell: eval "$DEV_VM_CMD"
