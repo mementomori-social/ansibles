@@ -1,6 +1,6 @@
 # Mementomori.social Mastodon instance playbooks
 
-![Version](https://img.shields.io/badge/version-1.5.0-blue?style=for-the-badge) ![Mastodon](https://img.shields.io/badge/-MASTODON-%236364FF?style=for-the-badge&logo=mastodon&logoColor=white) ![Ansible](https://img.shields.io/badge/Ansible-5CBEC1?style=for-the-badge&logo=ansible&logoColor=white) [![Build](https://img.shields.io/github/actions/workflow/status/mementomori-social/ansibles/lint.yml?style=for-the-badge&label=build)](https://github.com/mementomori-social/ansibles/actions/workflows/lint.yml) [![Dev environment](https://img.shields.io/github/actions/workflow/status/mementomori-social/ansibles/dev.yml?style=for-the-badge&label=dev%20environment)](https://github.com/mementomori-social/ansibles/actions/workflows/dev.yml)
+![Version](https://img.shields.io/badge/version-1.5.1-blue?style=for-the-badge) ![Mastodon](https://img.shields.io/badge/-MASTODON-%236364FF?style=for-the-badge&logo=mastodon&logoColor=white) ![Ansible](https://img.shields.io/badge/Ansible-5CBEC1?style=for-the-badge&logo=ansible&logoColor=white) [![Build](https://img.shields.io/github/actions/workflow/status/mementomori-social/ansibles/lint.yml?style=for-the-badge&label=build)](https://github.com/mementomori-social/ansibles/actions/workflows/lint.yml) [![Dev environment](https://img.shields.io/github/actions/workflow/status/mementomori-social/ansibles/dev.yml?style=for-the-badge&label=dev%20environment)](https://github.com/mementomori-social/ansibles/actions/workflows/dev.yml)
 
 This repo contains ansible automation to setup and maintain
 [mementomori.social Mastodon instance](https://mementomori.social) infra.
@@ -138,7 +138,7 @@ flowchart LR
 
 On macOS the keychain may ask you to confirm the certificate, and with Docker, Docker Desktop's licence needs accepting on its first start. With Docker on Linux, log out and in once afterwards so the `docker` group applies to your own shell.
 
-Running it again is safe. An existing checkout is never switched or pulled, and an already seeded database is left alone.
+Running it again is safe. An existing checkout is never switched or pulled, and an already seeded database is left alone. On a branch without the dev stack, such as upstream `main` for a pull request to Mastodon, it copies the dev files from the newest `mementomods-*` branch and lists them in `.git/info/exclude`, so they stay out of `git status` and your commits. It also stops the stack on the other engine first, keeping its data, since both use the same ports.
 
 The site is always https://mementomori.test when port 443 is free or held by a local nginx, such as a LEMP setup for other `.test` sites. With nginx on 443 the stack listens on 8443 and the playbook adds a `mementomori.test` site to nginx that forwards to it, then reloads nginx. Any earlier `mementomori.test` site, for example a hand-built one, is moved to `~/.local/share/mementomori-dev/nginx-backup/` first. If that file also serves other sites, the playbook stops instead. When something other than nginx holds 443, the address is https://mementomori.test:8443. The playbook prints the address and remembers the ports for `bin/mementomori-dev`.
 
