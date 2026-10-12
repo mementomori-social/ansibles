@@ -27,22 +27,71 @@
 - name: Choose the HTTPS port
   ansible.builtin.include_tasks: port.yml
 
-# bin/mementomori-dev reads this when HTTPS_PORT is not set.
-- name: Remember the HTTPS port
+# bin/mementomori-dev reads these when HTTPS_PORT and PUBLIC_PORT are not set.
+- name: Remember the HTTPS ports
   ansible.builtin.copy:
-    content: "{{ dev_vm_port }}\n"
-    dest: "{{ dev_vm_checkout }}/dev/https-port"
+    content: "{{ item.port }}\n"
+    dest: "{{ dev_vm_checkout }}/dev/{{ item.file }}"
     mode: '0644'
+  loop:
+    - { file: https-port, port: "{{ dev_vm_port }}" }
+    - { file: public-port, port: "{{ dev_vm_public_port }}" }
+
+- name: Create the certificate directory
+  ansible.builtin.file:
+    path: "{{ dev_vm_checkout }}/dev/certs"
+    state: directory
+    mode: '0755'
+
+# bin/mementomori-dev makes the same certificate; nginx needs it before up.
+- name: Create the site certificate
+  ansible.builtin.command:
+    cmd: mkcert -cert-file {{ dev_vm_domain }}.pem -key-file {{ dev_vm_domain }}-key.pem {{ dev_vm_domain }}
+    chdir: "{{ dev_vm_checkout }}/dev/certs"
+    creates: "{{ dev_vm_domain }}.pem"
+
+- name: Forward mementomori.test from the local nginx
+  ansible.builtin.include_tasks: nginx.yml
+  when: dev_vm_behind_nginx | bool
 
 - name: Start the stack
-  ansible.builtin.shell: "{{ dev_vm_wrap | format('HTTPS_PORT=' ~ dev_vm_port ~ ' bin/mementomori-dev up') }}"
+  ansible.builtin.shell: "{{ dev_vm_shell }}"
+  environment:
+    DEV_VM_CMD: bin/mementomori-dev up
   args:
     chdir: "{{ dev_vm_checkout }}"
   register: dev_vm_up
   changed_when: "'Started' in dev_vm_up.stdout + dev_vm_up.stderr"
 
+- name: Count posts made under another address
+  ansible.builtin.shell: "{{ dev_vm_shell }}"
+  environment:
+    DEV_VM_CMD: >-
+      bin/mementomori-dev compose exec -T db psql -U postgres -d mastodon_development -Atc
+      "select count(*) from statuses where local and uri not like 'https://{{ dev_vm_address }}/%'"
+  args:
+    chdir: "{{ dev_vm_checkout }}"
+  register: dev_vm_stale_posts
+  changed_when: false
+  failed_when: false
+
+# Posts store the full address, so demo data made on another port breaks.
+- name: Reseed demo data for the new address
+  ansible.builtin.shell: "{{ dev_vm_shell }}"
+  environment:
+    DEV_VM_CMD: RESET_YES=1 bin/mementomori-dev reset {{ dev_vm_seed_scale }}
+  args:
+    chdir: "{{ dev_vm_checkout }}"
+  changed_when: true
+  when:
+    - dev_vm_reset_on_address_change
+    - dev_vm_seed_scale | length > 0
+    - (dev_vm_stale_posts.stdout | trim | default('0', true) | int) > 0
+
 - name: Seed demo data
-  ansible.builtin.shell: "{{ dev_vm_wrap | format('HTTPS_PORT=' ~ dev_vm_port ~ ' bin/mementomori-dev seed ' ~ dev_vm_seed_scale) }}"
+  ansible.builtin.shell: "{{ dev_vm_shell }}"
+  environment:
+    DEV_VM_CMD: bin/mementomori-dev seed {{ dev_vm_seed_scale }}
   args:
     chdir: "{{ dev_vm_checkout }}"
   register: dev_vm_seed
@@ -55,6 +104,6 @@
 - name: Show where it runs
   ansible.builtin.debug:
     msg:
-      - "https://{{ dev_vm_domain }}{{ '' if dev_vm_port | int == 443 else ':' ~ dev_vm_port }}"
+      - "https://{{ dev_vm_address }}"
       - "Log in as demo@{{ dev_vm_domain }}, admin@{{ dev_vm_domain }} or moderator@{{ dev_vm_domain }}, password mementomori"
       - "Checkout: {{ dev_vm_checkout }}, commands: bin/mementomori-dev (see dev/README.md)"

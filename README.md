@@ -134,6 +134,7 @@ flowchart LR
   playbook --> pkgs["Docker, mkcert, nss"]
   playbook --> trust["mkcert CA trusted<br/>by the system and browsers"]
   playbook --> hosts["127.0.0.1 mementomori.test<br/>in /etc/hosts"]
+  playbook --> nginx["mementomori.test site in a local<br/>nginx on 443, when there is one"]
   playbook --> clone["~/Projects/mastodon<br/>newest mementomods branch"]
   clone --> up["bin/mementomori-dev up<br/>and seed small"]
 ```
@@ -150,9 +151,18 @@ afterwards so the `docker` group applies to your own shell.
 Running it again is safe. An existing checkout is never switched or pulled,
 and an already seeded database is left alone.
 
-The site is https://mementomori.test, or https://mementomori.test:8443 when
-something else on the machine already uses port 443. The playbook prints which,
-and remembers it for `bin/mementomori-dev`. Log in as `demo@mementomori.test`,
+The site is always https://mementomori.test when port 443 is free or held by
+a local nginx, such as a LEMP setup for other `.test` sites. With nginx on 443
+the stack listens on 8443 and the playbook adds a `mementomori.test` site to
+nginx that forwards to it, then reloads nginx. Any earlier `mementomori.test`
+site, for example a hand-built one, is moved to
+`~/.local/share/mementomori-dev/nginx-backup/` first. If that file also serves
+other sites, the playbook stops instead. When something other than nginx holds
+443, the address is https://mementomori.test:8443. The playbook prints the
+address and remembers the ports for `bin/mementomori-dev`.
+
+Demo posts store the full address, so when it changes (for example from
+`:8443` to the plain address) the playbook wipes and reseeds the demo data. Log in as `demo@mementomori.test`,
 `admin@mementomori.test` or `moderator@mementomori.test`, password `mementomori`.
 
 Settings, given with `-e`, for example `./dev.sh -e dev_vm_seed_scale=default`:
@@ -162,7 +172,9 @@ Settings, given with `-e`, for example `./dev.sh -e dev_vm_seed_scale=default`:
 | `dev_vm_checkout` | `~/Projects/mastodon` | Where the fork is cloned |
 | `dev_vm_repo` | the fork over HTTPS | Use `git@github.com:mementomori-social/mastodon.git` to push over SSH |
 | `dev_vm_branch` | newest `mementomods-*` | Branch for a new clone |
-| `dev_vm_https_port` | 443, or 8443 if taken | Fixed port |
+| `dev_vm_https_port` | 443, or 8443 behind nginx or when taken | Fixed port, turns off the nginx forwarding |
+| `dev_vm_nginx_proxy` | `true` | `false` keeps nginx untouched and uses `:8443` |
+| `dev_vm_reset_on_address_change` | `true` | `false` keeps demo data when the address changes |
 | `dev_vm_seed_scale` | `small` | `small`, `default`, `large`, or empty to skip |
 
 ## Testing

@@ -11,3 +11,7 @@ dev_vm_os_families:
   - Darwin
   - Archlinux
   - Debian
+# Indexed by "is macOS". Prints one command name per process on 443.
+dev_vm_listeners_cmd:
+  true: lsof -nP -iTCP:443 -sTCP:LISTEN -Fc | sed -n 's/^c//p' | sort -u
+  false: ss -ltnpH 'sport = :443' | grep -o '(("[^"]*"' | tr -d '("' | sort -u
