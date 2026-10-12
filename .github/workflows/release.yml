@@ -1,0 +1,59 @@
+---
+name: Release
+
+"on":
+  push:
+    branches: [main]
+    paths:
+      - 'CHANGELOG.md'
+
+# Tag style of this repo's earlier releases: "v" or "".
+env:
+  TAG_PREFIX: v
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Get version from CHANGELOG
+        id: version
+        run: |
+          VERSION=$(grep -m1 '^### ' CHANGELOG.md | sed 's/### \([0-9.]*\).*/\1/')
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Found version: $VERSION"
+
+      - name: Check if release exists
+        if: steps.version.outputs.version != ''
+        id: check
+        run: |
+          if gh release view "$TAG_PREFIX$VERSION" > /dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.version.outputs.version }}
+
+      # Written to a file rather than an output. An expression pasted into a run
+      # block is substituted before bash parses it, so a backtick or a quote in
+      # the changelog would run as a command instead of being release notes.
+      - name: Extract release notes
+        if: steps.check.outputs.exists == 'false'
+        run: awk '/^### [0-9]/{if(p) exit; p=1; next} p' CHANGELOG.md > "$RUNNER_TEMP/release-notes.md"
+
+      - name: Create release
+        if: steps.check.outputs.exists == 'false'
+        run: |
+          gh release create "$TAG_PREFIX$VERSION" \
+            --title "$VERSION" \
+            --notes-file "$RUNNER_TEMP/release-notes.md"
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.version.outputs.version }}
