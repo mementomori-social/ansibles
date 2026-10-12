@@ -20,10 +20,14 @@ fi
 
 ansible-galaxy collection install -r collections/requirements.yml -p collections >/dev/null
 
-# Asked here in plain words instead of Ansible's "BECOME password" prompt.
-read -rsp "Your login password (for sudo): " DEV_SUDO_PASS
-echo
-printf '%s\n' "$DEV_SUDO_PASS" | sudo -S -k -p '' -v 2>/dev/null || { echo "Wrong password." >&2; exit 1; }
+# Asked here in plain words instead of Ansible's "BECOME password" prompt,
+# and only when sudo needs a password at all.
+DEV_SUDO_PASS=
+if ! sudo -n true 2>/dev/null; then
+  read -rsp "Your login password (for sudo): " DEV_SUDO_PASS
+  echo
+  printf '%s\n' "$DEV_SUDO_PASS" | sudo -S -k -p '' -v 2>/dev/null || { echo "Wrong password." >&2; exit 1; }
+fi
 export DEV_SUDO_PASS
 
 # ansible.cfg points at the production vault password, which dev never reads.
