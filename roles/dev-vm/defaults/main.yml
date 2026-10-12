@@ -17,6 +17,10 @@ dev_vm_fallback_https_port: 8443
 dev_vm_nginx_proxy: true
 dev_vm_nginx_backup_dir: "{{ ansible_facts.env.HOME }}/.local/share/mementomori-dev/nginx-backup"
 
+# false skips Docker Desktop on macOS and everything that runs the stack: up,
+# seed and the final check. For CI on machines that cannot run Docker.
+dev_vm_stack: true
+
 # small, default or large, see dev/README.md in the fork. Empty skips seeding.
 dev_vm_seed_scale: small
 # Wipe and reseed when local posts were made under another address, for
