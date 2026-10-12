@@ -10,14 +10,19 @@ secrets/vault.yml file. All such variables are named with prefix `vault_` so
 you know to create your own vault if you want to try this automation yourself.
 
 > [!IMPORTANT]
-> **Interested in running the mementomori.test development environment on
-> your Mac or Linux machine?** It is not in this repo. It runs in Docker from
-> our Mastodon fork: clone
-> [mementomori-social/mastodon](https://github.com/mementomori-social/mastodon),
-> switch to the newest `mementomods-YYYY-MM-DD` branch and follow
-> `dev/README.md` there
-> ([current one](https://github.com/mementomori-social/mastodon/blob/mementomods-2026-10-11/dev/README.md)).
-> These playbooks are for the production servers only.
+> **Want the mementomori.test development environment on your Mac or Linux
+> machine?** Run this, nothing else is needed:
+>
+> ```sh
+> git clone https://github.com/mementomori-social/ansibles.git && ansibles/dev.sh
+> ```
+>
+> It installs Docker, mkcert and Ansible if missing, trusts the local
+> certificate, adds `mementomori.test` to `/etc/hosts`, clones
+> [our Mastodon fork](https://github.com/mementomori-social/mastodon) to
+> `~/Projects/mastodon` and starts it with demo data. See
+> [Development environment](#development-environment). The rest of this repo
+> is for the production servers.
 
 ## Prerequisites
 
@@ -109,12 +114,56 @@ ansible-playbook -i inventory-upcloud.yml update-host.yml
 We provision services based on roles. Aim is so we can scale and move services
 between the hosts if later needed.
 
-* **dev-vm** - Create server for developing mementomori.social features & BirdUI
+* **dev-vm** - Set up the mementomori.test dev environment on a developer's own machine
 * **elasticsearch** - Install and configure elastic search for mastodon search
 * **mastodon** - Install and configure mastodon services
 * **nginx** - Install and configre web server with reverse proxy and cert automation
 * **postgresql** - Install and configure database for mastodon
 * **valkey** - Install and configure key-val store for mastodon
+
+## Development environment
+
+`dev.sh` runs `dev.yml` with the `dev-vm` role against your own machine. It
+works on macOS, Arch Linux, Debian and Ubuntu, and asks for your password once
+for the system changes. The stack itself is Docker from the Mastodon fork,
+described in `dev/README.md` there.
+
+```mermaid
+flowchart LR
+  devsh["dev.sh"] --> playbook["dev.yml<br/>role dev-vm"]
+  playbook --> pkgs["Docker, mkcert, nss"]
+  playbook --> trust["mkcert CA trusted<br/>by the system and browsers"]
+  playbook --> hosts["127.0.0.1 mementomori.test<br/>in /etc/hosts"]
+  playbook --> clone["~/Projects/mastodon<br/>newest mementomods branch"]
+  clone --> up["bin/mementomori-dev up<br/>and seed small"]
+```
+
+| Step | macOS | Arch | Debian, Ubuntu |
+| --- | --- | --- | --- |
+| Docker | Docker Desktop with Homebrew, skipped when Docker Compose 2.24 or newer is already there | `docker`, `docker-buildx`, `docker-compose`, and you in the `docker` group | Docker's apt repository, and you in the `docker` group |
+| Certificate | System keychain, macOS asks to confirm | System trust store | System trust store |
+
+Two things need you at the keyboard on macOS: Docker Desktop's licence on its
+first start, and the keychain confirmation. On Linux log out and in once
+afterwards so the `docker` group applies to your own shell.
+
+Running it again is safe. An existing checkout is never switched or pulled,
+and an already seeded database is left alone.
+
+The site is https://mementomori.test, or https://mementomori.test:8443 when
+something else on the machine already uses port 443. The playbook prints which,
+and remembers it for `bin/mementomori-dev`. Log in as `demo@mementomori.test`,
+`admin@mementomori.test` or `moderator@mementomori.test`, password `mementomori`.
+
+Settings, given with `-e`, for example `./dev.sh -e dev_vm_seed_scale=default`:
+
+| Variable | Default | |
+| --- | --- | --- |
+| `dev_vm_checkout` | `~/Projects/mastodon` | Where the fork is cloned |
+| `dev_vm_repo` | the fork over HTTPS | Use `git@github.com:mementomori-social/mastodon.git` to push over SSH |
+| `dev_vm_branch` | newest `mementomods-*` | Branch for a new clone |
+| `dev_vm_https_port` | 443, or 8443 if taken | Fixed port |
+| `dev_vm_seed_scale` | `small` | `small`, `default`, `large`, or empty to skip |
 
 ## Testing
 
