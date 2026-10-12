@@ -1,5 +1,20 @@
 #SPDX-License-Identifier: MIT-0
 ---
+# Chrome and Chromium on Linux read ~/.pki/nssdb, and mkcert only fills NSS
+# stores that already exist, so a first-time Chrome would warn.
+- name: Create Chrome's certificate store directory on Linux
+  ansible.builtin.file:
+    path: "{{ ansible_facts.env.HOME }}/.pki/nssdb"
+    state: directory
+    mode: '0700'
+  when: ansible_facts.os_family != 'Darwin'
+
+- name: Create Chrome's certificate store on Linux
+  ansible.builtin.command: certutil -d sql:{{ ansible_facts.env.HOME }}/.pki/nssdb -N --empty-password
+  args:
+    creates: "{{ ansible_facts.env.HOME }}/.pki/nssdb/cert9.db"
+  when: ansible_facts.os_family != 'Darwin'
+
 # mkcert -install calls sudo itself, which has no terminal under Ansible.
 # So mkcert only creates the CA and fills the browser (NSS) stores, and the
 # system trust store is done here with become, the same way mkcert does it.

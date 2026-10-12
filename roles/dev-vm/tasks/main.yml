@@ -54,52 +54,65 @@
   ansible.builtin.include_tasks: nginx.yml
   when: dev_vm_behind_nginx | bool
 
-- name: Start the stack
-  ansible.builtin.shell: "{{ dev_vm_shell }}"
-  environment:
-    DEV_VM_CMD: bin/mementomori-dev up
-  args:
-    chdir: "{{ dev_vm_checkout }}"
-  register: dev_vm_up
-  changed_when: "'Started' in dev_vm_up.stdout + dev_vm_up.stderr"
+- name: Run the stack
+  when: dev_vm_stack | bool
+  block:
+    - name: Start the stack
+      ansible.builtin.shell: "{{ dev_vm_shell }}"
+      environment:
+        DEV_VM_CMD: bin/mementomori-dev up
+      args:
+        chdir: "{{ dev_vm_checkout }}"
+      register: dev_vm_up
+      changed_when: "'Started' in dev_vm_up.stdout + dev_vm_up.stderr"
 
-- name: Count posts made under another address
-  ansible.builtin.shell: "{{ dev_vm_shell }}"
-  environment:
-    DEV_VM_CMD: >-
-      bin/mementomori-dev compose exec -T db psql -U postgres -d mastodon_development -Atc
-      "select count(*) from statuses where local and uri not like 'https://{{ dev_vm_address }}/%'"
-  args:
-    chdir: "{{ dev_vm_checkout }}"
-  register: dev_vm_stale_posts
-  changed_when: false
-  failed_when: false
+    - name: Count posts made under another address
+      ansible.builtin.shell: "{{ dev_vm_shell }}"
+      environment:
+        DEV_VM_CMD: >-
+          bin/mementomori-dev compose exec -T db psql -U postgres -d mastodon_development -Atc
+          "select count(*) from statuses where local and uri not like 'https://{{ dev_vm_address }}/%'"
+      args:
+        chdir: "{{ dev_vm_checkout }}"
+      register: dev_vm_stale_posts
+      changed_when: false
+      failed_when: false
 
-# Posts store the full address, so demo data made on another port breaks.
-- name: Reseed demo data for the new address
-  ansible.builtin.shell: "{{ dev_vm_shell }}"
-  environment:
-    DEV_VM_CMD: RESET_YES=1 bin/mementomori-dev reset {{ dev_vm_seed_scale }}
-  args:
-    chdir: "{{ dev_vm_checkout }}"
-  changed_when: true
-  when:
-    - dev_vm_reset_on_address_change
-    - dev_vm_seed_scale | length > 0
-    - (dev_vm_stale_posts.stdout | trim | default('0', true) | int) > 0
+    # Posts store the full address, so demo data made on another port breaks.
+    - name: Reseed demo data for the new address
+      ansible.builtin.shell: "{{ dev_vm_shell }}"
+      environment:
+        DEV_VM_CMD: RESET_YES=1 bin/mementomori-dev reset {{ dev_vm_seed_scale }}
+      args:
+        chdir: "{{ dev_vm_checkout }}"
+      changed_when: true
+      when:
+        - dev_vm_reset_on_address_change
+        - dev_vm_seed_scale | length > 0
+        - (dev_vm_stale_posts.stdout | trim | default('0', true) | int) > 0
 
-- name: Seed demo data
-  ansible.builtin.shell: "{{ dev_vm_shell }}"
-  environment:
-    DEV_VM_CMD: bin/mementomori-dev seed {{ dev_vm_seed_scale }}
-  args:
-    chdir: "{{ dev_vm_checkout }}"
-  register: dev_vm_seed
-  changed_when: "'Done.' in dev_vm_seed.stdout"
-  failed_when:
-    - dev_vm_seed.rc != 0
-    - "'Already seeded' not in dev_vm_seed.stdout + dev_vm_seed.stderr"
-  when: dev_vm_seed_scale | length > 0
+    - name: Seed demo data
+      ansible.builtin.shell: "{{ dev_vm_shell }}"
+      environment:
+        DEV_VM_CMD: bin/mementomori-dev seed {{ dev_vm_seed_scale }}
+      args:
+        chdir: "{{ dev_vm_checkout }}"
+      register: dev_vm_seed
+      changed_when: "'Done.' in dev_vm_seed.stdout"
+      failed_when:
+        - dev_vm_seed.rc != 0
+        - "'Already seeded' not in dev_vm_seed.stdout + dev_vm_seed.stderr"
+      when: dev_vm_seed_scale | length > 0
+
+    # Same check a browser makes: the address answers over HTTPS with a
+    # certificate the system trusts.
+    - name: Check the site has a trusted certificate
+      ansible.builtin.command: curl -fsS --max-time 30 https://{{ dev_vm_address }}/health
+      register: dev_vm_tls
+      changed_when: false
+      retries: 5
+      delay: 5
+      until: dev_vm_tls.rc == 0
 
 - name: Show where it runs
   ansible.builtin.debug:
