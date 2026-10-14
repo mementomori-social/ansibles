@@ -6,7 +6,7 @@
 - name: Check the operating system is supported
   ansible.builtin.assert:
     that: ansible_facts.os_family in dev_vm_os_families
-    fail_msg: "Supported: macOS, Arch Linux, Debian and Ubuntu. This is {{ ansible_facts.distribution }}."
+    fail_msg: "Supported: macOS, Arch Linux, Debian, Ubuntu and Fedora. This is {{ ansible_facts.distribution }}."
 
 - name: Install packages
   ansible.builtin.include_tasks: "packages-{{ ansible_facts.os_family | lower }}.yml"

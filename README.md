@@ -117,7 +117,7 @@ between the hosts if later needed.
 
 ## Development environment
 
-`dev.sh` runs `dev.yml` with the `dev-vm` role against your own machine. It works on macOS, Arch Linux, Debian and Ubuntu, and asks for your sudo password once for the system changes, unless sudo needs none. The stack itself runs in containers from the Mastodon fork, with Podman by default or Docker, described in `dev/README.md` there, including [how to develop a feature](https://github.com/mementomori-social/mastodon/blob/mementomods-2026-10-11/dev/README.md#developing-a-feature) for mementomori.social or for Mastodon.
+`dev.sh` runs `dev.yml` with the `dev-vm` role against your own machine. It works on macOS, Arch Linux, Debian, Ubuntu and Fedora, and asks for your sudo password once for the system changes, unless sudo needs none. The stack itself runs in containers from the Mastodon fork, with Podman by default or Docker, described in `dev/README.md` there, including [how to develop a feature](https://github.com/mementomori-social/mastodon/blob/mementomods-2026-10-11/dev/README.md#developing-a-feature) for mementomori.social or for Mastodon.
 
 ```mermaid
 flowchart LR
@@ -130,11 +130,11 @@ flowchart LR
   clone --> up["bin/mementomori-dev up<br/>and seed small"]
 ```
 
-| Step | macOS | Arch | Debian, Ubuntu |
-| --- | --- | --- | --- |
-| Podman (default) | `podman` and `docker-compose` with Homebrew, and a rootful Podman machine (VM) created and started when missing | `podman`, `docker-compose`, the user's `podman.socket`, and ports from 80 allowed for rootless use | `podman`, `docker-compose-v2` (Ubuntu) or `docker-compose` (Debian), the same socket and port setting |
-| Docker (`-e dev_vm_engine=docker`) | Docker Desktop with Homebrew, skipped when Docker Compose 2.24 or newer is already there | `docker`, `docker-buildx`, `docker-compose`, and you in the `docker` group | Docker's apt repository, and you in the `docker` group |
-| Certificate | System keychain, macOS asks to confirm | System trust store | System trust store |
+| Step | macOS | Arch | Debian, Ubuntu | Fedora |
+| --- | --- | --- | --- | --- |
+| Podman (default) | `podman` and `docker-compose` with Homebrew, and a rootful Podman machine (VM) created and started when missing | `podman`, `docker-compose`, the user's `podman.socket`, and ports from 80 allowed for rootless use | `podman`, `docker-compose-v2` (Ubuntu) or `docker-compose` (Debian), the same socket and port setting | `podman`, `docker-compose`, the same socket and port setting |
+| Docker (`-e dev_vm_engine=docker`) | Docker Desktop with Homebrew, skipped when Docker Compose 2.24 or newer is already there | `docker`, `docker-buildx`, `docker-compose`, and you in the `docker` group | Docker's apt repository, and you in the `docker` group | `moby-engine`, `docker-buildx`, `docker-compose`, and you in the `docker` group |
+| Certificate | System keychain, macOS asks to confirm | System trust store | System trust store | System trust store |
 
 On macOS the keychain may ask you to confirm the certificate, and with Docker, Docker Desktop's licence needs accepting on its first start. With Docker on Linux, log out and in once afterwards so the `docker` group applies to your own shell.
 
@@ -146,7 +146,7 @@ Demo posts store the full address, so when it changes (for example from `:8443` 
 
 The playbook ends by loading the site over HTTPS with certificate checking on, so a certificate the system doesn't trust fails the run. On Linux it also creates Chrome's certificate store (`~/.pki/nssdb`) when missing, since mkcert only adds its CA to stores that exist.
 
-CI (`.github/workflows/dev.yml`) runs `dev.sh` twice on clean machines, once with port 443 free and once behind an nginx that already has other sites. The second run must change nothing. Ubuntu runs the whole stack with Podman and with Docker and the fork's `bin/mementomori-dev check`; macOS 26 runs everything except the containers, since GitHub's macOS runners can't run a container VM, with a stand-in HTTPS server instead. Ubuntu also opens the site in headless Chrome (`tests/dev-browser-check.sh`) and fails on a certificate warning. On the macOS runners headless Chrome hangs even for a plain page, so there that step may fail without failing the job; curl still checks the certificate. The repository variable `DEV_FORK_BRANCH` picks the fork branch to test; without it CI uses the newest `mementomods-*` branch.
+CI (`.github/workflows/dev.yml`) runs `dev.sh` twice on clean machines, once with port 443 free and once behind an nginx that already has other sites. The second run must change nothing. Ubuntu runs the whole stack with Podman and with Docker and the fork's `bin/mementomori-dev check`, and so does a Fedora VM with Podman and SELinux on; macOS 26 runs everything except the containers, since GitHub's macOS runners can't run a container VM, with a stand-in HTTPS server instead. Ubuntu also opens the site in headless Chrome (`tests/dev-browser-check.sh`) and fails on a certificate warning. On the macOS runners headless Chrome hangs even for a plain page, so there that step may fail without failing the job; curl still checks the certificate. The repository variable `DEV_FORK_BRANCH` picks the fork branch to test; without it CI uses the newest `mementomods-*` branch.
 
 Settings, given with `-e`, for example `./dev.sh -e dev_vm_seed_scale=default`:
 

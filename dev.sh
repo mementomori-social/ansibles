@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# mementomori.test on this machine (macOS, Arch, Debian, Ubuntu). See README.md.
+# mementomori.test on this machine (macOS, Arch, Debian, Ubuntu, Fedora). See README.md.
 # Extra arguments go to ansible-playbook, for example -e dev_vm_seed_scale=default
 set -euo pipefail
 
@@ -10,6 +10,8 @@ if ! command -v ansible-playbook >/dev/null; then
     brew install ansible
   elif command -v pacman >/dev/null; then
     sudo pacman -S --needed --noconfirm ansible
+  elif command -v dnf >/dev/null; then
+    sudo dnf install -y ansible
   elif command -v apt-get >/dev/null; then
     sudo apt-get update && sudo apt-get install -y ansible
   else
