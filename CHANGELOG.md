@@ -1,3 +1,7 @@
+### 1.6.1: 2026-10-14
+
+* Change dev CI to Ubuntu 26.04, Ref: MEM-15
+
 ### 1.6.0: 2026-10-14
 
 * Add Fedora to dev setup, Ref: MEM-15

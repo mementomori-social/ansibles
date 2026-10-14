@@ -33,7 +33,8 @@ permissions:
 
 jobs:
   dev:
-    runs-on: ubuntu-latest
+    # Same Ubuntu as the servers
+    runs-on: ubuntu-26.04
     timeout-minutes: 60
     strategy:
       fail-fast: false
