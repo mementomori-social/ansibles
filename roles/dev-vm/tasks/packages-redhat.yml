@@ -1,0 +1,31 @@
+#SPDX-License-Identifier: MIT-0
+---
+- name: Install mkcert and nss
+  become: true
+  ansible.builtin.dnf:
+    name:
+      - mkcert
+      - nss-tools
+    state: present
+
+- name: Install Podman
+  become: true
+  ansible.builtin.dnf:
+    name:
+      - podman
+      - docker-compose
+    state: present
+  when: dev_vm_engine == 'podman'
+
+- name: Install Docker
+  become: true
+  ansible.builtin.dnf:
+    name:
+      - moby-engine
+      - docker-buildx
+      - docker-compose
+    state: present
+  when: dev_vm_engine == 'docker'
+
+- name: Linux engine setup
+  ansible.builtin.include_tasks: "{{ dev_vm_engine }}-linux.yml"

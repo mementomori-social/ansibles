@@ -1,3 +1,7 @@
+### 1.6.0: 2026-10-14
+
+* Add Fedora to dev setup, Ref: MEM-15
+
 ### 1.5.1: 2026-10-12
 
 * Run dev setup on any branch, Ref: MEM-15
