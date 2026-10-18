@@ -1,6 +1,7 @@
 ### 1.7.0: 2026-10-18
 
 * Add Cloudflare proxy for mementomori.social, Ref: MEM-74
+* Fix Molecule apt 404 on stale package lists, Ref: MEM-51
 
 ### 1.6.1: 2026-10-14
 
