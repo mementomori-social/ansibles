@@ -103,6 +103,15 @@
     mode: '0644'
   notify: Reload nginx
 
+- name: Install Cloudflare real IP config
+  ansible.builtin.copy:
+    src: cloudflare-realip.conf
+    dest: /etc/nginx/conf.d/cloudflare-realip.conf
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Reload nginx
+
 - name: Install stub status snippet
   ansible.builtin.copy:
     src: stub-status.conf
@@ -199,7 +208,7 @@
     type: "{{ item.type }}"
     value: "{{ item.value }}"
     solo: true
-    proxied: false
+    proxied: "{{ item.proxied | default(false) }}"
     comment: nginx server
     api_token: "{{ nginx_mementomori_cloudflare_api_token }}"
   loop: "{{ nginx_mementomori_dns_records }}"

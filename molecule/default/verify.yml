@@ -196,6 +196,7 @@
         - /etc/nginx/conf.d/diagnostic-log.conf
         - /etc/logrotate.d/nginx-diagnostic
         - /etc/nginx/conf.d/static-asset-ratelimit.conf
+        - /etc/nginx/conf.d/cloudflare-realip.conf
         - /etc/nginx/snippets/stub-status.conf
         - /etc/nginx/sites-available/mastodon
         - /etc/nginx/sites-available/rolle

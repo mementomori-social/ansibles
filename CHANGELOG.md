@@ -1,3 +1,7 @@
+### 1.7.0: 2026-10-18
+
+* Add Cloudflare proxy for mementomori.social, Ref: MEM-74
+
 ### 1.6.1: 2026-10-14
 
 * Change dev CI to Ubuntu 26.04, Ref: MEM-15

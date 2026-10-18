@@ -165,19 +165,27 @@ nginx_mementomori_letsencrypt_enabled: true
 nginx_mementomori_letsencrypt_email: "{{ vault_letsencrypt_email | default('') }}"
 nginx_mementomori_cloudflare_api_token: "{{ vault_letsencrypt_cloudflare_api_token | default('') }}"
 
+# Serve mementomori.social through Cloudflare's proxy. Revert: set false and
+# run the playbook with --tags cf.
+nginx_mementomori_cloudflare_proxy: true
+
 nginx_mementomori_dns_records:
   - record: '@'
     type: A
     value: "{{ ansible_facts.eth0.ipv4.address }}"
+    proxied: "{{ nginx_mementomori_cloudflare_proxy }}"
   - record: '@'
     type: AAAA
     value: "{{ (ansible_facts.eth1.ipv6 | selectattr('scope', 'equalto', 'global') | first).address }}"
+    proxied: "{{ nginx_mementomori_cloudflare_proxy }}"
   - record: 'www'
     type: A
     value: "{{ ansible_facts.eth0.ipv4.address }}"
+    proxied: "{{ nginx_mementomori_cloudflare_proxy }}"
   - record: 'www'
     type: AAAA
     value: "{{ (ansible_facts.eth1.ipv6 | selectattr('scope', 'equalto', 'global') | first).address }}"
+    proxied: "{{ nginx_mementomori_cloudflare_proxy }}"
   - record: 'rolle'
     type: A
     value: "{{ ansible_facts.eth0.ipv4.address }}"

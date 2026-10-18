@@ -87,6 +87,24 @@ letsencrypt is skipped together with `skip_in_tests`, the role generates
 self-signed placeholder certificates at the same `/etc/letsencrypt/live/<name>/`
 paths so `nginx -t` can still validate the virtual hosts.
 
+Cloudflare proxy
+----------------
+
+`mementomori.social` and `www` are served through Cloudflare's proxy
+(`nginx_mementomori_cloudflare_proxy: true`), so visitors far from Helsinki
+connect to a nearby Cloudflare server. `rolle` stays DNS only.
+`/etc/nginx/conf.d/cloudflare-realip.conf` takes the client address from
+`CF-Connecting-IP` for requests coming from Cloudflare's ranges, so logs and
+Mastodon's rate limits see real visitors. Update its ranges from
+https://www.cloudflare.com/ips/ if Cloudflare adds new ones.
+
+The zone also has a Configuration Rule (no challenges, no HTML rewrites) and a
+Cache Rule (bypass) for these two hosts, set in the Cloudflare dashboard.
+
+To turn the proxy off, set `nginx_mementomori_cloudflare_proxy: false` and run:
+
+    ansible-playbook mastodon-0.mementomori.social.yml --tags cf
+
 Virtual hosts
 -------------
 
