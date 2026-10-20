@@ -1,6 +1,7 @@
 ### 1.7.1: 2026-10-20
 
 * Fix dev files ignored on fork branches, Ref: MEM-15
+* Fix Vite live reload through nginx, Ref: MEM-15
 
 ### 1.7.0: 2026-10-18
 
