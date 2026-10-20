@@ -26,12 +26,22 @@
   ansible.builtin.shell: |
     set -e
     paths="dev bin/mementomori-dev lib/tasks/mementomori_seed.rake"
+    exclude=$(git rev-parse --git-path info/exclude)
+    # On a fork branch the files are committed: drop the exclude entries, which
+    # every worktree of the repo shares and which would block git add
     if git ls-files --error-unmatch bin/mementomori-dev >/dev/null 2>&1; then
+      for path in $paths; do
+        if grep -qxF "/$path" "$exclude" 2>/dev/null; then
+          grep -vxF "/$path" "$exclude" > "$exclude.tmp" || true
+          mv "$exclude.tmp" "$exclude"
+          echo unexcluded
+        fi
+      done
       exit 0
     fi
     git fetch --quiet {{ dev_vm_repo | quote }} {{ (dev_vm_branch or dev_vm_newest.stdout) | quote }}
     for path in $paths; do
-      grep -qxF "/$path" .git/info/exclude 2>/dev/null || echo "/$path" >> .git/info/exclude
+      grep -qxF "/$path" "$exclude" 2>/dev/null || echo "/$path" >> "$exclude"
     done
     stale=
     for file in $(git ls-tree -r --name-only FETCH_HEAD -- $paths); do
@@ -45,7 +55,7 @@
   args:
     chdir: "{{ dev_vm_checkout }}"
   register: dev_vm_dev_files
-  changed_when: "'refreshed' in dev_vm_dev_files.stdout"
+  changed_when: "'refreshed' in dev_vm_dev_files.stdout or 'unexcluded' in dev_vm_dev_files.stdout"
 
 - name: Check the checkout has the dev stack
   ansible.builtin.stat:

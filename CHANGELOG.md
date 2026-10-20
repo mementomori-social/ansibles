@@ -1,3 +1,7 @@
+### 1.7.1: 2026-10-20
+
+* Fix dev files ignored on fork branches, Ref: MEM-15
+
 ### 1.7.0: 2026-10-18
 
 * Add Cloudflare proxy for mementomori.social, Ref: MEM-74
