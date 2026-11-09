@@ -1,3 +1,7 @@
+### 1.7.2: 2026-11-09
+
+* Fix streaming redirect breaking Elk and masto.js
+
 ### 1.7.1: 2026-10-20
 
 * Fix dev files ignored on fork branches, Ref: MEM-15
