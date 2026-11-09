@@ -1,6 +1,7 @@
 ### 1.7.2: 2026-11-09
 
 * Fix streaming redirect breaking Elk and masto.js
+* Add Forwarded header clearing from prod
 
 ### 1.7.1: 2026-10-20
 
