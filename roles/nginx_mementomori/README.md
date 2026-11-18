@@ -129,15 +129,22 @@ Deliberately out of scope
 Requirements
 ------------
 
-The brotli compression modules are installed from the distribution packages
-`libnginx-mod-http-brotli-filter` and `libnginx-mod-http-brotli-static`
-(available on Ubuntu 24.04+ and Debian; not on Ubuntu 22.04 jammy). The
-packages load the modules through `/etc/nginx/modules-enabled/`, so the role
-deletes any hardcoded `load_module ...ngx_http_brotli...;` lines left over
-from an older self-compiled install.
+nginx comes from the nginx.org mainline repository, which ships security
+fixes the same day, while Ubuntu's package can lag for days. The package is
+held (`apt-mark hold nginx`), so `update-host.yml` never upgrades it. Only
+this role does, with service restarts held (`/usr/sbin/policy-rc.d` and
+`NEEDRESTART_SUSPEND=1`) until `nginx -t` passes.
 
-This is still from ubununtu package repo, we might need to change it to
-self compiled one due Rolle has experienced bugs in canonical made ones.
+The brotli modules are built by hand for the installed nginx version, from
+[ngx_brotli](https://github.com/google/ngx_brotli), and loaded from
+`/etc/nginx/modules-enabled/50-mod-http-brotli.conf`. A stamp file
+`/usr/lib/nginx/modules/brotli-<version>.built` marks the version they were
+built for, so they are rebuilt whenever nginx changes. The role also deletes
+any hardcoded `load_module ...ngx_http_brotli...;` lines in `nginx.conf`.
+
+A fresh nginx.org install comes with a `nginx.conf` that has no
+`sites-enabled` or `modules-enabled`. The role then installs
+`files/nginx.conf`, the production one.
 
 Testing
 -------
@@ -150,9 +157,8 @@ run systemd):
         docker.io/jomrr/molecule-ubuntu:26.04 /sbin/init
 
 Then point an ad-hoc inventory at it with
-`ansible_connection=containers.podman.podman` and run the role. The brotli
-modules install from the distro packages, so `nginx -t` validates cleanly in
-the container — no `-e` brotli overrides are needed. Note the 26.04 stock
+`ansible_connection=containers.podman.podman` and run the role. The role
+builds brotli in the container, so `nginx -t` validates cleanly. Note the 26.04 stock
 config uses `server_tokens build; # comment` instead of the commented-out
 `# server_tokens off;` found on 22.04 — the role handles both.
 

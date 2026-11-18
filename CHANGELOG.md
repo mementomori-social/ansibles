@@ -1,3 +1,8 @@
+### 1.8.0: 2026-11-18
+
+* Change nginx to nginx.org mainline, build brotli
+* Remove delaycompress from nginx log rotation
+
 ### 1.7.2: 2026-11-09
 
 * Fix streaming redirect breaking Elk and masto.js

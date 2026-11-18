@@ -1,0 +1,195 @@
+# SPDX-License-Identifier: MIT-0
+---
+# nginx comes from nginx.org mainline, which ships security fixes the same
+# day. Brotli is built by hand for the installed version. nginx is held so a
+# dist-upgrade never swaps it under modules built for the old version.
+
+- name: Add the nginx.org signing key
+  ansible.builtin.get_url:
+    url: https://nginx.org/keys/nginx_signing.key
+    dest: /etc/apt/keyrings/nginx.asc
+    mode: '0644'
+
+- name: Add the nginx.org mainline repository
+  ansible.builtin.copy:
+    dest: /etc/apt/sources.list.d/nginx.list
+    content: >
+      deb [signed-by=/etc/apt/keyrings/nginx.asc]
+      http://nginx.org/packages/mainline/ubuntu
+      {{ ansible_facts['distribution_release'] }} nginx
+    mode: '0644'
+
+- name: Prefer nginx.org packages
+  ansible.builtin.copy:
+    dest: /etc/apt/preferences.d/99nginx
+    content: |
+      Package: *
+      Pin: origin nginx.org
+      Pin: release o=nginx
+      Pin-Priority: 900
+    mode: '0644'
+
+# The running nginx keeps serving with its loaded modules until the config
+# test passes and the handler restarts it.
+- name: Install nginx with service restarts held
+  block:
+    - name: Hold service restarts
+      ansible.builtin.copy:
+        dest: /usr/sbin/policy-rc.d
+        content: "#!/bin/sh\nexit 101\n"
+        mode: '0755'
+      changed_when: false
+
+    - name: Install the newest nginx
+      ansible.builtin.apt:
+        name: nginx
+        state: latest
+        update_cache: true
+        allow_change_held_packages: true
+        dpkg_options: force-confold,force-confdef
+      environment:
+        # needrestart restarts services with systemctl, past policy-rc.d
+        NEEDRESTART_SUSPEND: "1"
+      notify: Restart nginx
+
+    - name: Remove Ubuntu's brotli module packages
+      ansible.builtin.apt:
+        name:
+          - libnginx-mod-http-brotli-filter
+          - libnginx-mod-http-brotli-static
+        state: absent
+      environment:
+        NEEDRESTART_SUSPEND: "1"
+
+  always:
+    - name: Let services restart again
+      ansible.builtin.file:
+        path: /usr/sbin/policy-rc.d
+        state: absent
+      changed_when: false
+
+- name: Keep nginx out of dist-upgrades
+  ansible.builtin.dpkg_selections:
+    name: nginx
+    selection: hold
+
+- name: Read the nginx version
+  ansible.builtin.shell: >-
+    set -o pipefail; nginx -v 2>&1 | grep -o '[0-9.]*$'
+  args:
+    executable: /bin/bash
+  changed_when: false
+  check_mode: false
+  register: nginx_mementomori_nginx_version
+
+- name: Check for brotli built for this version
+  ansible.builtin.stat:
+    path: "/usr/lib/nginx/modules/brotli-{{ nginx_mementomori_nginx_version.stdout }}.built"
+  register: nginx_mementomori_brotli_stamp
+
+- name: Build brotli for the installed nginx
+  when: not nginx_mementomori_brotli_stamp.stat.exists
+  vars:
+    nginx_mementomori_build_dir: /usr/local/src/nginx-modules
+    nginx_mementomori_source: "{{ nginx_mementomori_build_dir }}/nginx-{{ nginx_mementomori_nginx_version.stdout }}"
+  block:
+    - name: Install the build tools
+      ansible.builtin.apt:
+        name: [build-essential, cmake, git, libpcre2-dev, zlib1g-dev, uuid-dev]
+        state: present
+
+    - name: Start from an empty build folder
+      ansible.builtin.file:
+        path: "{{ nginx_mementomori_build_dir }}"
+        state: "{{ item }}"
+        mode: '0755'
+      loop: [absent, directory]
+
+    - name: Download the nginx source of the installed version
+      ansible.builtin.unarchive:
+        src: "https://nginx.org/download/nginx-{{ nginx_mementomori_nginx_version.stdout }}.tar.gz"
+        dest: "{{ nginx_mementomori_build_dir }}"
+        remote_src: true
+
+    - name: Fetch ngx_brotli
+      ansible.builtin.git:
+        repo: https://github.com/google/ngx_brotli.git
+        dest: "{{ nginx_mementomori_build_dir }}/ngx_brotli"
+        version: master
+        depth: 1
+        recursive: true
+
+    - name: Build and install the brotli library
+      ansible.builtin.shell: >-
+        mkdir -p out && cd out
+        && cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON .. > /dev/null
+        && make -j"$(nproc)" > /dev/null && make install > /dev/null && ldconfig
+      args:
+        chdir: "{{ nginx_mementomori_build_dir }}/ngx_brotli/deps/brotli"
+      changed_when: true
+
+    - name: Build the brotli modules
+      ansible.builtin.shell: >-
+        ./configure --with-compat --add-dynamic-module=../ngx_brotli > /dev/null
+        && make -j"$(nproc)" modules > /dev/null
+      args:
+        chdir: "{{ nginx_mementomori_source }}"
+      changed_when: true
+
+    # copy writes a new file and renames it, so the running nginx keeps its
+    # loaded module intact. Never overwrite a loaded .so in place.
+    - name: Install the brotli modules
+      ansible.builtin.copy:
+        src: "{{ nginx_mementomori_source }}/objs/{{ item }}"
+        dest: "/usr/lib/nginx/modules/{{ item }}"
+        remote_src: true
+        mode: '0644'
+      loop:
+        - ngx_http_brotli_filter_module.so
+        - ngx_http_brotli_static_module.so
+      notify: Restart nginx
+
+    - name: Mark brotli built for this version
+      ansible.builtin.copy:
+        dest: "/usr/lib/nginx/modules/brotli-{{ nginx_mementomori_nginx_version.stdout }}.built"
+        content: ""
+        mode: '0644'
+
+- name: Load the brotli modules
+  ansible.builtin.copy:
+    dest: /etc/nginx/modules-enabled/50-mod-http-brotli.conf
+    content: |
+      load_module /usr/lib/nginx/modules/ngx_http_brotli_filter_module.so;
+      load_module /usr/lib/nginx/modules/ngx_http_brotli_static_module.so;
+    mode: '0644'
+  notify: Restart nginx
+
+- name: Remove the module links Ubuntu's packages left behind
+  ansible.builtin.file:
+    path: "/etc/nginx/modules-enabled/{{ item }}"
+    state: absent
+  loop:
+    - 50-mod-http-brotli-filter.conf
+    - 50-mod-http-brotli-static.conf
+    - 50-mod-http-brotli-filter.conf.removed
+    - 50-mod-http-brotli-static.conf.removed
+
+- name: Remove the nginx.org default site
+  ansible.builtin.file:
+    path: /etc/nginx/conf.d/default.conf
+    state: absent
+  notify: Reload nginx
+
+# Compress rotated logs straight away.
+- name: Drop delaycompress from nginx log rotation
+  ansible.builtin.lineinfile:
+    path: /etc/logrotate.d/nginx
+    regexp: '^\s*#?\s*delaycompress\s*$'
+    state: absent
+
+# nginx.org's init script has no rotate action
+- name: Reopen nginx logs after rotation
+  ansible.builtin.lineinfile:
+    path: /etc/logrotate.d/nginx
+    regexp: '^\s*(invoke-rc\.d nginx rotate|\[ -s /run/nginx\.pid \]).*$'
+    line: "\t\t[ -s /run/nginx.pid ] && kill -USR1 $(cat /run/nginx.pid)"

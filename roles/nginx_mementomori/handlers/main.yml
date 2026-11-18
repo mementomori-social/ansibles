@@ -1,5 +1,21 @@
 #SPDX-License-Identifier: MIT-0
 ---
+# Restart only after the config test passes, so a module built for another
+# nginx version never takes the site down.
+- name: Test nginx config before restart
+  ansible.builtin.command: nginx -t
+  changed_when: false
+  listen: Restart nginx
+
+- name: Restart nginx onto the new version
+  ansible.builtin.systemd_service:
+    name: nginx
+    state: restarted
+  listen: Restart nginx
+  when:
+    - not nginx_disable_all
+    - not nginx_mementomori_skip_systemd
+
 - name: Reload nginx
   ansible.builtin.systemd_service:
     name: nginx

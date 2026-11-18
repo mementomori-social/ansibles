@@ -1,12 +1,8 @@
 # SPDX-License-Identifier: MIT-0
 ---
-- name: Install nginx
+- name: Install php-fpm
   ansible.builtin.apt:
-    name:
-      - nginx
-      - libnginx-mod-http-brotli-filter
-      - libnginx-mod-http-brotli-static
-      - php-fpm
+    name: php-fpm
     state: present
     update_cache: true
 
@@ -22,6 +18,27 @@
     - /etc/nginx/snippets
     - /etc/nginx/sites-available
     - /etc/nginx/sites-enabled
+    - /etc/nginx/modules-enabled
+
+- name: Install nginx from nginx.org
+  ansible.builtin.include_tasks: nginx-package.yml
+
+- name: Read nginx.conf
+  ansible.builtin.slurp:
+    src: /etc/nginx/nginx.conf
+  register: nginx_mementomori_nginx_conf
+
+# A fresh nginx.org install brings a nginx.conf without sites-enabled and
+# modules-enabled. Start from the production one instead.
+- name: Use the production nginx.conf on a fresh install
+  ansible.builtin.copy:
+    src: nginx.conf
+    dest: /etc/nginx/nginx.conf
+    owner: root
+    group: root
+    mode: '0644'
+  when: "'sites-enabled' not in (nginx_mementomori_nginx_conf.content | b64decode)"
+  notify: Restart nginx
 
 - name: Apply nginx.conf tunables
   ansible.builtin.lineinfile:
