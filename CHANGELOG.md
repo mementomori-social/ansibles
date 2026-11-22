@@ -1,3 +1,7 @@
+### 1.8.2: 2026-11-22
+
+* Fix diagnostic log reopening after rotation
+
 ### 1.8.1: 2026-11-18
 
 * Remove delaycompress from nginx log rotation

@@ -208,6 +208,18 @@
           - nginx_memento_files.results | map(attribute='stat.exists') | list is all
         fail_msg: "nginx_mementomori config file missing"
 
+    - name: Read diagnostic log rotation
+      ansible.builtin.slurp:
+        src: /etc/logrotate.d/nginx-diagnostic
+      register: diag_logrotate
+
+    - name: Assert diagnostic log rotation reopens nginx logs
+      ansible.builtin.assert:
+        that:
+          - "'kill -USR1' in (diag_logrotate.content | b64decode)"
+          - "'invoke-rc.d' not in (diag_logrotate.content | b64decode)"
+        fail_msg: "nginx-diagnostic logrotate does not reopen the log"
+
     - name: Stat nginx_mementomori site symlinks
       ansible.builtin.stat:
         path: "/etc/nginx/sites-enabled/{{ item }}"

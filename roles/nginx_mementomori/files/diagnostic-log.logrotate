@@ -9,6 +9,6 @@
 	create 0640 www-data adm
 	sharedscripts
 	postrotate
-		invoke-rc.d nginx rotate >/dev/null 2>&1
+		[ -s /run/nginx.pid ] && kill -USR1 $(cat /run/nginx.pid)
 	endscript
 }
